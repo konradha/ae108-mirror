@@ -1,0 +1,49 @@
+// © 2020 ETH Zurich, Mechanics and Materials Lab
+// © 2020 California Institute of Technology
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include "ae108/assembly/utilities/IsSingleUniqueType.h"
+#include <type_traits>
+
+namespace ae108 {
+namespace assembly {
+namespace utilities {
+namespace {
+
+struct A {};
+struct B {};
+
+static_assert(IsSingleUniqueType<A>::value, "A is single unique type.");
+
+static_assert(!IsSingleUniqueType<>::value,
+              "Empty is not a single unique type.");
+
+static_assert(IsSingleUniqueType<A, A>::value, "A, A is a single unique type.");
+
+static_assert(std::is_same<A, IsSingleUniqueType<A, A>::type>::value,
+              "The unique type is A.");
+
+static_assert(!IsSingleUniqueType<A, A, B>::value,
+              "A, A, B is not a single unique type.");
+
+static_assert(!IsSingleUniqueType<A, B>::value,
+              "A, B is not a single unique type.");
+
+static_assert(!IsSingleUniqueType<A, B, A>::value,
+              "A, B, A is not a single unique type.");
+
+} // namespace
+} // namespace utilities
+} // namespace assembly
+} // namespace ae108

@@ -48,9 +48,10 @@ build-debian:
             su developer -c '
                 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage" . &&
                 cmake --build build --target all &&
-                CTEST_OUTPUT_ON_FAILURE=1 cmake --build build --target test &&
+                CTEST_OUTPUT_ON_FAILURE=1 GTEST_OUTPUT="xml:gtest-results.xml" cmake --build build --target test &&
                 python3 -m gcovr --print-summary --sonarqube coverage.xml -j$(nproc) --root . build
             '
     artifacts:
         reports:
             cobertura: coverage.xml
+            junit: build/**/test/gtest-results.xml

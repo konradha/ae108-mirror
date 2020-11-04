@@ -26,6 +26,7 @@ build-debian:
         - apt-get update && apt-get install -y cmake
         - apt-get update && apt-get install -y g++
         - apt-get update && apt-get install -y googletest
+        - apt-get update && apt-get install -y lcov
         - apt-get update && apt-get install -y libboost-program-options-dev
         - apt-get update && apt-get install -y libeigen3-dev
         - apt-get update && apt-get install -y ninja-build
@@ -33,7 +34,7 @@ build-debian:
         - >
             bash -c '
                 cd $(mktemp -d) &&
-                cmake -G Ninja -DCMAKE_BUILD_TYPE=Release /usr/src/googletest &&
+                cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage" /usr/src/googletest &&
                 cmake --build . &&
                 cmake --build . --target install &&
                 rm -rf $PWD
@@ -44,7 +45,9 @@ build-debian:
         - chown developer:developer build
         - >
             su developer -c '
-                cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release . &&
+                cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage" . &&
                 cmake --build build --target all &&
-                CTEST_OUTPUT_ON_FAILURE=1 cmake --build build --target test
+                CTEST_OUTPUT_ON_FAILURE=1 cmake --build build --target test &&
+                lcov --capture --no-external --directory . --output-file lcov.info &&
+                lcov --list lcov.info
             '

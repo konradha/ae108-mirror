@@ -56,11 +56,15 @@ build-debian:
         - chown developer:developer build
         - >
             su developer -c '
-                cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage" . &&
-                cmake --build build --target all &&
-                CTEST_OUTPUT_ON_FAILURE=1 cmake --build build --target test &&
-                python3 -m gcovr --print-summary --sonarqube coverage.xml -j$(nproc) --root . build
+                cd build
+                cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage" .. &&
+                cmake --build . --target all &&
+                GTEST_OUTPUT="xml:gtest-results.xml" ctest --output-on-failure --exclude-regex ".*_mpi$" &&
+                ctest --output-on-failure --tests-regex ".*_mpi$" &&
+                python3 -m gcovr --print-summary --sonarqube coverage.xml -j$(nproc) --root .. .
             '
     artifacts:
         reports:
-            cobertura: coverage.xml
+            cobertura: build/coverage.xml
+            junit: build/*/test/gtest-results.xml
+        when: always

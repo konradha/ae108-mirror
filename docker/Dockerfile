@@ -14,6 +14,7 @@
 # limitations under the License.
 
 ARG BASE_IMAGE=debian:buster
+ARG DEBIAN_FRONTEND=noninteractive
 
 FROM $BASE_IMAGE
 

@@ -14,24 +14,34 @@
 # limitations under the License.
 
 stages:
+    - image
     - build
 
-variables:
-    DEBIAN_FRONTEND: noninteractive
+image-debian:
+    stage: image
+    image:
+        name: gcr.io/kaniko-project/executor:debug
+        entrypoint:
+            - ""
+    script:
+        - mkdir -p /kaniko/.docker
+        - >
+            printf \
+                '{"auths": {"%s": {"username": "%s", "password": "%s"}}}' \
+                "$CI_REGISTRY" \
+                "$CI_REGISTRY_USER" \
+                "$CI_REGISTRY_PASSWORD" > /kaniko/.docker/config.json
+        - >
+            /kaniko/executor \
+                --cache-ttl=730h \
+                --cache=true \
+                --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG \
+                --dockerfile docker/Dockerfile
 
 build-debian:
     stage: build
-    image: debian:buster
+    image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
     before_script:
-        - apt-get update && apt-get install -y cmake
-        - apt-get update && apt-get install -y g++
-        - apt-get update && apt-get install -y googletest
-        - apt-get update && apt-get install -y libboost-program-options-dev
-        - apt-get update && apt-get install -y libeigen3-dev
-        - apt-get update && apt-get install -y ninja-build
-        - apt-get update && apt-get install -y petsc-dev
-        - apt-get update && apt-get install -y python3 python3-pip
-        - pip3 install gcovr
         - >
             bash -c '
                 cd $(mktemp -d) &&

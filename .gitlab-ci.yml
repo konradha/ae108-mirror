@@ -54,4 +54,4 @@ build-debian:
     artifacts:
         reports:
             cobertura: coverage.xml
-            junit: build/cpppetsc/test/gtest-results.xml
+            junit: build/**/test/gtest-results.xml

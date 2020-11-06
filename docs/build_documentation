@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# © 2020 ETH Zurich, Mechanics and Materials Lab
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -e
+ROOT_DIRECTORY=$(readlink -e $(dirname "$0"))/..
+
+(
+    doxygen -g -; \
+    echo GENERATE_HTML=NO; \
+    echo GENERATE_LATEX=NO; \
+    echo GENERATE_XML=YES; \
+    echo INPUT="$ROOT_DIRECTORY/cmdline/src/include" \
+               "$ROOT_DIRECTORY/cpppetsc/src/include" \
+               "$ROOT_DIRECTORY/assembly/src/include" \
+               "$ROOT_DIRECTORY/solve/src/include"; \
+    echo RECURSIVE=YES; \
+    echo PROJECT_NAME=\"AE108\" \
+) \
+| doxygen -
+
+sphinx-quickstart \
+    --no-batchfile \
+    --sep \
+    -a "ETH Zurich, Mechanics and Materials Lab; California Institute of Technology" \
+    -l "en" \
+    -p "AE108" \
+    -r "$(git describe)"
+
+cat <<EOF >> source/conf.py
+#
+extensions = [ "breathe" ]
+breathe_projects = { "AE108": "$PWD/xml" }
+breathe_default_project = "AE108"
+EOF
+
+pandoc \
+    -o source/README.rst \
+    -s \
+    -t rst \
+    "$ROOT_DIRECTORY/README.md"
+cp "$ROOT_DIRECTORY/docs/index.rst" source/index.rst
+
+make -j$(nproc) html
+make -j$(nproc) latexpdf

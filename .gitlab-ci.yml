@@ -14,11 +14,11 @@
 # limitations under the License.
 
 stages:
-    - image
+    - images
     - build
 
-image-debian:
-    stage: image
+.build-image: &build-image
+    stage: images
     image:
         name: gcr.io/kaniko-project/executor:debug
         entrypoint:
@@ -35,12 +35,24 @@ image-debian:
             /kaniko/executor \
                 --cache-ttl=730h \
                 --cache=true \
-                --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG \
-                --dockerfile docker/Dockerfile
+                --destination $CI_REGISTRY_IMAGE/$IMAGE_NAME:$CI_COMMIT_REF_SLUG \
+                --dockerfile docker/$DOCKERFILE_NAME
 
-build-debian:
+build-image-dev:
+    variables:
+        DOCKERFILE_NAME: "Dockerfile"
+        IMAGE_NAME: "dev"
+    <<: *build-image
+
+build-image-docu:
+    variables:
+        DOCKERFILE_NAME: "Dockerfile_docu"
+        IMAGE_NAME: "docu"
+    <<: *build-image
+
+build-library:
     stage: build
-    image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    image: $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_REF_SLUG
     before_script:
         - >
             bash -c '

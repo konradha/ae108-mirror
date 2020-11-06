@@ -17,6 +17,8 @@
 
 # AE108
 
+## Introduction
+
 The aim of this project is to provide a C++ foundation for computational solid mechanics simulations using a variational framework, primarily focusing on the Finite Element Method (FEM).
 See the [Computational Solid Mechanics lecture notes](https://www.mm.ethz.ch/) for more information about the approach that is used.
 The code is developed by the Mechanics & Materials Lab at ETH Zurich.

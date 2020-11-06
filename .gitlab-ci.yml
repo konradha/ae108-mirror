@@ -15,6 +15,7 @@
 
 stages:
     - image
+    - analyze
     - build
 
 image-debian:
@@ -37,6 +38,18 @@ image-debian:
                 --cache=true \
                 --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG \
                 --dockerfile docker/Dockerfile
+
+check-code-format:
+    stage: analyze
+    image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    script:
+        - >
+            find . \
+                -name "*.h" -print0 \
+                -o \
+                -name "*.cc" -print0 | \
+            xargs -0 -I {} -P $(nproc) \
+                bash -c 'diff <(cat {}) <(clang-format {})'
 
 build-debian:
     stage: build

@@ -15,6 +15,7 @@
 
 stages:
     - images
+    - analyze
     - build
 
 .build-image: &build-image
@@ -49,6 +50,18 @@ build-image-docu:
         DOCKERFILE_NAME: "Dockerfile_docu"
         IMAGE_NAME: "docu"
     <<: *build-image
+
+check-code-format:
+    stage: analyze
+    image: $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_REF_SLUG
+    script:
+        - >
+            find . \
+                -name "*.h" -print0 \
+                -o \
+                -name "*.cc" -print0 | \
+            xargs -0 -I {} -P $(nproc) \
+                bash -c 'diff <(cat {}) <(clang-format {})'
 
 build-library:
     stage: build

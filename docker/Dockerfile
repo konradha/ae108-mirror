@@ -18,6 +18,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 FROM $BASE_IMAGE
 
+RUN apt-get update && apt-get install -y clang-format
 RUN apt-get update && apt-get install -y cmake
 RUN apt-get update && apt-get install -y g++
 RUN apt-get update && apt-get install -y googletest

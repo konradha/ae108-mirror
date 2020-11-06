@@ -93,3 +93,14 @@ build-library:
             cobertura: build/coverage.xml
             junit: build/*/test/gtest-results.xml
         when: always
+
+build-documentation:
+    stage: build
+    image: $CI_REGISTRY_IMAGE/docu:$CI_COMMIT_REF_SLUG
+    script:
+        - mkdir build
+        - >
+            bash -c '
+                cd build &&
+                ../docs/build_documentation
+            '

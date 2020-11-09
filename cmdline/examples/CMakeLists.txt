@@ -15,6 +15,10 @@
 
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
-add_subdirectory(src)
-add_subdirectory(examples)
-add_subdirectory(test)
+add_executable(${PROJECT_NAME}-CmdLineExample
+               ./Example.cc
+)
+
+target_link_libraries(${PROJECT_NAME}-CmdLineExample
+                      PRIVATE ${PROJECT_NAME}::cmdline
+)

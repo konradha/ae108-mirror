@@ -35,7 +35,7 @@ ROOT_DIRECTORY=$(readlink -e $(dirname "$0"))/..
 sphinx-quickstart \
     --no-batchfile \
     --sep \
-    -a "ETH Zurich, Mechanics and Materials Lab; California Institute of Technology" \
+    -a "ETH Zurich, California Institute of Technology" \
     -l "en" \
     -p "AE108" \
     -r "$(git describe)"
@@ -53,7 +53,8 @@ pandoc \
     -t rst \
     "$ROOT_DIRECTORY/README.md"
 cp "$ROOT_DIRECTORY/docs/index.rst" source/index.rst
-cp "$ROOT_DIRECTORY/cmdline/README.rst" source/Cmdline.rst
+cp "$ROOT_DIRECTORY/cmdline/README.rst" source/cmdline.rst
+cp "$ROOT_DIRECTORY/cmdline/src/README.rst" source/cmdline-src.rst
 
 make -j$(nproc) html
 make -j$(nproc) latexpdf

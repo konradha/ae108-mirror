@@ -30,10 +30,8 @@ To use this library, you only need to familiarize yourself with a single class.
 This class is called ``CommandLineOptionParser``.
 It's in the namespace ``ae108::cmdline``.
 
-.. doxygenclass:: ae108::cmdline::CommandLineOptionParser
-
-Example Setup
-^^^^^^^^^^^^^
+Example Application
+^^^^^^^^^^^^^^^^^^^
 
 Let's try using this class in a simple example.
 
@@ -52,9 +50,6 @@ Construction
 ^^^^^^^^^^^^
 
 To parse the command line parameters, we'll construct a ``CommandLineOptionParser`` by providing a stream.
-
-.. doxygenfunction:: ae108::cmdline::CommandLineOptionParser::CommandLineOptionParser
-
 Let's say we want to print error messages and warnings to ``stderr``.
 
 .. code-block:: cpp
@@ -71,9 +66,9 @@ Adding Options
 
 The only thing that is missing are the options that we would like to parse.
 In this example, we are going greet the world if greetings are enabled via a command line flag.
-The ``CommandLineOptionParser`` class provides a ``withOption`` method to add flags.
+The ``CommandLineOptionParser`` class provides a ``withOption`` method that we are going to use to achieve that.
 
-In this example we'll add a flag ``--greet`` (with a short form ``-g``) together with a help text describing the flag.
+In this example we'll add a flag ``--enable_greeting`` (with a short form ``-g``) together with a help text describing the flag.
 
 .. code-block:: cpp
 
@@ -124,7 +119,7 @@ Example Source Code
 ^^^^^^^^^^^^^^^^^^^
 
 The full source code of the example is available in ``cmdline/examples/Example.cc``.
-If you want to build it and try it out, the executable target is called ``ae108-CmdLineExample``.
+If you want to build it and try it out, then compile the executable target ``ae108-CmdLineExample`` and run it with command line options of your choice.
 
 Outlook
 -------
@@ -141,16 +136,10 @@ For instance, it's possible to chain more than one call to ``withOption``:
 
 Also, there is another overload of ``withOption`` that permits to add flags without a help text.
 
-Interface Documentation
-^^^^^^^^^^^^^^^^^^^^^^^
+You can find additional information in the API documentation of the library.
 
-For reference, here's the documentation of the full interface of the ``CommandLineOptionParser`` class.
+.. toctree::
 
-.. doxygenclass:: ae108::cmdline::CommandLineOptionParser
-    :members:
+    cmdline-src.rst
 
-Tests
-^^^^^
-
-Finally, feel free to check out the tests in ``cmdline/test/CommandLineOptionParser_Test.cc``.
-They showcase the features of the library in many common use cases.
+In addition, the tests in ``cmdline/test/CommandLineOptionParser_Test.cc`` showcase the features in common use cases.

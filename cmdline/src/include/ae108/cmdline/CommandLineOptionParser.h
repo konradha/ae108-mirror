@@ -24,6 +24,10 @@ namespace cmdline {
 
 class CommandLineOptionParser {
 public:
+  /**
+   * @brief Create an instance of the class.
+   * @param stream Messages (e.g. warnings) are printed to this stream.
+   */
   explicit CommandLineOptionParser(std::ostream &stream);
 
   /**

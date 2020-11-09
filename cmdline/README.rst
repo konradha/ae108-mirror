@@ -34,54 +34,42 @@ Example Application
 ^^^^^^^^^^^^^^^^^^^
 
 Let's try using this class in a simple example.
+In this example, we are going greet the world if greetings are enabled via a command line flag.
 
-.. code-block:: cpp
+First, we include the necessary headers and start with defining a ``main`` function.
 
-    #include <ae108/cmdline/CommandLineOptionParser.h>
-    #include <iostream>
-
-    int main(const int argc, const char *const *const argv) {
-        /**
-         * @todo use command line options
-         */
-    }
-
-Construction
-^^^^^^^^^^^^
+.. literalinclude:: cmdline-example.cc
+    :language: cpp
+    :lines: 15-19
 
 To parse the command line parameters, we'll construct a ``CommandLineOptionParser`` by providing a stream.
 Let's say we want to print error messages and warnings to ``stderr``.
+In addition, we define a boolean variable ``enable_greeting`` that will store whether the greeting was enabled.
 
-.. code-block:: cpp
+.. literalinclude:: cmdline-example.cc
+    :language: cpp
+    :lines: 21-22
 
-    namespace cmdline = ae108::cmdline;
-    cmdline::CommandLineOptionParser(std::cerr)
-        /**
-         * @todo define available options
-         */
-        ;
-
-Adding Options
-^^^^^^^^^^^^^^
-
-The only thing that is missing are the options that we would like to parse.
-In this example, we are going greet the world if greetings are enabled via a command line flag.
+We'll add a flag ``--enable_greeting`` (with a short form ``-g``) together with a help text describing the flag.
 The ``CommandLineOptionParser`` class provides a ``withOption`` method that we are going to use to achieve that.
 
-In this example we'll add a flag ``--enable_greeting`` (with a short form ``-g``) together with a help text describing the flag.
+.. literalinclude:: cmdline-example.cc
+    :language: cpp
+    :lines: 23
 
-.. code-block:: cpp
+Now that we've configured the ``CommandLineOptionParser``, the only thing that is missing is using it to parse the command line options in ``argc``/``argv``.
 
-    auto enable_greeting = bool{false};
-    cmdline::CommandLineOptionParser(std::cerr)
-        .withOption("enable_greeting,g", "Print a greeting.", &enable_greeting)
-        .parse(argc, argv);
+.. literalinclude:: cmdline-example.cc
+    :language: cpp
+    :lines: 24-25
 
-    if (enable_greeting) {
-        std::cout << "Hello world!" << std::endl;
-    }
+Finally we print a message if greetings have been enabled.
 
-Let's see it in action.
+.. literalinclude:: cmdline-example.cc
+    :language: cpp
+    :lines: 26-
+
+Let's see the application in action.
 
 .. code-block:: shell-session
 
@@ -115,10 +103,16 @@ Most importantly, invalid command line parameters are rejected with a suitable e
     $ cmdline/examples/ae108-CmdLineExample --enable_greeting=123
     the argument ('123') for option '--enable_greeting' is invalid. Valid choices are 'on|off', 'yes|no', '1|0' and 'true|false'
 
-Example Source Code
-^^^^^^^^^^^^^^^^^^^
+Using the Example
+^^^^^^^^^^^^^^^^^
 
 The full source code of the example is available in ``cmdline/examples/Example.cc``.
+Here's what it looks like:
+
+.. literalinclude:: cmdline-example.cc
+    :language: cpp
+    :linenos:
+
 If you want to build it and try it out, then compile the executable target ``ae108-CmdLineExample`` and run it with command line options of your choice.
 
 Outlook

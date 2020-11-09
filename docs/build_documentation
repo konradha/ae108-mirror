@@ -55,6 +55,7 @@ pandoc \
 cp "$ROOT_DIRECTORY/docs/index.rst" source/index.rst
 cp "$ROOT_DIRECTORY/cmdline/README.rst" source/cmdline.rst
 cp "$ROOT_DIRECTORY/cmdline/src/README.rst" source/cmdline-src.rst
+cp "$ROOT_DIRECTORY/cmdline/examples/Example.cc" source/cmdline-example.cc
 
 make -j$(nproc) html
 make -j$(nproc) latexpdf

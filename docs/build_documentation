@@ -23,6 +23,7 @@ ROOT_DIRECTORY=$(readlink -e $(dirname "$0"))/..
     echo GENERATE_LATEX=NO; \
     echo GENERATE_XML=YES; \
     echo INPUT="$ROOT_DIRECTORY/cmdline/src/include" \
+               "$ROOT_DIRECTORY/cmdline/examples" \
                "$ROOT_DIRECTORY/cpppetsc/src/include" \
                "$ROOT_DIRECTORY/assembly/src/include" \
                "$ROOT_DIRECTORY/solve/src/include"; \
@@ -52,6 +53,7 @@ pandoc \
     -t rst \
     "$ROOT_DIRECTORY/README.md"
 cp "$ROOT_DIRECTORY/docs/index.rst" source/index.rst
+cp "$ROOT_DIRECTORY/cmdline/README.rst" source/Cmdline.rst
 
 make -j$(nproc) html
 make -j$(nproc) latexpdf

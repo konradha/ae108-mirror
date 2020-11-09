@@ -18,3 +18,4 @@ Welcome to AE108!
 
 .. toctree::
     Getting Started <README.rst>
+    Cmdline.rst

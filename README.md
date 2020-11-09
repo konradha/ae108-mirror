@@ -80,3 +80,7 @@ To link and use the libraries point CMake to the installation using ```-DCMAKE_P
 - ```ae108::cpppetsc```
 - ```ae108::assembly```
 - ```ae108::solve```
+
+## License
+
+AE108 is available under the [Apache 2.0 license](https://choosealicense.com/licenses/apache-2.0/).

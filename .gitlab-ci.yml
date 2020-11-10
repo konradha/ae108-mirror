@@ -63,6 +63,17 @@ check-code-format:
             xargs -0 -I {} -P $(nproc) \
                 bash -c 'diff <(cat {}) <(clang-format {})'
 
+check-license-header:
+    stage: analyze
+    image: $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_REF_SLUG
+    script:
+        - >
+            grep \
+                --recursive \
+                --exclude-dir='.git' \
+                --files-without-match "Apache License" \
+                .
+
 build-library:
     stage: build
     image: $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_REF_SLUG

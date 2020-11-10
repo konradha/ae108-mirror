@@ -68,7 +68,7 @@ check-license-header:
     image: $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_REF_SLUG
     script:
         - >
-            grep \
+            ! grep \
                 --recursive \
                 --exclude-dir='.git' \
                 --files-without-match "Apache License" \

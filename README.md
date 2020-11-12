@@ -73,3 +73,7 @@ To link and use the libraries point CMake to the installation using ```-DCMAKE_P
 - ```ae108::cpppetsc```
 - ```ae108::assembly```
 - ```ae108::solve```
+
+## Releases
+
+The latest release is v0.1.0. It is also available via the ETH library: [ae108](https://search.library.ethz.ch/permalink/f/13kse66/data_archiveIE15605648).

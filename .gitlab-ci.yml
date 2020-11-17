@@ -14,12 +14,12 @@
 # limitations under the License.
 
 stages:
-    - image
+    - images
     - analyze
     - build
 
-image-debian:
-    stage: image
+.build-image: &build-image
+    stage: images
     image:
         name: gcr.io/kaniko-project/executor:debug
         entrypoint:
@@ -36,12 +36,24 @@ image-debian:
             /kaniko/executor \
                 --cache-ttl=730h \
                 --cache=true \
-                --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG \
-                --dockerfile docker/Dockerfile
+                --destination $CI_REGISTRY_IMAGE/$IMAGE_NAME:$CI_COMMIT_REF_SLUG \
+                --dockerfile docker/$DOCKERFILE_NAME
+
+build-image-dev:
+    variables:
+        DOCKERFILE_NAME: "Dockerfile"
+        IMAGE_NAME: "dev"
+    <<: *build-image
+
+build-image-docu:
+    variables:
+        DOCKERFILE_NAME: "Dockerfile_docu"
+        IMAGE_NAME: "docu"
+    <<: *build-image
 
 check-code-format:
     stage: analyze
-    image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    image: $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_REF_SLUG
     script:
         - >
             find . \
@@ -51,9 +63,20 @@ check-code-format:
             xargs -0 -I {} -P $(nproc) \
                 bash -c 'diff <(cat {}) <(clang-format {})'
 
-build-debian:
+check-license-header:
+    stage: analyze
+    image: $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_REF_SLUG
+    script:
+        - >
+            ! grep \
+                --recursive \
+                --exclude-dir='.git' \
+                --files-without-match "Apache License" \
+                .
+
+build-library:
     stage: build
-    image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    image: $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_REF_SLUG
     before_script:
         - >
             bash -c '
@@ -81,3 +104,18 @@ build-debian:
             cobertura: build/coverage.xml
             junit: build/*/test/gtest-results.xml
         when: always
+
+build-documentation:
+    stage: build
+    image: $CI_REGISTRY_IMAGE/docu:$CI_COMMIT_REF_SLUG
+    script:
+        - mkdir build
+        - >
+            bash -c '
+                cd build &&
+                ../docs/build_documentation
+            '
+    artifacts:
+        paths:
+            - build/build/latex/ae108.pdf
+        expose_as: manual

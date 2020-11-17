@@ -1,5 +1,4 @@
 # © 2020 ETH Zurich, Mechanics and Materials Lab
-# © 2020 California Institute of Technology
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
+ARG BASE_IMAGE=debian:buster
+ARG DEBIAN_FRONTEND=noninteractive
 
-add_subdirectory(src)
-add_subdirectory(examples)
-add_subdirectory(test)
+FROM $BASE_IMAGE
+
+RUN apt-get update && apt-get install -y doxygen
+RUN apt-get update && apt-get install -y git
+RUN apt-get update && apt-get install -y pandoc
+RUN apt-get update && apt-get install -y python3 python3-pip
+RUN apt-get update && apt-get install -y texlive texlive-latex-extra latexmk
+
+RUN pip3 install sphinx
+RUN pip3 install breathe

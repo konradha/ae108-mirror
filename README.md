@@ -17,6 +17,8 @@
 
 # AE108
 
+## Introduction
+
 The aim of this project is to provide a C++ foundation for computational solid mechanics simulations using a variational framework, primarily focusing on the Finite Element Method (FEM).
 See the [Computational Solid Mechanics lecture notes](https://www.mm.ethz.ch/) for more information about the approach that is used.
 The code is developed by the Mechanics & Materials Lab at ETH Zurich.
@@ -56,7 +58,12 @@ Of course, these libraries are covered by their own license terms. Since PETSc d
 Once you have installed these libraries, run CMake to build the project, choosing a location to install the library to by specifying ```CMAKE_INSTALL_PREFIX```; see the following example. Of course, depending on your setup, you might need to add a ```-DCMAKE_PREFIX_PATH='...'``` parameter to tell CMake the location of the third party library installations.
 
 ```bash
-mkdir bin && cd bin && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX='install/to/path' ..
+mkdir build
+cd build
+cmake \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX='install/to/path' \
+    ..
 ```
 
 Now run ```make``` to build and install:
@@ -73,6 +80,10 @@ To link and use the libraries point CMake to the installation using ```-DCMAKE_P
 - ```ae108::cpppetsc```
 - ```ae108::assembly```
 - ```ae108::solve```
+
+## License
+
+AE108 is available under the [Apache 2.0 license](https://choosealicense.com/licenses/apache-2.0/).
 
 ## Releases
 

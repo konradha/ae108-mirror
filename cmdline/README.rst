@@ -38,7 +38,7 @@ In this example, we are going greet the world if greetings are enabled via a com
 
 First, we include the necessary headers and start with defining a ``main`` function.
 
-.. literalinclude:: cmdline-example.cc
+.. literalinclude:: examples/Example.cc
     :language: cpp
     :lines: 15-19
 
@@ -46,26 +46,26 @@ To parse the command line parameters, we'll construct a ``CommandLineOptionParse
 Let's say we want to print error messages and warnings to ``stderr``.
 In addition, we define a boolean variable ``enable_greeting`` that will store whether the greeting was enabled.
 
-.. literalinclude:: cmdline-example.cc
+.. literalinclude:: examples/Example.cc
     :language: cpp
     :lines: 21-22
 
 We'll add a flag ``--enable_greeting`` (with a short form ``-g``) together with a help text describing the flag.
 The ``CommandLineOptionParser`` class provides a ``withOption`` method that we are going to use to achieve that.
 
-.. literalinclude:: cmdline-example.cc
+.. literalinclude:: examples/Example.cc
     :language: cpp
     :lines: 23
 
 Now that we've configured the ``CommandLineOptionParser``, the only thing that is missing is using it to parse the command line options in ``argc``/``argv``.
 
-.. literalinclude:: cmdline-example.cc
+.. literalinclude:: examples/Example.cc
     :language: cpp
     :lines: 24-25
 
 Finally we print a message if greetings have been enabled.
 
-.. literalinclude:: cmdline-example.cc
+.. literalinclude:: examples/Example.cc
     :language: cpp
     :lines: 26-
 
@@ -109,7 +109,7 @@ Using the Example
 The full source code of the example is available in ``cmdline/examples/Example.cc``.
 Here's what it looks like:
 
-.. literalinclude:: cmdline-example.cc
+.. literalinclude:: examples/Example.cc
     :language: cpp
     :linenos:
 
@@ -134,6 +134,6 @@ You can find additional information in the API documentation of the library.
 
 .. toctree::
 
-    cmdline-src.rst
+    src/README.rst
 
 In addition, the tests in ``cmdline/test/CommandLineOptionParser_Test.cc`` showcase the features in common use cases.

@@ -17,5 +17,6 @@ Welcome to AE108!
 =================
 
 .. toctree::
+
     Getting Started <README.rst>
-    cmdline.rst
+    cmdline/README.rst

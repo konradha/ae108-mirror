@@ -35,7 +35,7 @@ ROOT_DIRECTORY=$(readlink -e $(dirname "$0"))/..
 sphinx-quickstart \
     --no-batchfile \
     --sep \
-    -a "ETH Zurich, California Institute of Technology" \
+    -a "Mechanics & Materials Lab, ETH Zurich" \
     -l "en" \
     -p "AE108" \
     -r "$(git describe)"

@@ -115,3 +115,7 @@ build-documentation:
                 cd build &&
                 ../docs/build_documentation
             '
+    artifacts:
+        paths:
+            - build/build/latex/ae108.pdf
+        expose_as: manual

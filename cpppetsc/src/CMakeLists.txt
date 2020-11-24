@@ -41,8 +41,10 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./TaggedEntity.cc
             ./TaggedVector.cc
             ./UniqueEntity.cc
+            ./Viewer.cc
             ./Vector.cc
             ./Vector_fwd.cc
+            ./writeToViewer.cc
 )
 
 add_library(${PROJECT_NAME}::cpppetsc ALIAS ${PROJECT_NAME}-cpppetsc)

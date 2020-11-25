@@ -113,9 +113,9 @@ template <typename T> struct Mesh_Test : Test {
   using Connectivity = std::vector<std::array<size_type, verticesPerElement>>;
   const Connectivity connectivity = {{0, 2}, {1, 2}, {0, 2}};
 
-  const mesh_type mesh = mesh_type::fromConnectivity(
-      dimension, connectivity, totalNumberOfVertices, dofPerVertex,
-      dofPerElement);
+  mesh_type mesh = mesh_type::fromConnectivity(dimension, connectivity,
+                                               totalNumberOfVertices,
+                                               dofPerVertex, dofPerElement);
 };
 
 template <class Policy, int VertexDof, int ElementDof> struct TestCase {
@@ -137,6 +137,28 @@ TYPED_TEST(Mesh_Test, from_connectivity_generates_correct_number_of_entities) {
               Eq(this->totalNumberOfElements));
   EXPECT_THAT(this->mesh.totalNumberOfVertices(),
               Eq(this->totalNumberOfVertices));
+}
+
+TYPED_TEST(Mesh_Test, coordinates_can_be_set) {
+  using size_type = typename TestFixture::size_type;
+  using vector_type = typename TestFixture::vector_type;
+
+  const auto coordinateMesh =
+      this->mesh.cloneWithDofs(this->dimension, size_type{0});
+  auto coordinates = vector_type::fromGlobalMesh(coordinateMesh);
+
+  EXPECT_NO_THROW(this->mesh.setCoordinates(std::move(coordinates)));
+}
+
+TYPED_TEST(Mesh_Test, setting_coordinates_throws_if_not_associated_with_mesh) {
+  using size_type = typename TestFixture::size_type;
+  using vector_type = typename TestFixture::vector_type;
+
+  auto coordinates = tag<DistributedTag>(
+      vector_type(this->totalNumberOfVertices * this->dofPerVertex));
+
+  EXPECT_THROW(this->mesh.setCoordinates(std::move(coordinates)),
+               InvalidParametersException);
 }
 
 TYPED_TEST(Mesh_Test, cloned_mesh_has_correct_number_of_entities) {

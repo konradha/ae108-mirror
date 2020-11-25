@@ -20,20 +20,16 @@
 namespace ae108 {
 namespace cpppetsc {
 
+template void
+writeToViewer<SequentialComputePolicy>(const Mesh<SequentialComputePolicy> &,
+                                       const Viewer<SequentialComputePolicy> &);
+template void
+writeToViewer<ParallelComputePolicy>(const Mesh<ParallelComputePolicy> &,
+                                     const Viewer<ParallelComputePolicy> &);
 template void writeToViewer<SequentialComputePolicy>(
-    const Mesh<SequentialComputePolicy> &,
     const distributed<Vector<SequentialComputePolicy>> &,
     const Viewer<SequentialComputePolicy> &);
 template void writeToViewer<ParallelComputePolicy>(
-    const Mesh<ParallelComputePolicy> &,
-    const distributed<Vector<ParallelComputePolicy>> &,
-    const Viewer<ParallelComputePolicy> &);
-template void writeToViewer<SequentialComputePolicy>(
-    const distributed<Vector<SequentialComputePolicy>> &,
-    const distributed<Vector<SequentialComputePolicy>> &,
-    const Viewer<SequentialComputePolicy> &);
-template void writeToViewer<ParallelComputePolicy>(
-    const distributed<Vector<ParallelComputePolicy>> &,
     const distributed<Vector<ParallelComputePolicy>> &,
     const Viewer<ParallelComputePolicy> &);
 

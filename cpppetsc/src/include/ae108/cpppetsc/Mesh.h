@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include "ae108/cpppetsc/InvalidParametersException.h"
 #include "ae108/cpppetsc/IteratorRange.h"
 #include "ae108/cpppetsc/LocalElementIterator.h"
 #include "ae108/cpppetsc/LocalElementView.h"
@@ -82,6 +83,17 @@ public:
    */
   Mesh cloneWithDofs(const size_type dofPerVertex,
                      const size_type dofPerElement) const;
+
+  /**
+   * @brief Set the coordinates of the vertices of the mesh.
+   *
+   * @param coordinates A vector with dimension number of degrees of freedom per
+   * vertex.
+   *
+   * @throw InvalidParametersException The vector was not created from a mesh
+   * describing its layout.
+   */
+  void setCoordinates(distributed<vector_type> coordinates);
 
   /**
    * @brief Makes it possible to iterate over (views of) the local elements.
@@ -481,6 +493,23 @@ template <class Policy> UniqueEntity<DM> Mesh<Policy>::createDM() {
   auto dm = DM();
   Policy::handleError(DMPlexCreate(Policy::communicator(), &dm));
   return makeUniqueEntity<Policy>(dm);
+}
+
+template <class Policy>
+void Mesh<Policy>::setCoordinates(distributed<vector_type> coordinates) {
+  const auto coordinateDM = [&]() {
+    auto dm = DM{};
+    Policy::handleError(VecGetDM(coordinates.unwrap().data(), &dm));
+    return dm;
+  }();
+
+  if (!coordinateDM) {
+    throw InvalidParametersException();
+  }
+
+  Policy::handleError(DMSetCoordinateDM(_mesh.get(), coordinateDM));
+  Policy::handleError(
+      DMSetCoordinates(_mesh.get(), coordinates.unwrap().data()));
 }
 
 template <class Policy>

@@ -28,8 +28,8 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./Matrix.cc
             ./Matrix_fwd.cc
             ./Mesh.cc
-            ./Mesh_fwd.cc
             ./MeshBoundaryCondition.cc
+            ./Mesh_fwd.cc
             ./NonlinearSolver.cc
             ./NonlinearSolverDivergedException.cc
             ./ParallelComputePolicy.cc
@@ -41,9 +41,10 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./TaggedEntity.cc
             ./TaggedVector.cc
             ./UniqueEntity.cc
-            ./Viewer.cc
             ./Vector.cc
             ./Vector_fwd.cc
+            ./Viewer.cc
+            ./createVectorFromSource.cc
             ./writeToViewer.cc
 )
 

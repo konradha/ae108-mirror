@@ -15,7 +15,6 @@
 
 #pragma once
 
-#include "ae108/cpppetsc/InvalidParametersException.h"
 #include "ae108/cpppetsc/Mesh_fwd.h"
 #include "ae108/cpppetsc/ParallelComputePolicy_fwd.h"
 #include "ae108/cpppetsc/SequentialComputePolicy_fwd.h"
@@ -29,32 +28,35 @@ namespace cpppetsc {
 
 /**
  * @brief Writes a mesh to a Viewer.
- *
- * @throw InvalidParametersException if the coordinates of `mesh` are not set.
  */
 template <class Policy>
-void writeToViewer(const Mesh<Policy> &mesh, const Viewer<Policy> &viewer);
+void writeToViewer(const Mesh<Policy> &mesh,
+                   const distributed<Vector<Policy>> &coordinates,
+                   const Viewer<Policy> &viewer);
 
 /**
- * @brief Writes a vector to a Viewer.
- *
- * @throw InvalidParametersException if the `data` vector has no associated mesh
- * or if the coordinates of this mesh are not set.
+ * @brief Writes a vector to a Viewer. The concrete format depends on the file
+ * extension (vtk/vtu).
  */
 template <class Policy>
 void writeToViewer(const distributed<Vector<Policy>> &data,
+                   const distributed<Vector<Policy>> &coordinates,
                    const Viewer<Policy> &viewer);
 
-extern template void
-writeToViewer<SequentialComputePolicy>(const Mesh<SequentialComputePolicy> &,
-                                       const Viewer<SequentialComputePolicy> &);
-extern template void
-writeToViewer<ParallelComputePolicy>(const Mesh<ParallelComputePolicy> &,
-                                     const Viewer<ParallelComputePolicy> &);
 extern template void writeToViewer<SequentialComputePolicy>(
+    const Mesh<SequentialComputePolicy> &,
     const distributed<Vector<SequentialComputePolicy>> &,
     const Viewer<SequentialComputePolicy> &);
 extern template void writeToViewer<ParallelComputePolicy>(
+    const Mesh<ParallelComputePolicy> &,
+    const distributed<Vector<ParallelComputePolicy>> &,
+    const Viewer<ParallelComputePolicy> &);
+extern template void writeToViewer<SequentialComputePolicy>(
+    const distributed<Vector<SequentialComputePolicy>> &,
+    const distributed<Vector<SequentialComputePolicy>> &,
+    const Viewer<SequentialComputePolicy> &);
+extern template void writeToViewer<ParallelComputePolicy>(
+    const distributed<Vector<ParallelComputePolicy>> &,
     const distributed<Vector<ParallelComputePolicy>> &,
     const Viewer<ParallelComputePolicy> &);
 
@@ -66,47 +68,71 @@ extern template void writeToViewer<ParallelComputePolicy>(
 
 namespace ae108 {
 namespace cpppetsc {
-namespace detail {
-template <class Policy> void throwIfNoCoordinateDM(const DM dm) {
-  auto coordinateDM = DM{};
-  Policy::handleError(DMGetCoordinateDM(dm, &coordinateDM));
-  if (!coordinateDM) {
-    throw InvalidParametersException();
-  }
-}
-
-template <class Policy> void throwIfNoCoordinates(const DM dm) {
-  auto coordinates = Vec{};
-  Policy::handleError(DMGetCoordinates(dm, &coordinates));
-  if (!coordinates) {
-    throw InvalidParametersException();
-  }
-}
-} // namespace detail
 
 template <class Policy>
-void writeToViewer(const Mesh<Policy> &mesh, const Viewer<Policy> &viewer) {
-  detail::throwIfNoCoordinateDM<Policy>(mesh.data());
-  detail::throwIfNoCoordinates<Policy>(mesh.data());
-  Policy::handleError(DMView(mesh.data(), viewer.data()));
+void writeToViewer(const Mesh<Policy> &mesh,
+                   const distributed<Vector<Policy>> &coordinates,
+                   const Viewer<Policy> &viewer) {
+  const auto coordinateDM = [&]() {
+    auto dm = DM{};
+    Policy::handleError(VecGetDM(coordinates.unwrap().data(), &dm));
+    assert(dm);
+    return UniqueEntity<DM>(dm, [](DM) {});
+  }();
+
+  // copy the DM to be able to set the coordinate DM, which is
+  // required by DMView
+  auto dm = [&]() {
+    auto dm = DM{};
+    Policy::handleError(DMClone(mesh.data(), &dm));
+    return makeUniqueEntity<Policy>(dm);
+  }();
+  Policy::handleError(DMSetCoordinateDM(dm.get(), coordinateDM.get()));
+  Policy::handleError(DMSetCoordinates(dm.get(), coordinates.unwrap().data()));
+
+  Policy::handleError(DMView(dm.get(), viewer.data()));
 }
 
 template <class Policy>
 void writeToViewer(const distributed<Vector<Policy>> &data,
+                   const distributed<Vector<Policy>> &coordinates,
                    const Viewer<Policy> &viewer) {
+  const auto getDM = [](const Vector<Policy> &x) {
+    auto dm = DM{};
+    Policy::handleError(VecGetDM(x.data(), &dm));
+    assert(dm);
+    return UniqueEntity<DM>(dm, [](DM) {});
+  };
+
+  // clone DM that defines the layout of the data vector
+  // to be able to set the coordinate DM
   const auto dm = [&]() {
     auto dm = DM{};
-    Policy::handleError(VecGetDM(data.unwrap().data(), &dm));
-    return dm;
+    const auto reference = getDM(data).get();
+    Policy::handleError(DMClone(reference, &dm));
+    return makeUniqueEntity<Policy>(dm);
   }();
 
-  if (!dm) {
-    throw InvalidParametersException();
-  }
-  detail::throwIfNoCoordinateDM<Policy>(dm);
-  detail::throwIfNoCoordinates<Policy>(dm);
+  // configure the default section to be able to create
+  // a copy of the data vector
+  auto section = PetscSection{};
+  Policy::handleError(DMGetDefaultSection(getDM(data).get(), &section));
+  Policy::handleError(DMSetDefaultSection(dm.get(), section));
 
-  Policy::handleError(VecView(data.unwrap().data(), viewer.data()));
+  // set the coordinate DM which is required by VecView
+  const auto coordinateDM = getDM(coordinates);
+  Policy::handleError(DMSetCoordinateDM(dm.get(), coordinateDM.get()));
+  Policy::handleError(DMSetCoordinates(dm.get(), coordinates.unwrap().data()));
+
+  // copy the data to the vector with the correct DM
+  const auto vec = [&]() {
+    auto vec = Vec{};
+    Policy::handleError(DMCreateGlobalVector(dm.get(), &vec));
+    return makeUniqueEntity<Policy>(vec);
+  }();
+  Policy::handleError(VecCopy(data.unwrap().data(), vec.get()));
+
+  Policy::handleError(VecView(vec.get(), viewer.data()));
 }
 
 } // namespace cpppetsc

@@ -17,6 +17,7 @@
 
 #include "ae108/cpppetsc/UniqueEntity.h"
 #include <petscviewer.h>
+#include <petscviewerhdf5.h>
 
 namespace ae108 {
 namespace cpppetsc {
@@ -34,9 +35,9 @@ public:
   static Viewer fromAsciiFilePath(const char *path);
 
   /**
-   * @brief Creates a PetscViewer that writes to a VTK file at path.
+   * @brief Creates a PetscViewer that writes to an HDF5 file at path.
    */
-  static Viewer fromVtkFilePath(const char *path);
+  static Viewer fromHdf5FilePath(const char *path);
 
   /**
    * @brief Creates a Viewer from the provided viewer (takes ownership).
@@ -74,10 +75,10 @@ Viewer<Policy> Viewer<Policy>::fromAsciiFilePath(const char *path) {
 }
 
 template <class Policy>
-Viewer<Policy> Viewer<Policy>::fromVtkFilePath(const char *path) {
+Viewer<Policy> Viewer<Policy>::fromHdf5FilePath(const char *path) {
   auto viewer = PetscViewer{};
-  Policy::handleError(PetscViewerVTKOpen(Policy::communicator(), path,
-                                         FILE_MODE_WRITE, &viewer));
+  Policy::handleError(PetscViewerHDF5Open(Policy::communicator(), path,
+                                          FILE_MODE_WRITE, &viewer));
   return Viewer(makeUniqueEntity<Policy>(viewer));
 }
 

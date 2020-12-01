@@ -15,7 +15,7 @@
 
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
-project(ae108 VERSION 0.1.0 LANGUAGES CXX)
+project(ae108 VERSION 0.1.0 LANGUAGES C CXX)
 enable_testing()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/modules")

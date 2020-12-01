@@ -27,5 +27,7 @@ RUN apt-get update && apt-get install -y libeigen3-dev
 RUN apt-get update && apt-get install -y ninja-build
 RUN apt-get update && apt-get install -y petsc-dev
 RUN apt-get update && apt-get install -y python3 python3-pip
+RUN apt-get update && apt-get install -y python3-h5py
+RUN pip3 install mypy==0.790 black==20.8b1 pylint==2.6.0
 
 RUN pip3 install gcovr

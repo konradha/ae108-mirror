@@ -32,30 +32,29 @@ namespace cpppetsc {
 template <class Policy>
 void writeToViewer(const Mesh<Policy> &mesh,
                    const distributed<Vector<Policy>> &coordinates,
-                   const Viewer<Policy> &viewer);
+                   Viewer<Policy> *viewer);
 
 /**
- * @brief Writes a vector to a Viewer. The concrete format depends on the file
- * extension (vtk/vtu).
+ * @brief Writes a vector to a Viewer.
  */
 template <class Policy>
 void writeToViewer(const distributed<Vector<Policy>> &data,
-                   const Viewer<Policy> &viewer);
+                   Viewer<Policy> *viewer);
 
 extern template void writeToViewer<SequentialComputePolicy>(
     const Mesh<SequentialComputePolicy> &,
     const distributed<Vector<SequentialComputePolicy>> &,
-    const Viewer<SequentialComputePolicy> &);
+    Viewer<SequentialComputePolicy> *);
 extern template void writeToViewer<ParallelComputePolicy>(
     const Mesh<ParallelComputePolicy> &,
     const distributed<Vector<ParallelComputePolicy>> &,
-    const Viewer<ParallelComputePolicy> &);
+    Viewer<ParallelComputePolicy> *);
 extern template void writeToViewer<SequentialComputePolicy>(
     const distributed<Vector<SequentialComputePolicy>> &,
-    const Viewer<SequentialComputePolicy> &);
+    Viewer<SequentialComputePolicy> *);
 extern template void writeToViewer<ParallelComputePolicy>(
     const distributed<Vector<ParallelComputePolicy>> &,
-    const Viewer<ParallelComputePolicy> &);
+    Viewer<ParallelComputePolicy> *);
 
 } // namespace cpppetsc
 } // namespace ae108
@@ -69,7 +68,9 @@ namespace cpppetsc {
 template <class Policy>
 void writeToViewer(const Mesh<Policy> &mesh,
                    const distributed<Vector<Policy>> &coordinates,
-                   const Viewer<Policy> &viewer) {
+                   Viewer<Policy> *const viewer) {
+  assert(viewer);
+
   const auto coordinateDM = [&]() {
     auto dm = DM{};
     Policy::handleError(VecGetDM(coordinates.unwrap().data(), &dm));
@@ -87,13 +88,14 @@ void writeToViewer(const Mesh<Policy> &mesh,
   Policy::handleError(DMSetCoordinateDM(dm.get(), coordinateDM.get()));
   Policy::handleError(DMSetCoordinates(dm.get(), coordinates.unwrap().data()));
 
-  Policy::handleError(DMView(dm.get(), viewer.data()));
+  Policy::handleError(DMView(dm.get(), viewer->data()));
 }
 
 template <class Policy>
 void writeToViewer(const distributed<Vector<Policy>> &data,
-                   const Viewer<Policy> &viewer) {
-  Policy::handleError(VecView(data.unwrap().data(), viewer.data()));
+                   Viewer<Policy> *const viewer) {
+  assert(viewer);
+  Policy::handleError(VecView(data.unwrap().data(), viewer->data()));
 }
 
 } // namespace cpppetsc

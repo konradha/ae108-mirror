@@ -23,17 +23,17 @@ namespace cpppetsc {
 template void writeToViewer<SequentialComputePolicy>(
     const Mesh<SequentialComputePolicy> &,
     const distributed<Vector<SequentialComputePolicy>> &,
-    const Viewer<SequentialComputePolicy> &);
+    Viewer<SequentialComputePolicy> *);
 template void writeToViewer<ParallelComputePolicy>(
     const Mesh<ParallelComputePolicy> &,
     const distributed<Vector<ParallelComputePolicy>> &,
-    const Viewer<ParallelComputePolicy> &);
+    Viewer<ParallelComputePolicy> *);
 template void writeToViewer<SequentialComputePolicy>(
     const distributed<Vector<SequentialComputePolicy>> &,
-    const Viewer<SequentialComputePolicy> &);
+    Viewer<SequentialComputePolicy> *);
 template void writeToViewer<ParallelComputePolicy>(
     const distributed<Vector<ParallelComputePolicy>> &,
-    const Viewer<ParallelComputePolicy> &);
+    Viewer<ParallelComputePolicy> *);
 
 } // namespace cpppetsc
 } // namespace ae108

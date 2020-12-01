@@ -61,11 +61,13 @@ TYPED_TEST(createVectorFromSource_Test, creates_correct_vector_with_two_dofs) {
   constexpr auto dofs = size_type{2};
   constexpr value_type increment = .1;
 
+  using DataSource = std::function<void(size_type, value_type *)>;
   const auto result = createVectorFromSource(
-      this->mesh, dofs, [](const size_type index, value_type *const data) {
+      this->mesh, dofs,
+      DataSource([](const size_type index, value_type *const data) {
         data[0] = static_cast<value_type>(index);
         data[1] = static_cast<value_type>(index) + increment;
-      });
+      }));
 
   ASSERT_THAT(result.unwrap(), SizeIs(dofs * this->numberOfVertices));
   EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(0, 0.));

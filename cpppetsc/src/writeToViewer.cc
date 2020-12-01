@@ -30,10 +30,8 @@ template void writeToViewer<ParallelComputePolicy>(
     const Viewer<ParallelComputePolicy> &);
 template void writeToViewer<SequentialComputePolicy>(
     const distributed<Vector<SequentialComputePolicy>> &,
-    const distributed<Vector<SequentialComputePolicy>> &,
     const Viewer<SequentialComputePolicy> &);
 template void writeToViewer<ParallelComputePolicy>(
-    const distributed<Vector<ParallelComputePolicy>> &,
     const distributed<Vector<ParallelComputePolicy>> &,
     const Viewer<ParallelComputePolicy> &);
 

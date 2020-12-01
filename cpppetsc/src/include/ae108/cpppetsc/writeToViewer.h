@@ -40,7 +40,6 @@ void writeToViewer(const Mesh<Policy> &mesh,
  */
 template <class Policy>
 void writeToViewer(const distributed<Vector<Policy>> &data,
-                   const distributed<Vector<Policy>> &coordinates,
                    const Viewer<Policy> &viewer);
 
 extern template void writeToViewer<SequentialComputePolicy>(
@@ -53,10 +52,8 @@ extern template void writeToViewer<ParallelComputePolicy>(
     const Viewer<ParallelComputePolicy> &);
 extern template void writeToViewer<SequentialComputePolicy>(
     const distributed<Vector<SequentialComputePolicy>> &,
-    const distributed<Vector<SequentialComputePolicy>> &,
     const Viewer<SequentialComputePolicy> &);
 extern template void writeToViewer<ParallelComputePolicy>(
-    const distributed<Vector<ParallelComputePolicy>> &,
     const distributed<Vector<ParallelComputePolicy>> &,
     const Viewer<ParallelComputePolicy> &);
 
@@ -95,44 +92,8 @@ void writeToViewer(const Mesh<Policy> &mesh,
 
 template <class Policy>
 void writeToViewer(const distributed<Vector<Policy>> &data,
-                   const distributed<Vector<Policy>> &coordinates,
                    const Viewer<Policy> &viewer) {
-  const auto getDM = [](const Vector<Policy> &x) {
-    auto dm = DM{};
-    Policy::handleError(VecGetDM(x.data(), &dm));
-    assert(dm);
-    return UniqueEntity<DM>(dm, [](DM) {});
-  };
-
-  // clone DM that defines the layout of the data vector
-  // to be able to set the coordinate DM
-  const auto dm = [&]() {
-    auto dm = DM{};
-    const auto reference = getDM(data).get();
-    Policy::handleError(DMClone(reference, &dm));
-    return makeUniqueEntity<Policy>(dm);
-  }();
-
-  // configure the default section to be able to create
-  // a copy of the data vector
-  auto section = PetscSection{};
-  Policy::handleError(DMGetDefaultSection(getDM(data).get(), &section));
-  Policy::handleError(DMSetDefaultSection(dm.get(), section));
-
-  // set the coordinate DM which is required by VecView
-  const auto coordinateDM = getDM(coordinates);
-  Policy::handleError(DMSetCoordinateDM(dm.get(), coordinateDM.get()));
-  Policy::handleError(DMSetCoordinates(dm.get(), coordinates.unwrap().data()));
-
-  // copy the data to the vector with the correct DM
-  const auto vec = [&]() {
-    auto vec = Vec{};
-    Policy::handleError(DMCreateGlobalVector(dm.get(), &vec));
-    return makeUniqueEntity<Policy>(vec);
-  }();
-  Policy::handleError(VecCopy(data.unwrap().data(), vec.get()));
-
-  Policy::handleError(VecView(vec.get(), viewer.data()));
+  Policy::handleError(VecView(data.unwrap().data(), viewer.data()));
 }
 
 } // namespace cpppetsc

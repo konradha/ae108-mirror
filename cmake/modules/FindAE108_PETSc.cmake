@@ -16,14 +16,18 @@
 include(FindPkgConfig)
 pkg_check_modules(PETSc PETSc IMPORTED_TARGET)
 find_package(MPI 3.1)
+find_package(HDF5 1.10 MODULE)
 
 find_package_handle_standard_args(AE108_PETSc
-                                  REQUIRED_VARS PETSc_FOUND MPI_CXX_FOUND
+                                  REQUIRED_VARS PETSc_FOUND MPI_CXX_FOUND HDF5_FOUND
                                   VERSION_VAR PETSc_VERSION
 )
 
 if(AE108_PETSc_FOUND AND NOT TARGET ae108::external::petsc)
     add_library(ae108::external::petsc INTERFACE IMPORTED)
+    target_include_directories(ae108::external::petsc
+                               INTERFACE ${HDF5_INCLUDE_DIRS}
+    )
     target_link_libraries(ae108::external::petsc
                           INTERFACE MPI::MPI_CXX
                           INTERFACE PkgConfig::PETSc

@@ -33,7 +33,7 @@ public:
   /**
    * @brief Constructs the contained value with the given arguments.
    */
-  template <class... Args> explicit TaggedEntity(Args &&... args);
+  template <class... Args> explicit constexpr TaggedEntity(Args &&... args);
 
   /**
    * @brief Calls operator() of the contained value.
@@ -46,13 +46,13 @@ public:
    * @brief Calls operator() of the contained value.
    */
   template <class... Args>
-  auto operator()(Args &&... args) const -> decltype(
+  constexpr auto operator()(Args &&... args) const -> decltype(
       std::declval<const value_type>()(std::forward<Args>(args)...));
 
   /**
    * @brief Returns a const reference to the contained value.
    */
-  const value_type &unwrap() const &noexcept;
+  constexpr const value_type &unwrap() const &noexcept;
 
   /**
    * @brief Returns a reference to the contained value.
@@ -67,7 +67,7 @@ public:
   /**
    * @brief Automatically unwraps the contained value.
    */
-  operator const value_type &() const &noexcept;
+  constexpr operator const value_type &() const &noexcept;
 
   /**
    * @brief Automatically unwraps the contained value.
@@ -87,7 +87,7 @@ private:
  * @brief Wraps the given entity in a TaggedEntity with the provided tag.
  */
 template <class Tag, class Entity>
-TaggedEntity<Entity, Tag> tag(Entity &&entity);
+constexpr TaggedEntity<Entity, Tag> tag(Entity &&entity);
 } // namespace cpppetsc
 } // namespace ae108
 
@@ -100,7 +100,7 @@ namespace cpppetsc {
 
 template <class Entity, class Tag>
 template <class... Args>
-TaggedEntity<Entity, Tag>::TaggedEntity(Args &&... args)
+constexpr TaggedEntity<Entity, Tag>::TaggedEntity(Args &&... args)
     : _value(std::forward<Args>(args)...) {}
 
 template <class Entity, class Tag>
@@ -113,14 +113,15 @@ auto TaggedEntity<Entity, Tag>::operator()(Args &&... args)
 
 template <class Entity, class Tag>
 template <class... Args>
-auto TaggedEntity<Entity, Tag>::operator()(Args &&... args) const -> decltype(
-    std::declval<const typename TaggedEntity<Entity, Tag>::value_type>()(
-        std::forward<Args>(args)...)) {
+constexpr auto TaggedEntity<Entity, Tag>::operator()(Args &&... args) const
+    -> decltype(
+        std::declval<const typename TaggedEntity<Entity, Tag>::value_type>()(
+            std::forward<Args>(args)...)) {
   return _value(std::forward<Args>(args)...);
 }
 
 template <class Entity, class Tag>
-const typename TaggedEntity<Entity, Tag>::value_type &
+constexpr const typename TaggedEntity<Entity, Tag>::value_type &
 TaggedEntity<Entity, Tag>::unwrap() const &noexcept {
   return _value;
 }
@@ -140,7 +141,7 @@ template <class Entity, class Tag>
 }
 
 template <class Entity, class Tag>
-TaggedEntity<Entity, Tag>::
+constexpr TaggedEntity<Entity, Tag>::
 operator const typename TaggedEntity<Entity, Tag>::value_type &()
     const &noexcept {
   return _value;
@@ -161,7 +162,7 @@ template <class Entity, class Tag>
 }
 
 template <class Tag, class Entity>
-TaggedEntity<Entity, Tag> tag(Entity &&entity) {
+constexpr TaggedEntity<Entity, Tag> tag(Entity &&entity) {
   return TaggedEntity<Entity, Tag>(std::forward<Entity>(entity));
 }
 } // namespace cpppetsc

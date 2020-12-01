@@ -123,7 +123,7 @@ def add_hdf_dataitem(
             "Rank": str(item.ndim),
         },
     )
-    dataitem.text = f"{hdf_file.filename}:{hdf_path}"
+    dataitem.text = "{}:{}".format(hdf_file.filename, hdf_path)
     return dataitem
 
 
@@ -192,9 +192,9 @@ def add_column_selector_dataitem(
     dataitem = ET.SubElement(
         parent,
         "DataItem",
-        {"Format": "XML", "Dimensions": f"3 {ndim}"},
+        {"Format": "XML", "Dimensions": "3 {}".format(ndim)},
     )
-    dataitem.text = f"0 {column} 1 1 {shape[0]} 1"
+    dataitem.text = "0 {} 1 1 {} 1".format(column, shape[0])
     return dataitem
 
 
@@ -208,7 +208,7 @@ def add_field(
         - 3 columns: A vector field will be added.
         - otherwise: The field is split into scalar fields, and those are added.
     """
-    hdf_path = f"/fields/{field_name}"
+    hdf_path = "/fields/{}".format(field_name)
 
     ndim = hdf_file[hdf_path].ndim
     shape = hdf_file[hdf_path].shape
@@ -220,7 +220,7 @@ def add_field(
             parent,
             "Attribute",
             {
-                "Name": f"{field_name}",
+                "Name": field_name,
                 "Center": center,
                 "AttributeType": "Scalar",
             },
@@ -233,7 +233,7 @@ def add_field(
             parent,
             "Attribute",
             {
-                "Name": f"{field_name}",
+                "Name": field_name,
                 "Center": center,
                 "AttributeType": "Vector",
             },
@@ -246,7 +246,7 @@ def add_field(
             parent,
             "Attribute",
             {
-                "Name": f"{field_name}[{column}]",
+                "Name": "{}[{}]".format(field_name, column),
                 "Center": center,
                 "AttributeType": "Scalar",
             },
@@ -254,7 +254,7 @@ def add_field(
         hyperslab = ET.SubElement(
             attribute,
             "DataItem",
-            {"ItemType": "HyperSlab", "Dimensions": f"{shape[0]} 1"},
+            {"ItemType": "HyperSlab", "Dimensions": "{} 1".format(shape[0])},
         )
         add_column_selector_dataitem(hyperslab, hdf_file, hdf_path, column)
         add_hdf_dataitem(hyperslab, hdf_file, hdf_path)

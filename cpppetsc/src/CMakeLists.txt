@@ -45,6 +45,8 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./Vector_fwd.cc
             ./Viewer.cc
             ./createVectorFromSource.cc
+            ./getName.cc
+            ./setName.cc
             ./writeToViewer.cc
 )
 

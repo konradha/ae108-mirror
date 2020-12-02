@@ -32,6 +32,7 @@ add_executable(${PROJECT_NAME}-CppPetscTests
                ./TaggedEntity_Test.cc
                ./Vector_Test.cc
                ./createVectorFromSource_Test.cc
+               ./setName_Test.cc
 )
 
 target_include_directories(${PROJECT_NAME}-CppPetscTests PRIVATE include)

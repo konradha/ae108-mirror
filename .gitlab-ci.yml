@@ -97,7 +97,7 @@ build-library:
                 cmake --build . --target all &&
                 GTEST_OUTPUT="xml:gtest-results.xml" ctest --output-on-failure --exclude-regex ".*_mpi$" &&
                 ctest --output-on-failure --tests-regex ".*_mpi$" &&
-                python3 -m gcovr --print-summary --sonarqube coverage.xml -j$(nproc) --root .. .
+                python3 -m gcovr --print-summary --xml coverage.xml -j$(nproc) --root .. .
             '
     artifacts:
         reports:

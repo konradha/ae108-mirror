@@ -20,9 +20,9 @@ namespace ae108 {
 namespace cpppetsc {
 
 template void setName<SequentialComputePolicy>(
-    const char*, distributed<Vector<SequentialComputePolicy>> *);
+    const char *, distributed<Vector<SequentialComputePolicy>> *);
 template void
-setName<ParallelComputePolicy>(const char*,
+setName<ParallelComputePolicy>(const char *,
                                distributed<Vector<ParallelComputePolicy>> *);
 
 } // namespace cpppetsc

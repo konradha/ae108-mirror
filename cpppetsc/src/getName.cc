@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "ae108/cpppetsc/getName.h"
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
-#include "ae108/cpppetsc/getName.h"
 
 namespace ae108 {
 namespace cpppetsc {

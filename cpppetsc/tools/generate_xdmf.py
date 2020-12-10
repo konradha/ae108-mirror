@@ -230,10 +230,19 @@ def read_coordinate_dimension(hdf_file: h5py.File) -> int:
     return hdf_file["/geometry/vertices"].shape[1]
 
 
+class MeshInformationMissing(Exception):
+    """
+    This exception is raised if mesh information is missing in the HDF5 file.
+    """
+
+
 def add_topology(parent: ET.Element, hdf_file: h5py.File) -> ET.Element:
     """
     Adds the topology element to the parent.
     """
+    if not "/viz/topology/cells" in hdf_file:
+        raise MeshInformationMissing()
+
     number_of_elements = hdf_file["/viz/topology/cells"].shape[0]
     number_of_corners = hdf_file["/viz/topology/cells"].attrs.get("cell_corners")
 
@@ -256,6 +265,9 @@ def add_geometry(parent: ET.Element, hdf_file: h5py.File) -> ET.Element:
     """
     Adds the geometry element to the parent.
     """
+    if not "/geometry/vertices" in hdf_file:
+        raise MeshInformationMissing()
+
     coordinate_dimension = read_coordinate_dimension(hdf_file)
     geometry = ET.SubElement(
         parent,

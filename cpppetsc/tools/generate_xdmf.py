@@ -47,8 +47,24 @@ def parse_input_filename() -> pathlib.Path:
 def extract_field_name(name: str) -> str:
     """
     Removes the trailing "_Field_0" (and similar) from the input name.
+
+    >>> extract_field_name("abc")
+    'abc'
+    >>> extract_field_name("abc_Field_0")
+    'abc'
+    >>> extract_field_name("abc_Field_10")
+    'abc'
+    >>> extract_field_name("abc_field_10")
+    'abc_field_10'
     """
     return re.sub(r"_Field_[\d]+$", "", name)
+
+
+class UnsupportedElementType(Exception):
+    """
+    This exception is raised if an unsupported element type
+    (number of vertices, topological dimension) is provided.
+    """
 
 
 def number_of_corners_to_type(
@@ -56,48 +72,121 @@ def number_of_corners_to_type(
 ) -> str:
     """
     Returns a guess of the element type for the provided number of vertices.
+
+    >>> number_of_corners_to_type(3, 2)
+    'Triangle'
+    >>> number_of_corners_to_type(4, 2)
+    'Quadrilateral'
+    >>> number_of_corners_to_type(2, 2)
+    Traceback (most recent call last):
+    generate_xdmf.UnsupportedElementType
+    >>> number_of_corners_to_type(5, 2)
+    Traceback (most recent call last):
+    generate_xdmf.UnsupportedElementType
+    >>> number_of_corners_to_type(4, 3)
+    'Tetrahedron'
+    >>> number_of_corners_to_type(8, 3)
+    'Hexahedron'
+    >>> number_of_corners_to_type(3, 3)
+    Traceback (most recent call last):
+    generate_xdmf.UnsupportedElementType
+    >>> number_of_corners_to_type(9, 3)
+    Traceback (most recent call last):
+    generate_xdmf.UnsupportedElementType
+    >>> number_of_corners_to_type(4, 1)
+    Traceback (most recent call last):
+    generate_xdmf.UnsupportedElementType
     """
-    type_map = {
-        2: {
-            3: "Triangle",
-            4: "Quadrilateral",
-        },
-        3: {
-            4: "Tetrahedron",
-            8: "Hexahedron",
-        },
-    }
-    return type_map[topological_dimension][number_of_vertices]
+    try:
+        type_map = {
+            2: {
+                3: "Triangle",
+                4: "Quadrilateral",
+            },
+            3: {
+                4: "Tetrahedron",
+                8: "Hexahedron",
+            },
+        }
+        return type_map[topological_dimension][number_of_vertices]
+    except KeyError as error:
+        raise UnsupportedElementType() from error
+
+
+class UnsupportedHdfDtype(Exception):
+    """
+    This exception is raised if an unsupported HDF datatype is provided.
+    """
 
 
 def hdf_dtype_to_type(dtype: numpy.dtype) -> typing.Tuple[str, str, int]:
     """
     Converts a Numpy dtype to a tuple describing the datatype for XDMF.
     The tuple has the following components: endianness, number type, bytes.
+
+    >>> hdf_dtype_to_type(numpy.dtype('<f8'))
+    ('Little', 'Float', 8)
+    >>> hdf_dtype_to_type(numpy.dtype('<f4'))
+    ('Little', 'Float', 4)
+    >>> hdf_dtype_to_type(numpy.dtype('<i8'))
+    ('Little', 'Int', 8)
+    >>> hdf_dtype_to_type(numpy.dtype('<i4'))
+    ('Little', 'Int', 4)
+    >>> hdf_dtype_to_type(numpy.dtype(numpy.int64))
+    ('Little', 'Int', 8)
+    >>> hdf_dtype_to_type(numpy.dtype(numpy.uint64))
+    Traceback (most recent call last):
+    generate_xdmf.UnsupportedHdfDtype
     """
-    datatype_map = {
-        numpy.dtype("<f8"): ("Little", "Float", 8),
-        numpy.dtype("<f4"): ("Little", "Float", 4),
-        numpy.dtype("<i8"): ("Little", "Int", 8),
-        numpy.dtype("<i4"): ("Little", "Int", 4),
-    }
-    return datatype_map[dtype]
+    try:
+        datatype_map = {
+            numpy.dtype("<f8"): ("Little", "Float", 8),
+            numpy.dtype("<f4"): ("Little", "Float", 4),
+            numpy.dtype("<i8"): ("Little", "Int", 8),
+            numpy.dtype("<i4"): ("Little", "Int", 4),
+        }
+        return datatype_map[dtype]
+    except KeyError as error:
+        raise UnsupportedHdfDtype() from error
+
+
+class UnsupportedCoordinateDimension(Exception):
+    """
+    This exception is raised if an unsupported coordinate dimension is provided.
+    """
 
 
 def coordinate_dimension_to_type(dimension: int) -> str:
     """
     Returns the grid type for the given dimension.
+
+    >>> coordinate_dimension_to_type(2)
+    'XY'
+    >>> coordinate_dimension_to_type(3)
+    'XYZ'
+    >>> coordinate_dimension_to_type(1)
+    Traceback (most recent call last):
+    generate_xdmf.UnsupportedCoordinateDimension
+    >>> coordinate_dimension_to_type(4)
+    Traceback (most recent call last):
+    generate_xdmf.UnsupportedCoordinateDimension
     """
-    type_map = {
-        2: "XY",
-        3: "XYZ",
-    }
-    return type_map[dimension]
+    try:
+        type_map = {
+            2: "XY",
+            3: "XYZ",
+        }
+        return type_map[dimension]
+    except KeyError as error:
+        raise UnsupportedCoordinateDimension() from error
 
 
 def shape_to_xdmf_dimensions(shape: typing.Tuple[int, int]) -> str:
     """
     Returns the dimension provided by shape
+
+    >>> shape_to_xdmf_dimensions((2, 3))
+    '2 3'
     """
     return " ".join(str(x) for x in shape)
 

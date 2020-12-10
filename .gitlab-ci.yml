@@ -85,6 +85,7 @@ check-script:
                 --python-version 3.5 \
                 --ignore-missing \
                 cpppetsc/tools/*.py
+        - python3 -m doctest cpppetsc/tools/*.py
 
 build-library:
     stage: build

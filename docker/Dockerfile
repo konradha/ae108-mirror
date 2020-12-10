@@ -21,6 +21,7 @@ FROM $BASE_IMAGE
 RUN apt-get update && apt-get install -y clang-format
 RUN apt-get update && apt-get install -y cmake
 RUN apt-get update && apt-get install -y g++
+RUN apt-get update && apt-get install -y git
 RUN apt-get update && apt-get install -y googletest
 RUN apt-get update && apt-get install -y libboost-program-options-dev
 RUN apt-get update && apt-get install -y libeigen3-dev

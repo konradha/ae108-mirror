@@ -22,6 +22,7 @@
 #include <petscsnes.h>
 #include <petsctao.h>
 #include <petscvec.h>
+#include <petscviewer.h>
 
 namespace ae108 {
 namespace cpppetsc {
@@ -65,6 +66,10 @@ template <> PetscErrorCode callDestructor(KSP *const ptr) noexcept {
 
 template <> PetscErrorCode callDestructor(Tao *const ptr) noexcept {
   return TaoDestroy(ptr);
+}
+
+template <> PetscErrorCode callDestructor(PetscViewer *const ptr) noexcept {
+  return PetscViewerDestroy(ptr);
 }
 } // namespace detail
 } // namespace cpppetsc

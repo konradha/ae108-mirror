@@ -50,6 +50,7 @@ The project uses [CMake](https://cmake.org) as its build system generator. The f
 - [Boost](https://www.boost.org) (component program_options): version 1.67
 - [Eigen](http://eigen.tuxfamily.org): version 3.3
 - [Google Test](https://github.com/google/googletest): version 1.8.1
+- [HDF5](https://www.hdfgroup.org/solutions/hdf5/): version 1.10
 - [MPI](https://cmake.org/cmake/help/latest/module/FindMPI.html): version 3.1
 - [PETSc](https://www.mcs.anl.gov/petsc/): version 3.10
 

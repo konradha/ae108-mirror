@@ -74,6 +74,19 @@ check-license-header:
                 --files-without-match "Apache License" \
                 .
 
+check-script:
+    stage: analyze
+    image: $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_REF_SLUG
+    script:
+        - python3 -m black --check cpppetsc/tools/*.py
+        - python3 -m pylint cpppetsc/tools/*.py
+        - >
+            python3 -m mypy \
+                --python-version 3.5 \
+                --ignore-missing \
+                cpppetsc/tools/*.py
+        - python3 -m doctest cpppetsc/tools/*.py
+
 build-library:
     stage: build
     image: $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_REF_SLUG

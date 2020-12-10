@@ -54,6 +54,23 @@ public:
   using matrix_type = Matrix<Policy>;
 
   static constexpr size_type IGNORE_VERTEX_INDEX = -1;
+
+  /**
+   * @brief Calls the second overload with topological and coordinate
+   * dimension both equal to `dimension`.
+   */
+  template <class Container>
+  static Mesh fromConnectivity(const size_type dimension,
+                               const Container &elementVertexIDs,
+                               const size_type numberOfVertices,
+                               const size_type dofPerVertex,
+                               const size_type dofPerElement = 0);
+
+  using TopologicalDimension =
+      TaggedEntity<size_type, struct TopologicalDimensionTag>;
+  using CoordinateDimension =
+      TaggedEntity<size_type, struct CoordinateDimensionTag>;
+
   /**
    * @brief Creates a Mesh from the connectivity representation.
    *
@@ -68,11 +85,12 @@ public:
    * @param numberOfVertices The maximum vertex ID in the mesh.
    */
   template <class Container>
-  static Mesh fromConnectivity(const size_type dimension,
+  static Mesh fromConnectivity(const TopologicalDimension topologicalDimension,
+                               const CoordinateDimension coordinateDimension,
                                const Container &elementVertexIDs,
                                const size_type numberOfVertices,
                                const size_type dofPerVertex,
-                               const size_type dofPerElement = 0);
+                               const size_type dofPerElement);
 
   using const_element_iterator = LocalElementIterator<Mesh>;
   using const_iterator = const_element_iterator;
@@ -113,6 +131,16 @@ public:
    * @brief Returns the local number of vertices in the mesh.
    */
   size_type localNumberOfVertices() const;
+
+  /**
+   * @brief Returns the dimension of the elements.
+   */
+  TopologicalDimension topologicalDimension() const;
+
+  /**
+   * @brief Returns the dimension of the coordinates.
+   */
+  CoordinateDimension coordinateDimension() const;
 
   /**
    * @brief Fill the local vector with the corresponding values from the
@@ -325,10 +353,24 @@ Mesh<Policy> Mesh<Policy>::fromConnectivity(const size_type dimension,
                                             const size_type numberOfVertices,
                                             const size_type dofPerVertex,
                                             const size_type dofPerElement) {
+  return fromConnectivity(TopologicalDimension(dimension),
+                          CoordinateDimension(dimension), elementVertexIDs,
+                          numberOfVertices, dofPerVertex, dofPerElement);
+}
+
+template <class Policy>
+template <class Container>
+Mesh<Policy> Mesh<Policy>::fromConnectivity(
+    const TopologicalDimension topologicalDimension,
+    const CoordinateDimension coordinateDimension,
+    const Container &elementVertexIDs, const size_type numberOfVertices,
+    const size_type dofPerVertex, const size_type dofPerElement) {
   auto mesh =
       Mesh(static_cast<size_type>(elementVertexIDs.size()), numberOfVertices);
 
-  Policy::handleError(DMSetDimension(mesh._mesh.get(), dimension));
+  Policy::handleError(
+      DMSetCoordinateDim(mesh._mesh.get(), coordinateDimension));
+  Policy::handleError(DMSetDimension(mesh._mesh.get(), topologicalDimension));
 
   addChart(elementVertexIDs, numberOfVertices, mesh._mesh.get());
 
@@ -430,11 +472,7 @@ void Mesh<Policy>::addChart(const Container &elementVertexIDs,
 template <class Policy>
 void Mesh<Policy>::addSection(const size_type dofPerVertex,
                               const size_type dofPerElement) {
-  const size_type dimension = [this]() {
-    auto dimension = size_type{0};
-    Policy::handleError(DMGetDimension(_mesh.get(), &dimension));
-    return dimension;
-  }();
+  const size_type dimension = topologicalDimension();
   assert(dimension > 0);
 
   auto section = PetscSection();
@@ -499,6 +537,22 @@ typename Mesh<Policy>::size_type Mesh<Policy>::localNumberOfElements() const {
   auto end = size_type{0};
   Policy::handleError(DMPlexGetHeightStratum(_mesh.get(), 0, &start, &end));
   return end - start;
+}
+
+template <class Policy>
+typename Mesh<Policy>::TopologicalDimension
+Mesh<Policy>::topologicalDimension() const {
+  auto dim = size_type{};
+  Policy::handleError(DMGetDimension(_mesh.get(), &dim));
+  return TopologicalDimension(dim);
+}
+
+template <class Policy>
+typename Mesh<Policy>::CoordinateDimension
+Mesh<Policy>::coordinateDimension() const {
+  auto dim = size_type{};
+  Policy::handleError(DMGetCoordinateDim(_mesh.get(), &dim));
+  return CoordinateDimension(dim);
 }
 
 template <class Policy>

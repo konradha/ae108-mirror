@@ -24,9 +24,11 @@ It writes an XDMF file of the same name to the working directory.
 """
 
 import argparse
+from enum import IntEnum
 import pathlib
 import re
 import typing
+import sys
 import xml.etree.ElementTree as ET
 
 import h5py
@@ -418,5 +420,46 @@ def main() -> None:
         xdmf_file.write(hdf_to_xdmf_string(h5py.File(filename, "r")))
 
 
+class ErrorCode(IntEnum):
+    """
+    The error codes used by this script on exit.
+    """
+
+    OK = 0
+    MISSING_MESH = 2
+    UNSUPPORTED_COORDINATE_DIM = 3
+    UNSUPPORTED_ELEMENT_TYPE = 4
+    UNSUPPORTED_DATA_TYPE = 5
+
+
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except MeshInformationMissing:
+        print(
+            "Error: "
+            "Mesh information is missing in the input file. "
+            "Please export the mesh (topology, geometry) to this file.",
+            file=sys.stderr,
+        )
+        sys.exit(ErrorCode.MISSING_MESH)
+    except UnsupportedCoordinateDimension:
+        print(
+            "Error: Coordinate dimensions other than 2 and 3 are not supported.",
+            file=sys.stderr,
+        )
+        sys.exit(ErrorCode.UNSUPPORTED_COORDINATE_DIM)
+    except UnsupportedElementType:
+        print(
+            "Error: "
+            "The combination of topological dimension and "
+            "number of vertices per element is not supported.",
+            file=sys.stderr,
+        )
+        sys.exit(ErrorCode.UNSUPPORTED_ELEMENT_TYPE)
+    except UnsupportedHdfDtype:
+        print(
+            "Error: The input file contains data of an unsupported type.",
+            file=sys.stderr,
+        )
+        sys.exit(ErrorCode.UNSUPPORTED_DATA_TYPE)

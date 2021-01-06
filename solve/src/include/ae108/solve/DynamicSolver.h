@@ -48,7 +48,7 @@ public:
       typename nonlinearsolver_type::BoundaryConditionContainer;
 
   /**
-   * @brief Calls the other overload of computeSolution passing on all arguments
+   * @brief Calls another overload of computeSolution passing on all arguments
    * except assembler. The local force vector and the local stiffness matrix are
    * computed using assembler's assembleForceVector and assembleStiffnessMatrix
    * methods.
@@ -57,7 +57,9 @@ public:
    * @param state The state to start iterating at.
    * @param time This will be used to configure the assembler.
    * @param timestep The current timestep.
-   * @para assembler Valid nonzero pointer.
+   * @param mass The mass matrix.
+   * @param damping The damping matrix.
+   * @param assembler Valid nonzero pointer.
    */
   state_type
   computeSolution(const BoundaryConditionContainer &boundaryConditions,
@@ -73,15 +75,19 @@ public:
       const cpppetsc::local<vector_type> &, double, matrix_type *)>;
 
   /**
-   * @brief Computes the solution using the provided nonlinear solver type.
+   * @brief Calls another overload of computeSolution passing on all arguments
+   * except the assembling functions. The global force vector and the global
+   * stiffness matrix are computed using the local contributions.
    *
    * @param boundaryConditions The local essential boundary conditions to apply.
    * @param state The state to start iterating at.
    * @param time This will be used to configure the assembler.
    * @param timestep The current timestep.
-   * @para assembleForceVector A valid callable. It will be called to assemble
+   * @param mass The mass matrix.
+   * @param damping The damping matrix.
+   * @param assembleForceVector A valid callable. It will be called to assemble
    * the local force vector.
-   * @para assembleStiffnessMatrix A valid callable. It will be called to
+   * @param assembleStiffnessMatrix A valid callable. It will be called to
    * assemble the local stiffness matrix.
    */
   state_type
@@ -90,6 +96,34 @@ public:
                   const matrix_type &mass, const matrix_type &damping,
                   LocalForceVectorAssembler assembleForceVector,
                   LocalStiffnessMatrixAssembler assembleStiffnessMatrix) const;
+
+  using DistributedForceVectorAssembler =
+      std::function<void(const cpppetsc::distributed<vector_type> &, double,
+                         cpppetsc::distributed<vector_type> *)>;
+
+  using DistributedStiffnessMatrixAssembler = std::function<void(
+      const cpppetsc::distributed<vector_type> &, double, matrix_type *)>;
+
+  /**
+   * @brief Computes the solution using the provided nonlinear solver type.
+   *
+   * @param boundaryConditions The local essential boundary conditions to apply.
+   * @param state The state to start iterating at.
+   * @param time This will be used to configure the assembler.
+   * @param timestep The current timestep.
+   * @param mass The mass matrix.
+   * @param damping The damping matrix.
+   * @param assembleForceVector A valid callable. It will be called to assemble
+   * the global force vector.
+   * @param assembleStiffnessMatrix A valid callable. It will be called to
+   * assemble the global stiffness matrix.
+   */
+  state_type computeSolution(
+      const BoundaryConditionContainer &boundaryConditions, state_type state,
+      const double time, const double timestep, const matrix_type &mass,
+      const matrix_type &damping,
+      DistributedForceVectorAssembler assembleForceVector,
+      DistributedStiffnessMatrixAssembler assembleStiffnessMatrix) const;
 
 private:
   const mesh_type *_mesh;
@@ -166,6 +200,41 @@ DynamicSolver<Assembler, NonlinearSolver>::computeSolution(
     const double time, const double timestep, const matrix_type &mass,
     const matrix_type &damping, LocalForceVectorAssembler assembleForceVector,
     LocalStiffnessMatrixAssembler assembleStiffnessMatrix) const {
+  assert(assembler);
+
+  const auto &mesh = *_mesh;
+  auto localDisplacements = vector_type::fromLocalMesh(mesh);
+  auto localForces = vector_type::fromLocalMesh(mesh);
+
+  return computeSolution(
+      boundaryConditions, std::move(state), time, timestep, mass, damping,
+      [&localDisplacements, &localForces, &mesh, &assembleForceVector,
+       &assembleStiffnessMatrix](
+          const cpppetsc::distributed<vector_type> &displacements,
+          const double time, cpppetsc::distributed<vector_type> *const output) {
+        mesh.copyToLocalVector(displacements, &localDisplacements);
+        localForces.unwrap().setZero();
+        assembleForceVector(localDisplacements, time, &localForces);
+        mesh.addToGlobalVector(localForces, output);
+      },
+      [&localDisplacements, &mesh, &assembleForceVector,
+       assembleStiffnessMatrix](
+          const cpppetsc::distributed<vector_type> &displacements,
+          const double time, matrix_type *const output) {
+        mesh.copyToLocalVector(displacements, &localDisplacements);
+        assembleStiffnessMatrix(localDisplacements, time, output);
+        output->finalize();
+      });
+}
+
+template <class Assembler, class NonlinearSolver>
+typename DynamicSolver<Assembler, NonlinearSolver>::state_type
+DynamicSolver<Assembler, NonlinearSolver>::computeSolution(
+    const BoundaryConditionContainer &boundaryConditions, state_type state,
+    const double time, const double timestep, const matrix_type &mass,
+    const matrix_type &damping,
+    DistributedForceVectorAssembler assembleForceVector,
+    DistributedStiffnessMatrixAssembler assembleStiffnessMatrix) const {
   assert(assembleForceVector);
   assert(assembleStiffnessMatrix);
 
@@ -196,10 +265,7 @@ DynamicSolver<Assembler, NonlinearSolver>::computeSolution(
               cpppetsc::distributed<vector_type> *const output) {
             assert(output);
 
-            mesh.copyToLocalVector(input, &localDisplacements);
-            localForces.unwrap().setZero();
-            assembleForceVector(localDisplacements, time, &localForces);
-            mesh.addToGlobalVector(localForces, output);
+            assembleForceVector(input, time, output);
             output->unwrap().addAx(lhsMatrix, input);
             output->unwrap().timesAlphaPlusBetaX(1., -1., rhsVector);
           }),
@@ -208,9 +274,7 @@ DynamicSolver<Assembler, NonlinearSolver>::computeSolution(
               const double time, matrix_type *const output) {
             assert(output);
 
-            mesh.copyToLocalVector(input, &localDisplacements);
-            assembleStiffnessMatrix(localDisplacements, time, output);
-            output->finalize();
+            assembleStiffnessMatrix(input, time, output);
             output->addAlphaX(1., lhsMatrix);
           }));
 

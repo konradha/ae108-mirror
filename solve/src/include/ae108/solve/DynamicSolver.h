@@ -200,8 +200,9 @@ DynamicSolver<Assembler, NonlinearSolver>::computeSolution(
     const double time, const double timestep, const matrix_type &mass,
     const matrix_type &damping, LocalForceVectorAssembler assembleForceVector,
     LocalStiffnessMatrixAssembler assembleStiffnessMatrix) const {
-  assert(assembler);
-
+  assert(assembleForceVector);
+  assert(assembleStiffnessMatrix);
+  
   const auto &mesh = *_mesh;
   auto localDisplacements = vector_type::fromLocalMesh(mesh);
   auto localForces = vector_type::fromLocalMesh(mesh);

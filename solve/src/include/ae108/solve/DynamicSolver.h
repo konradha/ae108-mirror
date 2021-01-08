@@ -202,7 +202,7 @@ DynamicSolver<Assembler, NonlinearSolver>::computeSolution(
     LocalStiffnessMatrixAssembler assembleStiffnessMatrix) const {
   assert(assembleForceVector);
   assert(assembleStiffnessMatrix);
-  
+
   const auto &mesh = *_mesh;
   auto localDisplacements = vector_type::fromLocalMesh(mesh);
   auto localForces = vector_type::fromLocalMesh(mesh);

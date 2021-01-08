@@ -107,13 +107,12 @@ using Policies =
 TYPED_TEST_CASE(DynamicSolver_Test, Policies);
 
 TYPED_TEST(DynamicSolver_Test, passes_on_displacements) {
+  using solver_type = typename TestFixture::solver_type;
   this->solver.computeSolution =
-      [&](const typename TestFixture::solver_type::BoundaryConditionContainer &,
-          typename TestFixture::solver_type::distributed_vector_type guess,
-          double,
-          typename TestFixture::solver_type::DistributedForceVectorAssembler,
-          typename TestFixture::solver_type::
-              DistributedStiffnessMatrixAssembler) {
+      [&](const typename solver_type::BoundaryConditionContainer &,
+          typename solver_type::distributed_vector_type guess, double,
+          typename solver_type::DistributedForceVectorAssembler,
+          typename solver_type::DistributedStiffnessMatrixAssembler) {
         const auto full = TestFixture::vector_type::fromDistributed(guess);
         EXPECT_THAT(full.unwrap(), SizeIs(2));
         EXPECT_THAT(full(0), DoubleEq(2.));
@@ -128,13 +127,13 @@ TYPED_TEST(DynamicSolver_Test, passes_on_displacements) {
 }
 
 TYPED_TEST(DynamicSolver_Test, passes_on_time) {
+  using solver_type = typename TestFixture::solver_type;
   this->solver.computeSolution =
-      [&](const typename TestFixture::solver_type::BoundaryConditionContainer &,
-          typename TestFixture::solver_type::distributed_vector_type guess,
+      [&](const typename solver_type::BoundaryConditionContainer &,
+          typename solver_type::distributed_vector_type guess,
           const double time,
-          typename TestFixture::solver_type::DistributedForceVectorAssembler,
-          typename TestFixture::solver_type::
-              DistributedStiffnessMatrixAssembler) {
+          typename solver_type::DistributedForceVectorAssembler,
+          typename solver_type::DistributedStiffnessMatrixAssembler) {
         EXPECT_THAT(time, DoubleEq(TestFixture::assembler_type::constantTime));
         return guess;
       };
@@ -146,20 +145,17 @@ TYPED_TEST(DynamicSolver_Test, passes_on_time) {
 }
 
 TYPED_TEST(DynamicSolver_Test, passes_on_bc) {
-  typename TestFixture::solver_type::BoundaryConditionContainer
-      boundaryConditions;
+  using solver_type = typename TestFixture::solver_type;
+  typename solver_type::BoundaryConditionContainer boundaryConditions;
   for (const auto &vertex : this->mesh.localVertices()) {
     boundaryConditions.push_back({vertex, 1, .7});
   }
 
   this->solver.computeSolution =
-      [&](const typename TestFixture::solver_type::BoundaryConditionContainer
-              &bc,
-          typename TestFixture::solver_type::distributed_vector_type guess,
-          double,
-          typename TestFixture::solver_type::DistributedForceVectorAssembler,
-          typename TestFixture::solver_type::
-              DistributedStiffnessMatrixAssembler) {
+      [&](const typename solver_type::BoundaryConditionContainer &bc,
+          typename solver_type::distributed_vector_type guess, double,
+          typename solver_type::DistributedForceVectorAssembler,
+          typename solver_type::DistributedStiffnessMatrixAssembler) {
         EXPECT_THAT(bc, SizeIs(boundaryConditions.size()));
         if (!bc.empty()) {
           EXPECT_THAT(bc.front().node.index(),
@@ -177,12 +173,12 @@ TYPED_TEST(DynamicSolver_Test, passes_on_bc) {
 }
 
 TYPED_TEST(DynamicSolver_Test, returns_correct_displacements) {
+  using solver_type = typename TestFixture::solver_type;
   this->solver.computeSolution =
-      [&](const typename TestFixture::solver_type::BoundaryConditionContainer &,
-          typename TestFixture::solver_type::distributed_vector_type, double,
-          typename TestFixture::solver_type::DistributedForceVectorAssembler,
-          typename TestFixture::solver_type::
-              DistributedStiffnessMatrixAssembler) {
+      [&](const typename solver_type::BoundaryConditionContainer &,
+          typename solver_type::distributed_vector_type, double,
+          typename solver_type::DistributedForceVectorAssembler,
+          typename solver_type::DistributedStiffnessMatrixAssembler) {
         auto result = TestFixture::vector_type::fromGlobalMesh(this->mesh);
         result.unwrap().replace().elements({0, 1}, {7., 77.});
         return result;
@@ -202,12 +198,12 @@ TYPED_TEST(DynamicSolver_Test, returns_correct_displacements) {
 }
 
 TYPED_TEST(DynamicSolver_Test, returns_correct_velocities) {
+  using solver_type = typename TestFixture::solver_type;
   this->solver.computeSolution =
-      [&](const typename TestFixture::solver_type::BoundaryConditionContainer &,
-          typename TestFixture::solver_type::distributed_vector_type, double,
-          typename TestFixture::solver_type::DistributedForceVectorAssembler,
-          typename TestFixture::solver_type::
-              DistributedStiffnessMatrixAssembler) {
+      [&](const typename solver_type::BoundaryConditionContainer &,
+          typename solver_type::distributed_vector_type, double,
+          typename solver_type::DistributedForceVectorAssembler,
+          typename solver_type::DistributedStiffnessMatrixAssembler) {
         auto result = TestFixture::vector_type::fromGlobalMesh(this->mesh);
         result.unwrap().replace().elements({0, 1}, {7., 77.});
         return result;
@@ -227,12 +223,12 @@ TYPED_TEST(DynamicSolver_Test, returns_correct_velocities) {
 }
 
 TYPED_TEST(DynamicSolver_Test, returns_correct_accelerations) {
+  using solver_type = typename TestFixture::solver_type;
   this->solver.computeSolution =
-      [&](const typename TestFixture::solver_type::BoundaryConditionContainer &,
-          typename TestFixture::solver_type::distributed_vector_type, double,
-          typename TestFixture::solver_type::DistributedForceVectorAssembler,
-          typename TestFixture::solver_type::
-              DistributedStiffnessMatrixAssembler) {
+      [&](const typename solver_type::BoundaryConditionContainer &,
+          typename solver_type::distributed_vector_type, double,
+          typename solver_type::DistributedForceVectorAssembler,
+          typename solver_type::DistributedStiffnessMatrixAssembler) {
         auto result = TestFixture::vector_type::fromGlobalMesh(this->mesh);
         result.unwrap().replace().elements({0, 1}, {7., 77.});
         return result;
@@ -252,15 +248,13 @@ TYPED_TEST(DynamicSolver_Test, returns_correct_accelerations) {
 }
 
 TYPED_TEST(DynamicSolver_Test, computes_correct_effective_forces) {
+  using solver_type = typename TestFixture::solver_type;
   this->solver.computeSolution =
-      [&](const typename TestFixture::solver_type::BoundaryConditionContainer &,
-          const typename TestFixture::solver_type::distributed_vector_type
-              guess,
+      [&](const typename solver_type::BoundaryConditionContainer &,
+          const typename solver_type::distributed_vector_type guess,
           const double time,
-          const typename TestFixture::solver_type::
-              DistributedForceVectorAssembler assemble,
-          typename TestFixture::solver_type::
-              DistributedStiffnessMatrixAssembler) {
+          const typename solver_type::DistributedForceVectorAssembler assemble,
+          typename solver_type::DistributedStiffnessMatrixAssembler) {
         auto forces = TestFixture::vector_type::fromGlobalMesh(this->mesh);
         assemble(guess, time, &forces);
 
@@ -281,15 +275,13 @@ TYPED_TEST(DynamicSolver_Test, computes_correct_effective_forces) {
 
 TYPED_TEST(DynamicSolver_Test,
            computes_same_effective_forces_when_called_twice) {
+  using solver_type = typename TestFixture::solver_type;
   this->solver.computeSolution =
-      [&](const typename TestFixture::solver_type::BoundaryConditionContainer &,
-          const typename TestFixture::solver_type::distributed_vector_type
-              guess,
+      [&](const typename solver_type::BoundaryConditionContainer &,
+          const typename solver_type::distributed_vector_type guess,
           const double time,
-          const typename TestFixture::solver_type::
-              DistributedForceVectorAssembler assemble,
-          typename TestFixture::solver_type::
-              DistributedStiffnessMatrixAssembler) {
+          const typename solver_type::DistributedForceVectorAssembler assemble,
+          typename solver_type::DistributedStiffnessMatrixAssembler) {
         auto reference = TestFixture::vector_type::fromGlobalMesh(this->mesh);
         assemble(guess, time, &reference);
 
@@ -310,14 +302,13 @@ TYPED_TEST(DynamicSolver_Test,
 
 TYPED_TEST(DynamicSolver_Test,
            computes_correct_effective_forces_with_mod_probe) {
+  using solver_type = typename TestFixture::solver_type;
   this->solver.computeSolution =
-      [&](const typename TestFixture::solver_type::BoundaryConditionContainer &,
-          typename TestFixture::solver_type::distributed_vector_type guess,
+      [&](const typename solver_type::BoundaryConditionContainer &,
+          typename solver_type::distributed_vector_type guess,
           const double time,
-          const typename TestFixture::solver_type::
-              DistributedForceVectorAssembler assemble,
-          typename TestFixture::solver_type::
-              DistributedStiffnessMatrixAssembler) {
+          const typename solver_type::DistributedForceVectorAssembler assemble,
+          typename solver_type::DistributedStiffnessMatrixAssembler) {
         guess.unwrap().scale(2.);
         const auto &probe = guess;
 
@@ -340,14 +331,14 @@ TYPED_TEST(DynamicSolver_Test,
 }
 
 TYPED_TEST(DynamicSolver_Test, computes_correct_effective_stiffness) {
+  using solver_type = typename TestFixture::solver_type;
   this->solver.computeSolution =
-      [&](const typename TestFixture::solver_type::BoundaryConditionContainer &,
-          const typename TestFixture::solver_type::distributed_vector_type
-              guess,
+      [&](const typename solver_type::BoundaryConditionContainer &,
+          const typename solver_type::distributed_vector_type guess,
           const double time,
-          typename TestFixture::solver_type::DistributedForceVectorAssembler,
-          const typename TestFixture::solver_type::
-              DistributedStiffnessMatrixAssembler assemble) {
+          typename solver_type::DistributedForceVectorAssembler,
+          const typename solver_type::DistributedStiffnessMatrixAssembler
+              assemble) {
         auto matrix = TestFixture::matrix_type::fromMesh(this->mesh);
         assemble(guess, time, &matrix);
 
@@ -367,14 +358,14 @@ TYPED_TEST(DynamicSolver_Test, computes_correct_effective_stiffness) {
 
 TYPED_TEST(DynamicSolver_Test,
            computes_same_effective_stiffness_when_called_twice) {
+  using solver_type = typename TestFixture::solver_type;
   this->solver.computeSolution =
-      [&](const typename TestFixture::solver_type::BoundaryConditionContainer &,
-          const typename TestFixture::solver_type::distributed_vector_type
-              guess,
+      [&](const typename solver_type::BoundaryConditionContainer &,
+          const typename solver_type::distributed_vector_type guess,
           const double time,
-          typename TestFixture::solver_type::DistributedForceVectorAssembler,
-          const typename TestFixture::solver_type::
-              DistributedStiffnessMatrixAssembler assemble) {
+          typename solver_type::DistributedForceVectorAssembler,
+          const typename solver_type::DistributedStiffnessMatrixAssembler
+              assemble) {
         auto reference = TestFixture::matrix_type::fromMesh(this->mesh);
         assemble(guess, time, &reference);
 
@@ -395,13 +386,14 @@ TYPED_TEST(DynamicSolver_Test,
 
 TYPED_TEST(DynamicSolver_Test,
            computes_correct_effective_stiffness_with_mod_probe) {
+  using solver_type = typename TestFixture::solver_type;
   this->solver.computeSolution =
-      [&](const typename TestFixture::solver_type::BoundaryConditionContainer &,
-          typename TestFixture::solver_type::distributed_vector_type guess,
+      [&](const typename solver_type::BoundaryConditionContainer &,
+          typename solver_type::distributed_vector_type guess,
           const double time,
-          typename TestFixture::solver_type::DistributedForceVectorAssembler,
-          const typename TestFixture::solver_type::
-              DistributedStiffnessMatrixAssembler assemble) {
+          typename solver_type::DistributedForceVectorAssembler,
+          const typename solver_type::DistributedStiffnessMatrixAssembler
+              assemble) {
         auto matrix = TestFixture::matrix_type::fromMesh(this->mesh);
 
         guess.unwrap().scale(2.);
@@ -423,30 +415,14 @@ TYPED_TEST(DynamicSolver_Test,
                                       this->dampingMatrix, &this->assembler);
 }
 
-TYPED_TEST(DynamicSolver_Test, functional_interface_works_for_vector) {
+TYPED_TEST(DynamicSolver_Test, local_functional_interface_is_callable) {
+  using solver_type = typename TestFixture::solver_type;
   const auto value = .123;
   this->solver.computeSolution =
-      [&](const typename TestFixture::solver_type::BoundaryConditionContainer &,
-          const typename TestFixture::solver_type::distributed_vector_type
-              guess,
-          const double time,
-          typename TestFixture::solver_type::DistributedForceVectorAssembler
-              assemble,
-          const typename TestFixture::solver_type::
-              DistributedStiffnessMatrixAssembler) {
-        const auto reference = [&]() {
-          auto x = TestFixture::vector_type::fromGlobalMesh(this->mesh);
-          x.unwrap().fill(value);
-          return x;
-        }();
-        const auto difference = [&]() {
-          auto x = TestFixture::vector_type::fromGlobalMesh(this->mesh);
-          assemble(guess, time, &x);
-          x.unwrap().timesAlphaPlusBetaX(1., -1., reference);
-          return x;
-        }();
-
-        EXPECT_THAT(difference.unwrap().norm(), DoubleEq(0.));
+      [this](const typename solver_type::BoundaryConditionContainer &,
+             const typename solver_type::distributed_vector_type, const double,
+             typename solver_type::DistributedForceVectorAssembler,
+             const typename solver_type::DistributedStiffnessMatrixAssembler) {
         return TestFixture::vector_type::fromGlobalMesh(this->mesh);
       };
 
@@ -455,55 +431,38 @@ TYPED_TEST(DynamicSolver_Test, functional_interface_works_for_vector) {
   this->dynamicSolver.computeSolution(
       {}, std::move(this->state), TestFixture::assembler_type::constantTime,
       constantTimeStep, zeroMatrix, zeroMatrix,
-      [&](const cpppetsc::local<typename TestFixture::vector_type> &, double,
-          cpppetsc::local<typename TestFixture::vector_type> *output) {
-        output->unwrap().fill(value);
-      },
-      [&](const cpppetsc::local<typename TestFixture::vector_type> &, double,
-          typename TestFixture::matrix_type *output) { output->setZero(); });
-}
-
-TYPED_TEST(DynamicSolver_Test, functional_interface_works_for_matrix) {
-  const auto value = .123;
-  this->solver.computeSolution =
-      [&](const typename TestFixture::solver_type::BoundaryConditionContainer &,
-          const typename TestFixture::solver_type::distributed_vector_type
-              guess,
-          const double time,
-          typename TestFixture::solver_type::DistributedForceVectorAssembler,
-          const typename TestFixture::solver_type::
-              DistributedStiffnessMatrixAssembler assemble) {
-        const auto reference = [&]() {
-          auto x = TestFixture::matrix_type::fromMesh(this->mesh);
-          x.assemblyView().replace().elements({0, 1}, {0, 1},
-                                              {value, value, value, value});
-          return x;
-        }();
-        const auto difference = [&]() {
-          auto x = TestFixture::matrix_type::fromMesh(this->mesh);
-          assemble(guess, time, &x);
-          x.addAlphaX(-1., reference);
-          return x;
-        }();
-
-        EXPECT_THAT(difference.norm(), DoubleEq(0.));
-        return TestFixture::vector_type::fromGlobalMesh(this->mesh);
-      };
-
-  const auto zeroMatrix = TestFixture::matrix_type::fromMesh(this->mesh);
-
-  this->dynamicSolver.computeSolution(
-      {}, std::move(this->state), TestFixture::assembler_type::constantTime,
-      constantTimeStep, zeroMatrix, zeroMatrix,
-      [&](const cpppetsc::local<typename TestFixture::vector_type> &, double,
-          cpppetsc::local<typename TestFixture::vector_type> *output) {
+      [](const cpppetsc::local<typename TestFixture::vector_type> &, double,
+         cpppetsc::local<typename TestFixture::vector_type> *output) {
         output->unwrap().setZero();
       },
-      [&](const cpppetsc::local<typename TestFixture::vector_type> &, double,
-          typename TestFixture::matrix_type *output) {
-        output->assemblyView().replace().elements({0, 1}, {0, 1},
-                                                  {value, value, value, value});
-      });
+      [](const cpppetsc::local<typename TestFixture::vector_type> &, double,
+         typename TestFixture::matrix_type *output) { output->setZero(); });
+}
+
+TYPED_TEST(DynamicSolver_Test, distributed_functional_interface_is_callable) {
+  using solver_type = typename TestFixture::solver_type;
+  const auto value = .123;
+  this->solver.computeSolution =
+      [this](const typename solver_type::BoundaryConditionContainer &,
+             const typename solver_type::distributed_vector_type, const double,
+             typename solver_type::DistributedForceVectorAssembler,
+             const typename solver_type::DistributedStiffnessMatrixAssembler) {
+        return TestFixture::vector_type::fromGlobalMesh(this->mesh);
+      };
+
+  const auto zeroMatrix = TestFixture::matrix_type::fromMesh(this->mesh);
+
+  this->dynamicSolver.computeSolution(
+      {}, std::move(this->state), TestFixture::assembler_type::constantTime,
+      constantTimeStep, zeroMatrix, zeroMatrix,
+      [](const cpppetsc::distributed<typename TestFixture::vector_type> &,
+         double,
+         cpppetsc::distributed<typename TestFixture::vector_type> *output) {
+        output->unwrap().setZero();
+      },
+      [](const cpppetsc::distributed<typename TestFixture::vector_type> &,
+         double,
+         typename TestFixture::matrix_type *output) { output->setZero(); });
 }
 } // namespace
 } // namespace solve

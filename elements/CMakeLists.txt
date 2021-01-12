@@ -1,5 +1,4 @@
 # © 2020 ETH Zurich, Mechanics and Materials Lab
-# © 2020 California Institute of Technology
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,15 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-include(CMakeFindDependencyMacro)
+cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
-find_dependency(Boost 1.67 COMPONENTS program_options)
-
-find_dependency(Eigen3 3.3 CONFIG REQUIRED)
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/modules")
-find_dependency(AE108_PETSc MODULE 3.10)
-
-foreach(AE108_LIBRARY elements cpppetsc assembly solve cmdline)
-    include("${CMAKE_CURRENT_LIST_DIR}/ae108-${AE108_LIBRARY}-export.cmake")
-endforeach()
+add_subdirectory(src)
+add_subdirectory(test)

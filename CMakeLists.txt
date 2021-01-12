@@ -24,7 +24,7 @@ include(cmake/ae108_install_library.cmake)
 include(cmake/ae108_add_cppptest.cmake)
 
 add_subdirectory(cppptest)
-foreach(AE108_LIBRARY cpppetsc assembly solve cmdline)
+foreach(AE108_LIBRARY elements cpppetsc assembly solve cmdline)
     add_subdirectory(${AE108_LIBRARY})
 endforeach()
 

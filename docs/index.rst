@@ -20,3 +20,4 @@ Welcome to AE108!
 
     Getting Started <README.rst>
     cmdline/README.rst
+    elements/README.rst

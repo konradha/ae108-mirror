@@ -27,6 +27,7 @@ add_subdirectory(cppptest)
 foreach(AE108_LIBRARY elements cpppetsc assembly solve cmdline)
     add_subdirectory(${AE108_LIBRARY})
 endforeach()
+add_subdirectory(examples)
 
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)

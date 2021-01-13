@@ -85,9 +85,15 @@ def quadrature_definition(order: int, dimension: int) -> str:
     nodes = compute_gaussian_nodes_in_dimension(order, dimension)
     weights = compute_gaussian_weights_in_dimension(order, dimension)
     return (
-        "AE108_ELEMENTS_QUADRATURE_DEFINE(QuadratureType::Cube, "
-        + f"{dimension}, {order}, {len(nodes)}, "
-        + f"{{{to_initializer_list(nodes)}, {to_initializer_list(weights)}}});"
+        "AE108_ELEMENTS_QUADRATURE_DEFINE("
+        "QuadratureType::Cube, {}, {}, {}, {{{}, {}}}"
+        ");".format(
+            dimension,
+            order,
+            len(nodes),
+            to_initializer_list(nodes),
+            to_initializer_list(weights),
+        )
     )
 
 

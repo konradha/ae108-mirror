@@ -22,7 +22,8 @@ ROOT_DIRECTORY=$(readlink -e $(dirname "$0"))/..
     echo GENERATE_HTML=NO; \
     echo GENERATE_LATEX=NO; \
     echo GENERATE_XML=YES; \
-    echo INPUT="$ROOT_DIRECTORY/cmdline/src/include" \
+    echo INPUT="$ROOT_DIRECTORY/elements/src/include" \
+               "$ROOT_DIRECTORY/cmdline/src/include" \
                "$ROOT_DIRECTORY/cmdline/examples" \
                "$ROOT_DIRECTORY/cpppetsc/src/include" \
                "$ROOT_DIRECTORY/assembly/src/include" \
@@ -54,6 +55,7 @@ pandoc \
     "$ROOT_DIRECTORY/README.md"
 
 ln -sf "$ROOT_DIRECTORY/docs/index.rst" source/index.rst
+ln -s "$ROOT_DIRECTORY/elements" source/elements
 ln -s "$ROOT_DIRECTORY/cmdline" source/cmdline
 
 make -j$(nproc) html

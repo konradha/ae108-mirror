@@ -1,5 +1,4 @@
 ..
-
     © 2020 ETH Zurich, Mechanics and Materials Lab
 
     Licensed under the Apache License, Version 2.0 (the "License");

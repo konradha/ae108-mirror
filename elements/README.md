@@ -26,7 +26,7 @@ These two concepts are (almost) orthogonal and the two components can therefore 
 
 ## Components
 
-Currently this library has seven parts.
+Currently this library has eight parts.
 
 ### Elements
 
@@ -72,6 +72,10 @@ This trait is implemented for a set of quadrature rules and a script to generate
 ### Tensor
 
 This subfolder contains utilities for working with C++ arrays. For instance, it contains functions that interpret such arrays as Eigen matrices.
+
+### Mesh
+
+This subfolder contains functions that generate meshes.
 
 ## FAQ
 

@@ -20,15 +20,20 @@ if (NOT TARGET ae108::elements)
     find_package(ae108 REQUIRED)
 endif()
 
-add_executable(${PROJECT_NAME}-Basic Basic.cc)
-target_link_libraries(${PROJECT_NAME}-Basic
+add_executable(${PROJECT_NAME}-Cmdline Cmdline.cc)
+target_link_libraries(${PROJECT_NAME}-Cmdline
+                      PRIVATE ae108::cmdline
+)
+
+add_executable(${PROJECT_NAME}-MeshGeneration MeshGeneration.cc)
+target_link_libraries(${PROJECT_NAME}-MeshGeneration
                       PRIVATE ae108::solve
                       PRIVATE ae108::assembly
                       PRIVATE ae108::elements
 )
 
-add_executable(${PROJECT_NAME}-MeshGeneration MeshGeneration.cc)
-target_link_libraries(${PROJECT_NAME}-MeshGeneration
+add_executable(${PROJECT_NAME}-Basic Basic.cc)
+target_link_libraries(${PROJECT_NAME}-Basic
                       PRIVATE ae108::solve
                       PRIVATE ae108::assembly
                       PRIVATE ae108::elements

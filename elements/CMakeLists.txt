@@ -1,5 +1,4 @@
 # © 2020 ETH Zurich, Mechanics and Materials Lab
-# © 2020 California Institute of Technology
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +14,5 @@
 
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
-add_executable(${PROJECT_NAME}-CmdLineExample
-               ./Example.cc
-)
-
-target_link_libraries(${PROJECT_NAME}-CmdLineExample
-                      PRIVATE ${PROJECT_NAME}::cmdline
-)
+add_subdirectory(src)
+add_subdirectory(test)

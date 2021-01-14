@@ -22,11 +22,12 @@ ROOT_DIRECTORY=$(readlink -e $(dirname "$0"))/..
     echo GENERATE_HTML=NO; \
     echo GENERATE_LATEX=NO; \
     echo GENERATE_XML=YES; \
-    echo INPUT="$ROOT_DIRECTORY/cmdline/src/include" \
-               "$ROOT_DIRECTORY/cmdline/examples" \
+    echo INPUT="$ROOT_DIRECTORY/elements/src/include" \
+               "$ROOT_DIRECTORY/cmdline/src/include" \
                "$ROOT_DIRECTORY/cpppetsc/src/include" \
                "$ROOT_DIRECTORY/assembly/src/include" \
-               "$ROOT_DIRECTORY/solve/src/include"; \
+               "$ROOT_DIRECTORY/solve/src/include" \
+               "$ROOT_DIRECTORY/examples"; \
     echo RECURSIVE=YES; \
     echo PROJECT_NAME=\"AE108\" \
 ) \
@@ -54,7 +55,9 @@ pandoc \
     "$ROOT_DIRECTORY/README.md"
 
 ln -sf "$ROOT_DIRECTORY/docs/index.rst" source/index.rst
+ln -s "$ROOT_DIRECTORY/elements" source/elements
 ln -s "$ROOT_DIRECTORY/cmdline" source/cmdline
+ln -s "$ROOT_DIRECTORY/examples" source/examples
 
 make -j$(nproc) html
 make -j$(nproc) latexpdf

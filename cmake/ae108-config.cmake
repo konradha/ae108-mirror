@@ -22,6 +22,6 @@ find_dependency(Eigen3 3.3 CONFIG REQUIRED)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/modules")
 find_dependency(AE108_PETSc MODULE 3.10)
 
-foreach(AE108_LIBRARY cpppetsc assembly solve cmdline)
+foreach(AE108_LIBRARY elements cpppetsc assembly solve cmdline)
     include("${CMAKE_CURRENT_LIST_DIR}/ae108-${AE108_LIBRARY}-export.cmake")
 endforeach()

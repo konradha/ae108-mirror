@@ -35,6 +35,10 @@ The following libraries are provided:
 
     A library for creating a FEM mesh and managing the degrees of freedom associated with the elements and their vertices (based on PETSc's DMPLEX). It also provides wrappers around PETSc's solvers (KSP, SNES, and TAO).
 
+- ```ae108-elements```: Define elements.
+
+    A library for specifying the behaviour of the elements that make up the mesh. For instance, use this library to define the energy needed to deform an element.
+
 - ```ae108-assembly```: Assemble local data.
 
     A library for assembling MPI-local data in ```cpppetsc``` meshes. For instance, assemble the local energy by summing the energy of all local element instances.
@@ -79,6 +83,7 @@ To link and use the libraries point CMake to the installation using ```-DCMAKE_P
 
 - ```ae108::cmdline```
 - ```ae108::cpppetsc```
+- ```ae108::elements```
 - ```ae108::assembly```
 - ```ae108::solve```
 

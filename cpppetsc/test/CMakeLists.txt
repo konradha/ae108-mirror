@@ -32,6 +32,7 @@ add_executable(${PROJECT_NAME}-CppPetscTests
                ./TaggedEntity_Test.cc
                ./Vector_Test.cc
                ./copy_Test.cc
+               ./createRhsTransform_Test.cc
                ./createTransformInput_Test.cc
                ./createTransformOutput_Test.cc
                ./createVectorFromSource_Test.cc

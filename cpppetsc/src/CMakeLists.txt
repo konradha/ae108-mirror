@@ -44,6 +44,7 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./Vector.cc
             ./Vector_fwd.cc
             ./Viewer.cc
+            ./clone.cc
             ./copy.cc
             ./createRhsTransform.cc
             ./createTransformInput.cc

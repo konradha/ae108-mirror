@@ -23,6 +23,7 @@ add_library(${PROJECT_NAME}-solve
             ./NewmarkParameters.cc
             ./NonlinearSolver.cc
             ./TAOSolver.cc
+            ./TransformingSolver.cc
 )
 
 add_library(${PROJECT_NAME}::solve ALIAS ${PROJECT_NAME}-solve)

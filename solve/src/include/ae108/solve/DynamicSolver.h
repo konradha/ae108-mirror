@@ -310,8 +310,7 @@ DynamicSolver<Assembler, NonlinearSolver>::computeRhsVector(
   //         1 / (beta * dt) * U' +
   //         1 / (2 * beta -1) * U''
   //         )
-  result.addAx(mass,
-               [&]() {
+  result.addAx(mass, [&]() {
     auto vec = clone(state.displacements);
     vec.unwrap().timesAlphaPlusBetaXPlusGammaY(
         1. / _newmark.beta / timestep / timestep, 1. / _newmark.beta / timestep,
@@ -325,14 +324,14 @@ DynamicSolver<Assembler, NonlinearSolver>::computeRhsVector(
   //         dt * (gamma / (2 * beta) - 1) * U''
   //         )
   result.addAx(damping, [&]() {
-                 auto vec = clone(state.displacements);
-                 vec.unwrap().timesAlphaPlusBetaXPlusGammaY(
-                     _newmark.gamma / _newmark.beta / timestep,
-                     (_newmark.gamma / _newmark.beta - 1.), state.velocities,
-                     timestep * (_newmark.gamma / 2. / _newmark.beta - 1.),
-                     state.accelerations);
-                 return vec;
-               }());
+    auto vec = clone(state.displacements);
+    vec.unwrap().timesAlphaPlusBetaXPlusGammaY(
+        _newmark.gamma / _newmark.beta / timestep,
+        (_newmark.gamma / _newmark.beta - 1.), state.velocities,
+        timestep * (_newmark.gamma / 2. / _newmark.beta - 1.),
+        state.accelerations);
+    return vec;
+  }());
 
   return cpppetsc::tag<cpppetsc::DistributedTag>(std::move(result));
 }

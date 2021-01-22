@@ -50,7 +50,8 @@ public:
    * arguments.
    *
    * @param transform The affine transform to apply.
-   * @param initialGuess The global (untransformed) vector to start iterating at.
+   * @param initialGuess The global (untransformed) vector to start iterating
+   * at.
    * @param time This will be used to configure the assembler.
    * @para assembler Valid nonzero pointer.
    */
@@ -71,7 +72,8 @@ public:
    * distributed assembler calls. Passes on the rest of the arguments.
    *
    * @param transform The affine transform to apply.
-   * @param initialGuess The global (untransformed) vector to start iterating at.
+   * @param initialGuess The global (untransformed) vector to start iterating
+   * at.
    * @param time This will be used to configure the assembler.
    * @param assembleForceVector A valid callable. It will be called to assemble
    * the local force vector.
@@ -98,11 +100,13 @@ public:
    * `transform`. The transform can be used to specify boundary conditions by
    * fixing degrees of freedom in the output of the transform.
    *
-   * More precisely, this function solves the equation E' = 0, which is equivalent to
-   * P^t * F(P * y + c) = 0, where F(P * y + c) are the forces at P * y + c.
+   * More precisely, this function solves the equation E' = 0, which is
+   * equivalent to P^t * F(P * y + c) = 0, where F(P * y + c) are the forces at
+   * P * y + c.
    *
    * @param transform The affine transform to apply.
-   * @param initialGuess The global (untransformed) vector to start iterating at.
+   * @param initialGuess The global (untransformed) vector to start iterating
+   * at.
    * @param time This will be used to configure the assembler.
    * @param assembleForceVector A valid callable. It will be called to assemble
    * the distributed force vector.

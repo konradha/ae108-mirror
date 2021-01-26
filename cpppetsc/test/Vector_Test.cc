@@ -286,16 +286,6 @@ TYPED_TEST(Vector_Test, duplicating_layout_works) {
   EXPECT_THAT(newVector, AlmostEqIfLocal(1, 0.));
 }
 
-TYPED_TEST(Vector_Test, cloning_vector_works) {
-  const auto vec = TestFixture::vector_type::fromList({7., 8.});
-
-  const auto newVector = TestFixture::vector_type::clone(vec);
-
-  ASSERT_THAT(newVector.size(), Eq(vec.size()));
-  EXPECT_THAT(newVector, AlmostEqIfLocal(0, 7.));
-  EXPECT_THAT(newVector, AlmostEqIfLocal(1, 8.));
-}
-
 TYPED_TEST(Vector_Test, scaling_vector_works) {
   auto vec = TestFixture::vector_type::fromList({7., 8.});
 

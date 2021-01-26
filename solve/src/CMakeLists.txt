@@ -16,12 +16,14 @@
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
 add_library(${PROJECT_NAME}-solve
+            ./AffineTransform.cc
             ./DampingParameters.cc
             ./DynamicSolver.cc
             ./DynamicState.cc
             ./NewmarkParameters.cc
             ./NonlinearSolver.cc
             ./TAOSolver.cc
+            ./TransformingSolver.cc
 )
 
 add_library(${PROJECT_NAME}::solve ALIAS ${PROJECT_NAME}-solve)

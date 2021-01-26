@@ -112,11 +112,6 @@ public:
   static Vector fromLayoutOf(const Vector &vector);
 
   /**
-   * @brief Returns a deep copy of the vector.
-   */
-  static Vector clone(const Vector &vector);
-
-  /**
    * @brief Wraps the given UniqueEntity in a Vector.
    */
   explicit Vector(UniqueEntity<Vec> vec);
@@ -566,13 +561,6 @@ template <class Policy> void Vector<Policy>::fill(const value_type value) {
 }
 
 template <class Policy> Vec Vector<Policy>::data() const { return _vec.get(); }
-
-template <class Policy>
-Vector<Policy> Vector<Policy>::clone(const Vector &vector) {
-  auto result = fromLayoutOf(vector);
-  Policy::handleError(VecCopy(vector.data(), result.data()));
-  return result;
-}
 
 template <class Policy>
 void Vector<Policy>::addAx(const matrix_type &A, const distributed<Vector> &x) {

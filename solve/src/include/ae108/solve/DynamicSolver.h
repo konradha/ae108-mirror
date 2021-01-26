@@ -17,6 +17,7 @@
 
 #include "ae108/assembly/AssemblerTypeTraits.h"
 #include "ae108/cpppetsc/TaggedVector.h"
+#include "ae108/cpppetsc/clone.h"
 #include "ae108/solve/NonlinearSolver.h"
 #include "ae108/solve/dynamics/DynamicState.h"
 #include "ae108/solve/dynamics/NewmarkParameters.h"
@@ -242,12 +243,8 @@ DynamicSolver<Assembler, NonlinearSolver>::computeSolution(
   const auto lhsMatrix = computeLhsMatrix(timestep, mass, damping);
   const auto rhsVector = computeRhsVector(state, timestep, mass, damping);
 
-  state_type newState = {cpppetsc::tag<cpppetsc::DistributedTag>(
-                             vector_type::clone(state.displacements)),
-                         cpppetsc::tag<cpppetsc::DistributedTag>(
-                             vector_type::clone(state.velocities)),
-                         cpppetsc::tag<cpppetsc::DistributedTag>(
-                             vector_type::clone(state.accelerations))};
+  state_type newState = {clone(state.displacements), clone(state.velocities),
+                         clone(state.accelerations)};
 
   const auto &mesh = *_mesh;
   auto localDisplacements = vector_type::fromLocalMesh(mesh);
@@ -313,29 +310,28 @@ DynamicSolver<Assembler, NonlinearSolver>::computeRhsVector(
   //         1 / (beta * dt) * U' +
   //         1 / (2 * beta -1) * U''
   //         )
-  result.addAx(mass, cpppetsc::tag<cpppetsc::DistributedTag>([&]() {
-                 auto vec = vector_type::clone(state.displacements);
-                 vec.timesAlphaPlusBetaXPlusGammaY(
-                     1. / _newmark.beta / timestep / timestep,
-                     1. / _newmark.beta / timestep, state.velocities,
-                     (1. / 2. / _newmark.beta - 1.), state.accelerations);
-                 return vec;
-               }()));
+  result.addAx(mass, [&]() {
+    auto vec = clone(state.displacements);
+    vec.unwrap().timesAlphaPlusBetaXPlusGammaY(
+        1. / _newmark.beta / timestep / timestep, 1. / _newmark.beta / timestep,
+        state.velocities, (1. / 2. / _newmark.beta - 1.), state.accelerations);
+    return vec;
+  }());
 
   // add C * (
   //         gamma / (beta * dt) * U +
   //         (gamma/beta - 1) * U' +
   //         dt * (gamma / (2 * beta) - 1) * U''
   //         )
-  result.addAx(damping, cpppetsc::tag<cpppetsc::DistributedTag>([&]() {
-                 auto vec = vector_type::clone(state.displacements);
-                 vec.timesAlphaPlusBetaXPlusGammaY(
-                     _newmark.gamma / _newmark.beta / timestep,
-                     (_newmark.gamma / _newmark.beta - 1.), state.velocities,
-                     timestep * (_newmark.gamma / 2. / _newmark.beta - 1.),
-                     state.accelerations);
-                 return vec;
-               }()));
+  result.addAx(damping, [&]() {
+    auto vec = clone(state.displacements);
+    vec.unwrap().timesAlphaPlusBetaXPlusGammaY(
+        _newmark.gamma / _newmark.beta / timestep,
+        (_newmark.gamma / _newmark.beta - 1.), state.velocities,
+        timestep * (_newmark.gamma / 2. / _newmark.beta - 1.),
+        state.accelerations);
+    return vec;
+  }());
 
   return cpppetsc::tag<cpppetsc::DistributedTag>(std::move(result));
 }

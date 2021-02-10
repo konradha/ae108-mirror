@@ -35,9 +35,17 @@ public:
   static Viewer fromAsciiFilePath(const char *path);
 
   /**
+   * @brief Used to specify the mode a file is opened with.
+   */
+  enum class Mode {
+    read,
+    write,
+  };
+
+  /**
    * @brief Creates a PetscViewer that writes to an HDF5 file at path.
    */
-  static Viewer fromHdf5FilePath(const char *path);
+  static Viewer fromHdf5FilePath(const char *path, const Mode mode);
 
   /**
    * @brief Creates a Viewer from the provided viewer (takes ownership).
@@ -75,10 +83,14 @@ Viewer<Policy> Viewer<Policy>::fromAsciiFilePath(const char *path) {
 }
 
 template <class Policy>
-Viewer<Policy> Viewer<Policy>::fromHdf5FilePath(const char *path) {
+Viewer<Policy> Viewer<Policy>::fromHdf5FilePath(const char *path,
+                                                const Mode mode) {
   auto viewer = PetscViewer{};
   Policy::handleError(PetscViewerHDF5Open(Policy::communicator(), path,
-                                          FILE_MODE_WRITE, &viewer));
+                                          mode == Mode::write
+                                              ? PetscFileMode::FILE_MODE_WRITE
+                                              : PetscFileMode::FILE_MODE_READ,
+                                          &viewer));
   return Viewer(makeUniqueEntity<Policy>(viewer));
 }
 

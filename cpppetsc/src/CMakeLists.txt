@@ -51,6 +51,7 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./createTransformOutput.cc
             ./createVectorFromSource.cc
             ./getName.cc
+            ./readFromViewer.cc
             ./setName.cc
             ./writeToViewer.cc
 )

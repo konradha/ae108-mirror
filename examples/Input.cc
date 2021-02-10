@@ -17,6 +17,7 @@
 #include "ae108/cpppetsc/Vector.h"
 #include "ae108/cpppetsc/Viewer.h"
 #include "ae108/cpppetsc/createVectorFromSource.h"
+#include "ae108/cpppetsc/readFromViewer.h"
 #include "ae108/cpppetsc/setName.h"
 #include "ae108/cpppetsc/writeToViewer.h"
 #include <algorithm>
@@ -57,21 +58,6 @@ constexpr auto connectivity = Connectivity{{
     {{1, 4, 5, 2}}, // vertices of element B
 }};
 
-// Each of the vertices is located at the following coordinates in physical
-// space.
-
-using VertexPositions =
-    std::array<std::array<Mesh::value_type, coordinate_dimension>,
-               number_of_vertices>;
-constexpr auto vertex_positions = VertexPositions{{
-    {{0., 0., 0.}},
-    {{1., 0., 0.}},
-    {{1., 1., 0.}},
-    {{0., 1., 0.}},
-    {{2., 0., 0.}},
-    {{2., 1., 0.}},
-}};
-
 int main(int argc, char **argv) {
   // PETSc must be initialized before using it.
   Policy::handleError(PetscInitialize(&argc, &argv, NULL, NULL));
@@ -84,45 +70,38 @@ int main(int argc, char **argv) {
         topological_dimension, coordinate_dimension, connectivity,
         number_of_vertices, dof_per_vertex, dof_per_element);
 
-    // Then we create a vector of coordinates from `vertex_positions`.
-    using DataSource = std::function<void(Mesh::size_type, Mesh::value_type *)>;
-    auto coordinates = cpppetsc::createVectorFromSource(
-        mesh, coordinate_dimension,
-        DataSource(
-            [&](const Mesh::size_type index, Mesh::value_type *const out) {
-              const auto &position = vertex_positions.at(index);
-              std::copy(position.begin(), position.end(), out);
-            }));
-    cpppetsc::setName("coordinates", &coordinates);
-
     // Let's create a global vector and fill it with the vertex indices.
-    constexpr auto data_per_vertex = coordinate_dimension + 2;
+    using DataSource = std::function<void(Mesh::size_type, Mesh::value_type *)>;
     auto data = cpppetsc::createVectorFromSource(
-        mesh, data_per_vertex,
+        mesh, dof_per_vertex,
         DataSource(
             [&](const Mesh::size_type index, Mesh::value_type *const out) {
-              std::fill_n(out, data_per_vertex,
+              std::fill_n(out, dof_per_vertex,
                           static_cast<Mesh::value_type>(index));
             }));
     cpppetsc::setName("vertex_index_data", &data);
 
-    // Finally we write the results to "output.ae108".
-    // We start with writing the mesh.
-    auto viewer = Viewer::fromHdf5FilePath("output.ae108", Viewer::Mode::read);
-    cpppetsc::writeToViewer(mesh, coordinates, &viewer);
+    // To be able to compare it with the read vector we print it to the console.
+    data.unwrap().print();
 
-    // Then we write two vector fields of different dimension.
-    cpppetsc::writeToViewer(data, &viewer);        // dimension 5
-    cpppetsc::writeToViewer(coordinates, &viewer); // dimension 3
+    // We write this vector to "input.ae108".
+    {
+      auto viewer =
+          Viewer::fromHdf5FilePath("input.ae108", Viewer::Mode::write);
+      cpppetsc::writeToViewer(data, &viewer);
+    }
 
-    // Note that Paraview supports both "point arrays" and "cell arrays"
-    cpppetsc::writeToViewer(
-        Mesh::vector_type::fromGlobalMesh(mesh.cloneWithDofs(1, 0)), &viewer);
-    cpppetsc::writeToViewer(
-        Mesh::vector_type::fromGlobalMesh(mesh.cloneWithDofs(0, 1)), &viewer);
+    // Finally we read this vector from the file to a new vector called `input`.
+    auto input = Vector::fromGlobalMesh(mesh);
+    {
+      const auto viewer =
+          Viewer::fromHdf5FilePath("input.ae108", Viewer::Mode::read);
+      cpppetsc::setName("vertex_index_data", &input);
+      cpppetsc::readFromViewer(viewer, &input);
+    }
 
-    fprintf(stderr,
-            "The data has been written to the file \"output.ae108\".\n");
+    // We expect the same vector as printed above when printing the result.
+    input.unwrap().print();
   }
   Policy::handleError(PetscFinalize());
 }

@@ -43,3 +43,8 @@ add_executable(${PROJECT_NAME}-Output Output.cc)
 target_link_libraries(${PROJECT_NAME}-Output
                       PRIVATE ae108::cpppetsc
 )
+
+add_executable(${PROJECT_NAME}-Input Input.cc)
+target_link_libraries(${PROJECT_NAME}-Input
+                      PRIVATE ae108::cpppetsc
+)

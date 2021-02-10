@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
 
     // Finally we write the results to "output.ae108".
     // We start with writing the mesh.
-    auto viewer = Viewer::fromHdf5FilePath("output.ae108");
+    auto viewer = Viewer::fromHdf5FilePath("output.ae108", Viewer::Mode::read);
     cpppetsc::writeToViewer(mesh, coordinates, &viewer);
 
     // Then we write two vector fields of different dimension.

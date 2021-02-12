@@ -19,6 +19,8 @@
 #include "ae108/cpppetsc/TaggedVector.h"
 #include "ae108/cpppetsc/Vector.h"
 #include "ae108/cpppetsc/copy.h"
+#include <petscmat.h>
+#include <petscvec.h>
 
 namespace ae108 {
 namespace cpppetsc {

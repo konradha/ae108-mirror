@@ -98,12 +98,12 @@ public:
    *
    * @pre The vector is in the default "Mesh"-based ordering.
    * @post The vector is in the canonical ordering:
-   * [dof 0 for vertex 0, dof 1 for vertex 0, ..., dof 0 for vertex 1, ...,
-   * dof 0 for element 0, dof 1 for element 0, ..., dof 0 for element 1, ...]
+   * [dof 0 for element 0, dof 1 for element 0, ..., dof 0 for element 1, ...,
+   *  dof 0 for vertex 0, dof 1 for vertex 0, ..., dof 0 for vertex 1, ...]
    */
-  static global<Vector> fromDistributedInCanonicalOrder(
-      const distributed<Vector> &vector, const Mesh<Policy> &mesh,
-      const size_type vertexDof, const size_type elementDof = 0);
+  static global<Vector>
+  fromDistributedInCanonicalOrder(const distributed<Vector> &vector,
+                                  const Mesh<Policy> &mesh);
 
   /**
    * @brief Returns a zero initialized vector with the same layout as the
@@ -325,65 +325,8 @@ Vector<Policy>::fromDistributed(const distributed<Vector> &vector) {
 
 template <class Policy>
 global<Vector<Policy>> Vector<Policy>::fromDistributedInCanonicalOrder(
-    const distributed<Vector> &vector, const Mesh<Policy> &mesh,
-    const size_type vertexDof, const size_type elementDof) {
-  const auto localNumberOfVertices = mesh.localNumberOfVertices();
-  const auto totalNumberOfVertices = mesh.totalNumberOfVertices();
-  const auto localNumberOfElements = mesh.localNumberOfElements();
-
-  std::vector<size_type> fromIndices;
-  fromIndices.reserve(vertexDof * localNumberOfVertices +
-                      elementDof * localNumberOfElements);
-  std::vector<size_type> toIndices;
-  toIndices.reserve(fromIndices.size());
-
-  for (const auto &vertex : mesh.localVertices()) {
-    const auto range = vertex.globalDofLineRange();
-    assert(std::abs(range.second - range.first) == vertexDof &&
-           "The number of dofs must be the same for all vertices.");
-
-    for (auto i = range.first; i < range.second; ++i) {
-      fromIndices.push_back(i);
-      toIndices.push_back(vertex.index() * vertexDof + (i - range.first));
-    }
-  }
-  for (const auto &element : mesh.localElements()) {
-    const auto range = element.globalDofLineRange();
-    assert(range.second - range.first == elementDof &&
-           "The number of dofs must be the same for all elements.");
-
-    for (auto i = range.first; i < range.second; ++i) {
-      fromIndices.push_back(i);
-      toIndices.push_back(vertexDof * totalNumberOfVertices +
-                          element.index() * elementDof + (i - range.first));
-    }
-  }
-
-  const auto toGlobalIS = [](const std::vector<size_type> &indices) {
-    const auto isLocal = [&indices]() {
-      auto is = IS();
-      Policy::handleError(ISCreateGeneral(Policy::communicator(),
-                                          indices.size(), indices.data(),
-                                          PETSC_USE_POINTER, &is));
-      return makeUniqueEntity<Policy>(is);
-    }();
-
-    auto isGlobal = IS();
-    ISAllGather(isLocal.get(), &isGlobal);
-    return makeUniqueEntity<Policy>(isGlobal);
-  };
-
-  const auto globalFrom = toGlobalIS(fromIndices);
-  const auto globalTo = toGlobalIS(toIndices);
-
-  auto fullVector = fromDistributed(vector);
-
-  Policy::handleError(
-      VecPermute(fullVector.unwrap().data(), globalFrom.get(), PETSC_FALSE));
-  Policy::handleError(
-      VecPermute(fullVector.unwrap().data(), globalTo.get(), PETSC_TRUE));
-
-  return fullVector;
+    const distributed<Vector> &vector, const Mesh<Policy> &mesh) {
+  return fromDistributed(mesh.toCanonicalOrder(vector));
 }
 
 template <class Policy>

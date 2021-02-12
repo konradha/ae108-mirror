@@ -200,6 +200,50 @@ TYPED_TEST(Mesh_Test, view_for_cloned_mesh_returns_same_vertex_index) {
   }
 }
 
+TYPED_TEST(Mesh_Test, canonical_vectors_are_the_same_for_cloned_mesh) {
+  using size_type = typename TestFixture::size_type;
+  using vector_type = typename TestFixture::vector_type;
+
+  const auto reference = vector_type::fromDistributedInCanonicalOrder(
+      createIndexVector(this->mesh), this->mesh);
+
+  const auto clonedMesh =
+      this->mesh.cloneWithDofs(this->dofPerVertex, this->dofPerElement);
+  const auto result =
+      clonedMesh.toCanonicalOrder(createIndexVector(clonedMesh));
+
+  ASSERT_THAT(result.unwrap().size(), Eq(reference.unwrap().size()));
+  for (size_type i = 0; i < result.unwrap().size(); ++i) {
+    EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(i, reference(i)));
+  }
+}
+
+TYPED_TEST(Mesh_Test, sorting_in_canonical_order_works_for_cloned_mesh) {
+  using vector_type = typename TestFixture::vector_type;
+  using size_type = typename TestFixture::size_type;
+
+  const auto dofPerVertex = size_type{7};
+  const auto dofPerElement = size_type{8};
+
+  const auto clonedMesh = this->mesh.cloneWithDofs(dofPerVertex, dofPerElement);
+
+  const auto globalVector = createIndexVector(clonedMesh);
+  const auto sortedVector = clonedMesh.toCanonicalOrder(globalVector);
+
+  ASSERT_THAT(sortedVector.unwrap(),
+              SizeIs(this->totalNumberOfVertices * dofPerVertex +
+                     this->totalNumberOfElements * dofPerElement));
+  for (size_type i = 0; i < this->totalNumberOfElements * dofPerElement; ++i) {
+    EXPECT_THAT(sortedVector.unwrap(),
+                AlmostEqIfLocal(i, static_cast<double>(i / dofPerElement)));
+  }
+  for (size_type i = 0; i < this->totalNumberOfVertices * dofPerVertex; ++i) {
+    EXPECT_THAT(sortedVector.unwrap(),
+                AlmostEqIfLocal(this->totalNumberOfElements * dofPerElement + i,
+                                static_cast<double>(i / dofPerVertex)));
+  }
+}
+
 TYPED_TEST(Mesh_Test, correct_number_of_local_elements_are_iterated) {
   using size_type = typename TestFixture::size_type;
 
@@ -309,8 +353,8 @@ TYPED_TEST(Mesh_Test, value_can_be_read_from_global_vector) {
   const auto value = value_type{.7};
   vector.unwrap().fill(value);
 
-  const auto fullVector = vector_type::fromDistributedInCanonicalOrder(
-      vector, this->mesh, this->dofPerVertex, this->dofPerElement);
+  const auto fullVector =
+      vector_type::fromDistributedInCanonicalOrder(vector, this->mesh);
 
   const auto reference = this->totalNumberOfVertices * this->dofPerVertex +
                          this->totalNumberOfElements * this->dofPerElement;
@@ -395,25 +439,31 @@ TYPED_TEST(Mesh_Test, adding_to_global_vector_works) {
 
   this->mesh.addToGlobalVector(localVector, &globalVector);
 
-  const auto fullVector = vector_type::fromDistributedInCanonicalOrder(
-      globalVector, this->mesh, this->dofPerVertex, this->dofPerElement);
+  const auto fullVector =
+      vector_type::fromDistributedInCanonicalOrder(globalVector, this->mesh);
 
   ASSERT_THAT(fullVector.unwrap(),
               SizeIs(this->totalNumberOfVertices * this->dofPerVertex +
                      this->totalNumberOfElements * this->dofPerElement));
 
   auto index = size_type{0};
-  for (size_type i = 0; i < this->dofPerVertex; ++i) {
-    EXPECT_THAT(fullVector(index++), Ge(value + value_2));
-  }
-  for (size_type i = 0; i < this->dofPerVertex; ++i) {
+  for (size_type i = 0; i < this->dofPerElement; ++i) {
     EXPECT_THAT(fullVector(index++), DoubleEq(value + value_2));
-  }
-  for (size_type i = 0; i < this->dofPerVertex; ++i) {
-    EXPECT_THAT(fullVector(index++), Ge(value + value_2));
   }
   for (size_type i = 0; i < this->dofPerElement; ++i) {
     EXPECT_THAT(fullVector(index++), DoubleEq(value + value_2));
+  }
+  for (size_type i = 0; i < this->dofPerElement; ++i) {
+    EXPECT_THAT(fullVector(index++), DoubleEq(value + value_2));
+  }
+  for (size_type i = 0; i < this->dofPerVertex; ++i) {
+    EXPECT_THAT(fullVector(index++), Ge(value + value_2));
+  }
+  for (size_type i = 0; i < this->dofPerVertex; ++i) {
+    EXPECT_THAT(fullVector(index++), DoubleEq(value + value_2));
+  }
+  for (size_type i = 0; i < this->dofPerVertex; ++i) {
+    EXPECT_THAT(fullVector(index++), Ge(value + value_2));
   }
 }
 
@@ -431,8 +481,8 @@ TYPED_TEST(Mesh_Test, copying_to_global_vector_works) {
 
   this->mesh.copyToGlobalVector(localVector, &globalVector);
 
-  const auto fullVector = vector_type::fromDistributedInCanonicalOrder(
-      globalVector, this->mesh, this->dofPerVertex, this->dofPerElement);
+  const auto fullVector =
+      vector_type::fromDistributedInCanonicalOrder(globalVector, this->mesh);
 
   ASSERT_THAT(fullVector.unwrap(),
               SizeIs(this->totalNumberOfVertices * this->dofPerVertex +
@@ -606,22 +656,39 @@ TYPED_TEST(Mesh_Test, sorting_in_canonical_order_works) {
   using size_type = typename TestFixture::size_type;
 
   const auto globalVector = createIndexVector(this->mesh);
-  const auto fullVector = vector_type::fromDistributedInCanonicalOrder(
-      globalVector, this->mesh, this->dofPerVertex, this->dofPerElement);
+  const auto sortedVector = this->mesh.toCanonicalOrder(globalVector);
 
-  ASSERT_THAT(fullVector.unwrap(),
+  ASSERT_THAT(sortedVector.unwrap(),
               SizeIs(this->totalNumberOfVertices * this->dofPerVertex +
                      this->totalNumberOfElements * this->dofPerElement));
-  for (size_type i = 0; i < this->totalNumberOfVertices * this->dofPerVertex;
-       ++i) {
-    EXPECT_THAT(fullVector(i),
-                DoubleEq(static_cast<double>(i / this->dofPerVertex)));
-  }
   for (size_type i = 0; i < this->totalNumberOfElements * this->dofPerElement;
        ++i) {
     EXPECT_THAT(
-        fullVector(this->totalNumberOfVertices * this->dofPerVertex + i),
-        DoubleEq(static_cast<double>(i / this->dofPerElement)));
+        sortedVector.unwrap(),
+        AlmostEqIfLocal(i, static_cast<double>(i / this->dofPerElement)));
+  }
+  for (size_type i = 0; i < this->totalNumberOfVertices * this->dofPerVertex;
+       ++i) {
+    EXPECT_THAT(
+        sortedVector.unwrap(),
+        AlmostEqIfLocal(this->totalNumberOfElements * this->dofPerElement + i,
+                        static_cast<double>(i / this->dofPerVertex)));
+  }
+}
+
+TYPED_TEST(Mesh_Test,
+           from_distributed_in_canonical_order_contains_canonical_order_data) {
+  using vector_type = typename TestFixture::vector_type;
+  using size_type = typename TestFixture::size_type;
+
+  const auto globalVector = createIndexVector(this->mesh);
+  const auto reference = this->mesh.toCanonicalOrder(globalVector);
+  const auto fullVector =
+      vector_type::fromDistributedInCanonicalOrder(globalVector, this->mesh);
+
+  ASSERT_THAT(fullVector.unwrap(), SizeIs(reference.unwrap().size()));
+  for (size_type i = 0; i < reference.unwrap().size(); ++i) {
+    EXPECT_THAT(reference.unwrap(), AlmostEqIfLocal(i, fullVector(i)));
   }
 }
 

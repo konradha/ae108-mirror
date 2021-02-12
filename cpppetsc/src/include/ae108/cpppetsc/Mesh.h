@@ -167,6 +167,15 @@ public:
                           distributed<vector_type> *const globalVector) const;
 
   /**
+   * @brief Returns a global vector in canonical row order (the degrees of
+   * freedom of the elements sorted by global index, followed by the degrees of
+   * freedom of the vertices sorted by global index) transformed from the
+   * provided vector in PETSc's row order.
+   */
+  distributed<vector_type>
+  toCanonicalOrder(const distributed<vector_type> &vector) const;
+
+  /**
    * @brief Prints the mesh to stdout.
    */
   void print() const;
@@ -298,6 +307,32 @@ private:
                        matrix_type *const matrix) const;
 
   /**
+   * @brief Returns the layout of a global vector associated with this mesh.
+   */
+  PetscLayout globalVectorLayout() const;
+
+  /**
+   * @brief Returns a vector that contains the canonical row index for every
+   * locally-owned row in a global vector.
+   */
+  std::vector<size_type>
+  canonicalRowIndices(const size_type dofPerVertex,
+                      const size_type dofPerElement) const;
+
+  /**
+   * @brief Computes the transform between PETSc's row order and the order
+   * specified by `targetRows` for locally-owned rows.
+   */
+  UniqueEntity<PetscSF>
+  createReorderingSF(const std::vector<size_type> &targetRows) const;
+
+  /**
+   * @brief Stores `globalToNatural` as the "GlobalToNaturalSF" of the
+   * DM.
+   */
+  void setGlobalToNaturalSF(UniqueEntity<PetscSF> globalToNatural);
+
+  /**
    * @brief Asserts that the vector has been created with this mesh.
    */
   void assertCorrectBaseMesh(const vector_type &vector) const;
@@ -380,7 +415,83 @@ Mesh<Policy> Mesh<Policy>::fromConnectivity(
 
   mesh.addSection(dofPerVertex, dofPerElement);
 
+  mesh.setGlobalToNaturalSF(mesh.createReorderingSF(
+      mesh.canonicalRowIndices(dofPerVertex, dofPerElement)));
+
   return mesh;
+}
+
+template <class Policy> PetscLayout Mesh<Policy>::globalVectorLayout() const {
+  const auto vector = [this] {
+    auto vec = Vec();
+    Policy::handleError(DMGetGlobalVector(_mesh.get(), &vec));
+    return UniqueEntity<Vec>(vec, [&](Vec vec) {
+      Policy::handleError(DMRestoreGlobalVector(_mesh.get(), &vec));
+    });
+  }();
+
+  auto layout = PetscLayout();
+  Policy::handleError(VecGetLayout(vector.get(), &layout));
+  return layout;
+}
+
+template <class Policy>
+std::vector<typename Mesh<Policy>::size_type>
+Mesh<Policy>::canonicalRowIndices(const size_type dofPerVertex,
+                                  const size_type dofPerElement) const {
+  using Range = std::pair<size_type, size_type>;
+
+  const auto localRange = [this] {
+    auto result = Range();
+    Policy::handleError(PetscLayoutGetRange(globalVectorLayout(), &result.first,
+                                            &result.second));
+    return result;
+  }();
+
+  auto result = std::vector<size_type>(localRange.second - localRange.first,
+                                       size_type{-1});
+
+  const auto insert = [&](const Range &range, const size_type offset) {
+    for (auto row = std::max(range.first, localRange.first);
+         row < std::min(range.second, localRange.second); ++row) {
+      const auto dof = row - range.first;
+      result[row - localRange.first] = dof + offset;
+    }
+  };
+
+  for (const auto &element : localElements()) {
+    insert(element.globalDofLineRange(), element.index() * dofPerElement);
+  }
+  for (const auto &vertex : localVertices()) {
+    insert(vertex.globalDofLineRange(), _totalNumberOfElements * dofPerElement +
+                                            vertex.index() * dofPerVertex);
+  }
+
+  return result;
+}
+
+template <class Policy>
+UniqueEntity<PetscSF> Mesh<Policy>::createReorderingSF(
+    const std::vector<size_type> &targetRows) const {
+  const auto inverse = []() {
+    auto result = PetscSF();
+    Policy::handleError(PetscSFCreate(Policy::communicator(), &result));
+    return makeUniqueEntity<Policy>(result);
+  }();
+  Policy::handleError(PetscSFSetGraphLayout(
+      inverse.get(), globalVectorLayout(), targetRows.size(), nullptr,
+      PETSC_USE_POINTER, targetRows.data()));
+  Policy::handleError(PetscSFSetUp(inverse.get()));
+
+  auto result = PetscSF();
+  Policy::handleError(PetscSFCreateInverseSF(inverse.get(), &result));
+  return makeUniqueEntity<Policy>(result);
+}
+
+template <class Policy>
+void Mesh<Policy>::setGlobalToNaturalSF(UniqueEntity<PetscSF> globalToNatural) {
+  Policy::handleError(
+      DMPlexSetGlobalToNaturalSF(_mesh.get(), globalToNatural.release()));
 }
 
 template <class Policy>
@@ -405,6 +516,9 @@ Mesh<Policy> Mesh<Policy>::cloneWithDofs(const size_type dofPerVertex,
   }
 
   mesh.addSection(dofPerVertex, dofPerElement);
+
+  mesh.setGlobalToNaturalSF(mesh.createReorderingSF(
+      mesh.canonicalRowIndices(dofPerVertex, dofPerElement)));
 
   return mesh;
 }
@@ -611,6 +725,21 @@ void Mesh<Policy>::copyToGlobalVector(
   Policy::handleError(
       DMLocalToGlobalEnd(_mesh.get(), localVector.unwrap().data(),
                          INSERT_VALUES, globalVector->unwrap().data()));
+}
+
+template <class Policy>
+distributed<typename Mesh<Policy>::vector_type>
+Mesh<Policy>::toCanonicalOrder(const distributed<vector_type> &vector) const {
+  auto globalToNatural = PetscSF{};
+  Policy::handleError(
+      DMPlexGetGlobalToNaturalSF(_mesh.get(), &globalToNatural));
+
+  auto result = tag<DistributedTag>(Vector<Policy>::fromLayoutOf(vector));
+  Policy::handleError(DMPlexGlobalToNaturalBegin(
+      _mesh.get(), vector.unwrap().data(), result.unwrap().data()));
+  Policy::handleError(DMPlexGlobalToNaturalEnd(
+      _mesh.get(), vector.unwrap().data(), result.unwrap().data()));
+  return result;
 }
 
 template <class Policy>

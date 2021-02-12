@@ -303,7 +303,6 @@ private:
   void assertCorrectBaseMesh(const vector_type &vector) const;
 
   UniqueEntity<DM> _mesh;
-  UniqueEntity<PetscSF> _sf;
   size_type _totalNumberOfElements = 0;
   size_type _totalNumberOfVertices = 0;
 };
@@ -396,13 +395,13 @@ Mesh<Policy> Mesh<Policy>::cloneWithDofs(const size_type dofPerVertex,
     }(_mesh.get());
   }
 
-  if (_sf) {
-    mesh._sf = [](const PetscSF &sf) {
-      auto clonedSF = PetscSF{};
-      Policy::handleError(
-          PetscSFDuplicate(sf, PETSCSF_DUPLICATE_GRAPH, &clonedSF));
-      return makeUniqueEntity<Policy>(clonedSF);
-    }(_sf.get());
+  auto migration = PetscSF();
+  Policy::handleError(DMPlexGetMigrationSF(_mesh.get(), &migration));
+  if (migration) {
+    auto cloned = PetscSF();
+    Policy::handleError(
+        PetscSFDuplicate(migration, PETSCSF_DUPLICATE_GRAPH, &cloned));
+    Policy::handleError(DMPlexSetMigrationSF(mesh._mesh.get(), cloned));
   }
 
   mesh.addSection(dofPerVertex, dofPerElement);
@@ -499,8 +498,8 @@ template <class Policy> void Mesh<Policy>::distributeMesh(Mesh *const mesh) {
   setAdjacencyRules(mesh->_mesh.get());
   Policy::handleError(DMPlexDistribute(mesh->_mesh.get(), 0, &sf, &dm));
   if (dm) {
+    Policy::handleError(DMPlexSetMigrationSF(dm, sf));
     mesh->_mesh.reset(dm);
-    mesh->_sf = makeUniqueEntity<Policy>(sf);
   }
 }
 
@@ -618,15 +617,16 @@ template <class Policy>
 typename Mesh<Policy>::size_type
 Mesh<Policy>::elementPointIndexToGlobalIndex(const size_type pointIndex) const {
   auto globalIndex = size_type{0};
-  if (_sf) {
+  auto migration = PetscSF();
+  Policy::handleError(DMPlexGetMigrationSF(_mesh.get(), &migration));
+  if (migration) {
     const PetscSFNode *nodes = nullptr;
     Policy::handleError(
-        PetscSFGetGraph(_sf.get(), nullptr, nullptr, nullptr, &nodes));
-    globalIndex = nodes[pointIndex].index;
-  } else {
-    globalIndex = pointIndex;
+        PetscSFGetGraph(migration, nullptr, nullptr, nullptr, &nodes));
+    return nodes[pointIndex].index;
   }
-  return globalIndex;
+
+  return pointIndex;
 }
 
 template <class Policy>

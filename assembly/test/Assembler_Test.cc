@@ -119,7 +119,7 @@ template <class Policy> struct Assembler_Test : Test {
    */
   cpppetsc::global<typename mesh_type::vector_type> fullInput() const {
     return mesh_type::vector_type::fromDistributedInCanonicalOrder(
-        globalInput(), mesh, Element::DegreesOfFreedom);
+        globalInput(), mesh);
   }
 };
 
@@ -242,8 +242,8 @@ TYPED_TEST(Assembler_Test, assembling_forces_works) {
   auto globalForces = vector_type::fromGlobalMesh(this->mesh);
   this->mesh.addToGlobalVector(forces, &globalForces);
 
-  const auto result = vector_type::fromDistributedInCanonicalOrder(
-      globalForces, this->mesh, TestFixture::Element::DegreesOfFreedom);
+  const auto result =
+      vector_type::fromDistributedInCanonicalOrder(globalForces, this->mesh);
   ASSERT_THAT(result.unwrap(), SizeIs(this->numberOfNodes));
   EXPECT_THAT(result(0), DoubleEq(1. + 2.));
   EXPECT_THAT(result(1), DoubleEq(3.));

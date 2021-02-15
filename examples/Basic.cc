@@ -195,7 +195,7 @@ int main(int argc, char **argv) {
     // [ vertex-0-dof-0, vertex-0-dof-1, vertex-1-dof-0, vertex-1-dof-1, ...].
 
     const auto global_result =
-        Vector::fromDistributedInCanonicalOrder(result, mesh, dof_per_vertex);
+        Vector::fromDistributedInCanonicalOrder(result, mesh);
 
     // Then we print this global vector only on the primary rank.
     // We expect the degrees of freedom in x direction to be between 0 and .5,

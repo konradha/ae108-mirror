@@ -176,6 +176,15 @@ public:
   toCanonicalOrder(const distributed<vector_type> &vector) const;
 
   /**
+   * @brief Returns a global vector in PETSc's row order transformed from the
+   * provided vector in canonical row order (the degrees of freedom of the
+   * elements sorted by global index, followed by the degrees of freedom of the
+   * vertices sorted by global index).
+   */
+  distributed<vector_type>
+  fromCanonicalOrder(const distributed<vector_type> &vector) const;
+
+  /**
    * @brief Prints the mesh to stdout.
    */
   void print() const;
@@ -738,6 +747,21 @@ Mesh<Policy>::toCanonicalOrder(const distributed<vector_type> &vector) const {
   Policy::handleError(DMPlexGlobalToNaturalBegin(
       _mesh.get(), vector.unwrap().data(), result.unwrap().data()));
   Policy::handleError(DMPlexGlobalToNaturalEnd(
+      _mesh.get(), vector.unwrap().data(), result.unwrap().data()));
+  return result;
+}
+
+template <class Policy>
+distributed<typename Mesh<Policy>::vector_type>
+Mesh<Policy>::fromCanonicalOrder(const distributed<vector_type> &vector) const {
+  auto globalToNatural = PetscSF{};
+  Policy::handleError(
+      DMPlexGetGlobalToNaturalSF(_mesh.get(), &globalToNatural));
+
+  auto result = tag<DistributedTag>(Vector<Policy>::fromLayoutOf(vector));
+  Policy::handleError(DMPlexNaturalToGlobalBegin(
+      _mesh.get(), vector.unwrap().data(), result.unwrap().data()));
+  Policy::handleError(DMPlexNaturalToGlobalEnd(
       _mesh.get(), vector.unwrap().data(), result.unwrap().data()));
   return result;
 }

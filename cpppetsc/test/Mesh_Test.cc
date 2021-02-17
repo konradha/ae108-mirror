@@ -676,6 +676,21 @@ TYPED_TEST(Mesh_Test, sorting_in_canonical_order_works) {
   }
 }
 
+TYPED_TEST(Mesh_Test, sorting_to_canonical_order_and_back_yields_same_vector) {
+  using vector_type = typename TestFixture::vector_type;
+  using size_type = typename TestFixture::size_type;
+
+  const auto globalVector = createIndexVector(this->mesh);
+  const auto result =
+      this->mesh.fromCanonicalOrder(this->mesh.toCanonicalOrder(globalVector));
+  const auto reference = vector_type::fromDistributed(globalVector);
+
+  ASSERT_THAT(result.unwrap(), SizeIs(reference.unwrap().size()));
+  for (size_type i = 0; i < result.unwrap().size(); ++i) {
+    EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(i, reference(i)));
+  }
+}
+
 TYPED_TEST(Mesh_Test,
            from_distributed_in_canonical_order_contains_canonical_order_data) {
   using vector_type = typename TestFixture::vector_type;

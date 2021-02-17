@@ -48,7 +48,7 @@ public:
   static Viewer fromHdf5FilePath(const char *path, const Mode mode);
 
   /**
-   * @brief Creates a PetscViewer that writes to an Binary file at path.
+   * @brief Creates a PetscViewer that writes to a Binary file at path.
    */
   static Viewer fromBinaryFilePath(const char *path, const Mode mode);
 

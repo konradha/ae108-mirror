@@ -48,6 +48,11 @@ public:
   static Viewer fromHdf5FilePath(const char *path, const Mode mode);
 
   /**
+   * @brief Creates a PetscViewer that writes to an Binary file at path.
+   */
+  static Viewer fromBinaryFilePath(const char *path, const Mode mode);
+
+  /**
    * @brief Creates a Viewer from the provided viewer (takes ownership).
    */
   explicit Viewer(UniqueEntity<PetscViewer> viewer);
@@ -91,6 +96,18 @@ Viewer<Policy> Viewer<Policy>::fromHdf5FilePath(const char *path,
                                               ? PetscFileMode::FILE_MODE_WRITE
                                               : PetscFileMode::FILE_MODE_READ,
                                           &viewer));
+  return Viewer(makeUniqueEntity<Policy>(viewer));
+}
+
+template <class Policy>
+Viewer<Policy> Viewer<Policy>::fromBinaryFilePath(const char *path,
+                                                  const Mode mode) {
+  auto viewer = PetscViewer{};
+  Policy::handleError(PetscViewerBinaryOpen(Policy::communicator(), path,
+                                            mode == Mode::write
+                                                ? PetscFileMode::FILE_MODE_WRITE
+                                                : PetscFileMode::FILE_MODE_READ,
+                                            &viewer));
   return Viewer(makeUniqueEntity<Policy>(viewer));
 }
 

@@ -17,6 +17,7 @@
 #include "ae108/assembly/AssemblerTypeTraits.h"
 #include "ae108/assembly/FeaturePlugin.h"
 #include "ae108/assembly/FeaturePlugins.h"
+#include "ae108/assembly/plugins/AssembleConsistentMassMatrixPlugin.h"
 #include "ae108/assembly/plugins/AssembleEnergyPlugin.h"
 #include "ae108/assembly/plugins/AssembleForceVectorPlugin.h"
 #include "ae108/assembly/plugins/AssembleLumpedMassMatrixPlugin.h"
@@ -74,6 +75,7 @@ template <class Policy> struct Assembler_Test : Test {
       plugins::AssembleEnergyPlugin, plugins::AssembleForceVectorPlugin,
       plugins::AssembleStiffnessMatrixPlugin,
       plugins::UpdateInternalVariablesPlugin,
+      plugins::AssembleConsistentMassMatrixPlugin,
       plugins::AssembleLumpedMassMatrixPlugin, SumUpElementIndicesPlugin,
       SumUpElementIndicesPluginNonConst>;
   using AssemblerWithPlugins = Assembler<Element, Plugins, Policy>;
@@ -292,6 +294,30 @@ TYPED_TEST(Assembler_Test, assembling_lumped_mass_matrix_works) {
   }
 
   this->assembler.assembleLumpedMassMatrix(&matrix);
+  matrix.finalize();
+
+  ASSERT_THAT(matrix.size(),
+              Pair(Eq(this->numberOfNodes), Eq(this->numberOfNodes)));
+  EXPECT_THAT(matrix, AlmostEqIfLocal(0, 0, 1. + 2.));
+  EXPECT_THAT(matrix, AlmostEqIfLocal(0, 1, 0.));
+  EXPECT_THAT(matrix, AlmostEqIfLocal(1, 0, 0.));
+  EXPECT_THAT(matrix, AlmostEqIfLocal(1, 1, 3.));
+}
+
+TYPED_TEST(Assembler_Test, assembling_consistent_mass_matrix_works) {
+  using matrix_type = typename TestFixture::mesh_type::matrix_type;
+
+  auto matrix = matrix_type::fromMesh(this->mesh);
+  const auto fullInput = this->fullInput();
+
+  for (const auto &annotatedElement : this->assembler.meshElements()) {
+    const auto elementMatrix = typename TestFixture::Element::StiffnessMatrix(
+        annotatedElement.meshView().index() + 1.);
+    ON_CALL(annotatedElement.instance(), computeConsistentMassMatrix())
+        .WillByDefault(Return(elementMatrix));
+  }
+
+  this->assembler.assembleConsistentMassMatrix(&matrix);
   matrix.finalize();
 
   ASSERT_THAT(matrix.size(),

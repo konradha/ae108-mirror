@@ -19,6 +19,7 @@ add_library(${PROJECT_NAME}-assembly
             ./AssembleEnergyPlugin.cc
             ./AssembleForceVectorPlugin.cc
             ./AssembleLumpedMassMatrixPlugin.cc
+            ./AssembleConsistentMassMatrixPlugin.cc
             ./AssembleStiffnessMatrixPlugin.cc
             ./Assembler.cc
             ./AssemblerGroup.cc

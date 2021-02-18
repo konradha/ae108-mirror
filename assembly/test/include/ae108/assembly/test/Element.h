@@ -43,6 +43,7 @@ struct Element {
   MOCK_CONST_METHOD2(computeStiffnessMatrix,
                      StiffnessMatrix(const NodalDisplacements &, const double));
   MOCK_CONST_METHOD0(computeLumpedMassMatrix, StiffnessMatrix());
+  MOCK_CONST_METHOD0(computeConsistentMassMatrix, StiffnessMatrix());
   MOCK_METHOD2(updateInternalVariables,
                void(const NodalDisplacements &, const double));
 };

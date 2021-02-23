@@ -38,6 +38,10 @@ AE108_ELEMENTS_QUADRATURE_DEFINE_CC(QuadratureType::Cube, 1, 5);
 AE108_ELEMENTS_QUADRATURE_DEFINE_CC(QuadratureType::Cube, 2, 5);
 AE108_ELEMENTS_QUADRATURE_DEFINE_CC(QuadratureType::Cube, 3, 5);
 
+AE108_ELEMENTS_QUADRATURE_DEFINE_CC(QuadratureType::Simplex, 2, 1);
+AE108_ELEMENTS_QUADRATURE_DEFINE_CC(QuadratureType::Simplex, 2, 2);
+AE108_ELEMENTS_QUADRATURE_DEFINE_CC(QuadratureType::Simplex, 2, 3);
+
 } // namespace quadrature
 } // namespace elements
 } // namespace ae108

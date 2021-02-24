@@ -29,6 +29,8 @@ add_executable(${PROJECT_NAME}-ElementsTests
                shape/Hexa8_Test.cc
                shape/Quad4_Test.cc
                shape/Seg2_Test.cc
+               shape/Tri6_Test.cc
+               shape/Tri3_Test.cc
                tensor/Tensor_Test.cc
                tensor/as_matrix_of_columns_Test.cc
                tensor/as_matrix_of_rows_Test.cc

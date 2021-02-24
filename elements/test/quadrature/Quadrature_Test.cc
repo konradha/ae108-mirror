@@ -14,6 +14,7 @@
 
 #include "ae108/elements/quadrature/Quadrature.h"
 #include "ae108/elements/quadrature/integrate.h"
+#include <cmath>
 #include <gmock/gmock.h>
 
 using testing::DoubleEq;
@@ -27,22 +28,47 @@ namespace elements {
 namespace quadrature {
 namespace {
 
+template <std::size_t Dimension_, QuadratureType Type_>
+struct IntegrableFunction;
+
+template <std::size_t Dimension_>
+struct IntegrableFunction<Dimension_, QuadratureType::Cube> {
+  double operator()(const std::size_t order,
+                    const tensor::Tensor<double, Dimension_> &x) noexcept {
+    auto result = double{};
+    for (const auto value : x)
+      result += std::pow(value + 1., order);
+    result /= Dimension_ * std::pow(2., order + Dimension_) / (order + 1.);
+    return result;
+  }
+};
+
+template <std::size_t Dimension_>
+struct IntegrableFunction<Dimension_, QuadratureType::Simplex> {
+  double operator()(const std::size_t order,
+                    const tensor::Tensor<double, Dimension_> &x) noexcept {
+    auto result = double{};
+    for (const auto value : x)
+      result += std::pow(value, order);
+    result /= Dimension_ * tgamma(order + 1.) / tgamma(Dimension_ + order + 1.);
+    return result;
+  }
+};
+
 template <class Configuration> struct Quadrature_Test : Test {
   static constexpr std::size_t Dimension = Configuration::Dimension;
   static constexpr std::size_t Order = Configuration::Order;
+  static constexpr QuadratureType Type = Configuration::Type;
+  using Function = IntegrableFunction<Dimension, Type>;
 
   /**
    * @brief Returns a test polynomial of the given order evaluated at x. The
-   * integral of this polynomial is 2^dimension.
+   * integral of this polynomial is 1.
    */
   static double
-  polynomial_of_order_at(std::size_t order,
+  polynomial_of_order_at(const std::size_t order,
                          const tensor::Tensor<double, Dimension> &x) noexcept {
-    auto result = 1.;
-    for (const auto value : x)
-      result *=
-          std::pow(value + 1., order) * (order + 1.) / std::pow(2., order);
-    return result;
+    return Function{}(order, x);
   }
 };
 
@@ -57,10 +83,10 @@ TYPED_TEST_P(Quadrature_Test,
   };
 
   const auto result =
-      integrate<Quadrature<QuadratureType::Cube, TestFixture::Dimension,
+      integrate<Quadrature<TestFixture::Type, TestFixture::Dimension,
                            TestFixture::Order>>(f, 0.);
 
-  EXPECT_THAT(result, DoubleNear(std::pow(2., TestFixture::Dimension), 1e-13));
+  EXPECT_THAT(result, DoubleNear(1., 1e-13));
 }
 
 TYPED_TEST_P(Quadrature_Test, integrates_2n_order_polynomial_incorrectly) {
@@ -71,28 +97,42 @@ TYPED_TEST_P(Quadrature_Test, integrates_2n_order_polynomial_incorrectly) {
   };
 
   const auto result =
-      integrate<Quadrature<QuadratureType::Cube, TestFixture::Dimension,
+      integrate<Quadrature<TestFixture::Type, TestFixture::Dimension,
                            TestFixture::Order>>(f, 0.);
 
-  EXPECT_THAT(result,
-              Not(DoubleNear(std::pow(2., TestFixture::Dimension), 1e-13)));
+  EXPECT_THAT(result, Not(DoubleNear(1., 1e-13)));
 }
 
 REGISTER_TYPED_TEST_CASE_P(Quadrature_Test,
                            integrates_2n_minus_1_order_polynomial_correctly,
                            integrates_2n_order_polynomial_incorrectly);
 
-template <std::size_t Dimension_, std::size_t Order_> struct Configuration {
+template <std::size_t Dimension_, std::size_t Order_, QuadratureType Type_>
+struct Configuration {
   static constexpr std::size_t Dimension = Dimension_;
   static constexpr std::size_t Order = Order_;
+  static constexpr QuadratureType Type = Type_;
 };
 
-using Configurations =
-    Types<Configuration<1, 1>, Configuration<2, 1>, Configuration<3, 1>,
-          Configuration<1, 2>, Configuration<2, 2>, Configuration<3, 2>,
-          Configuration<1, 3>, Configuration<2, 3>, Configuration<3, 3>,
-          Configuration<1, 4>, Configuration<2, 4>, Configuration<3, 4>,
-          Configuration<1, 5>, Configuration<2, 5>, Configuration<3, 5>>;
+using Configurations = Types<Configuration<1, 1, QuadratureType::Cube>,
+                             Configuration<2, 1, QuadratureType::Cube>,
+                             Configuration<3, 1, QuadratureType::Cube>,
+                             Configuration<1, 2, QuadratureType::Cube>,
+                             Configuration<2, 2, QuadratureType::Cube>,
+                             Configuration<3, 2, QuadratureType::Cube>,
+                             Configuration<1, 3, QuadratureType::Cube>,
+                             Configuration<2, 3, QuadratureType::Cube>,
+                             Configuration<3, 3, QuadratureType::Cube>,
+                             Configuration<1, 4, QuadratureType::Cube>,
+                             Configuration<2, 4, QuadratureType::Cube>,
+                             Configuration<3, 4, QuadratureType::Cube>,
+                             Configuration<1, 5, QuadratureType::Cube>,
+                             Configuration<2, 5, QuadratureType::Cube>,
+                             Configuration<3, 5, QuadratureType::Cube>,
+                             Configuration<3, 5, QuadratureType::Cube>,
+                             Configuration<2, 1, QuadratureType::Simplex>,
+                             Configuration<2, 2, QuadratureType::Simplex>,
+                             Configuration<2, 3, QuadratureType::Simplex>>;
 INSTANTIATE_TYPED_TEST_CASE_P(Quadrature_Test, Quadrature_Test, Configurations);
 
 struct Quadrature_1D_Test : Test {

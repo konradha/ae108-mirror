@@ -517,6 +517,7 @@ AE108_ELEMENTS_QUADRATURE_DEFINE(
        +0.0132997364206326, +0.0268675087653718, +0.0319342073528483,
        +0.0268675087653718, +0.0132997364206326}}});
 
+// see Cook et. al (2002), "Concepts and applications of Finite Element Analysis", 4th ed., p.267
 AE108_ELEMENTS_QUADRATURE_DEFINE(
     QuadratureType::Simplex, 2, 1, 1,
     {{{
@@ -524,6 +525,7 @@ AE108_ELEMENTS_QUADRATURE_DEFINE(
      }},
      {{+0.5000000000000000}}});
 
+// see Cook et. al (2002), "Concepts and applications of Finite Element Analysis", 4th ed., p.267
 AE108_ELEMENTS_QUADRATURE_DEFINE(
     QuadratureType::Simplex, 2, 2, 3,
     {{{
@@ -533,6 +535,7 @@ AE108_ELEMENTS_QUADRATURE_DEFINE(
      }},
      {{+0.1666666666666667, +0.1666666666666667, +0.1666666666666667}}});
 
+// see Cook et. al (2002), "Concepts and applications of Finite Element Analysis", 4th ed., p.267
 AE108_ELEMENTS_QUADRATURE_DEFINE(
     QuadratureType::Simplex, 2, 3, 4,
     {{{

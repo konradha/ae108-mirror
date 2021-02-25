@@ -74,8 +74,7 @@ template <class Configuration> struct Quadrature_Test : Test {
 
 TYPED_TEST_CASE_P(Quadrature_Test);
 
-TYPED_TEST_P(Quadrature_Test,
-             integrates_maximum_order_polynomial_correctly) {
+TYPED_TEST_P(Quadrature_Test, integrates_maximum_order_polynomial_correctly) {
   constexpr auto maximum_order = TestFixture::Order;
   const auto f = [&](std::size_t,
                      const tensor::Tensor<double, TestFixture::Dimension> &x) {
@@ -89,7 +88,8 @@ TYPED_TEST_P(Quadrature_Test,
   EXPECT_THAT(result, DoubleNear(1., 1e-13));
 }
 
-TYPED_TEST_P(Quadrature_Test, integrates_maximum_plus_1_order_polynomial_incorrectly) {
+TYPED_TEST_P(Quadrature_Test,
+             integrates_maximum_plus_1_order_polynomial_incorrectly) {
   constexpr auto too_high_order = std::size_t{TestFixture::Order + 1};
   const auto f = [&](std::size_t,
                      const tensor::Tensor<double, TestFixture::Dimension> &x) {
@@ -103,35 +103,35 @@ TYPED_TEST_P(Quadrature_Test, integrates_maximum_plus_1_order_polynomial_incorre
   EXPECT_THAT(result, Not(DoubleNear(1., 1e-13)));
 }
 
-REGISTER_TYPED_TEST_CASE_P(Quadrature_Test,
-                           integrates_maximum_order_polynomial_correctly,
-                           integrates_maximum_plus_1_order_polynomial_incorrectly);
+REGISTER_TYPED_TEST_CASE_P(
+    Quadrature_Test, integrates_maximum_order_polynomial_correctly,
+    integrates_maximum_plus_1_order_polynomial_incorrectly);
 
-template <std::size_t Dimension_, std::size_t Order_, QuadratureType Type_>
+template <QuadratureType Type_, std::size_t Dimension_, std::size_t Order_>
 struct Configuration {
   static constexpr std::size_t Dimension = Dimension_;
   static constexpr std::size_t Order = Order_;
   static constexpr QuadratureType Type = Type_;
 };
 
-using Configurations = Types<Configuration<1, 1, QuadratureType::Cube>,
-                             Configuration<2, 1, QuadratureType::Cube>,
-                             Configuration<3, 1, QuadratureType::Cube>,
-                             Configuration<1, 3, QuadratureType::Cube>,
-                             Configuration<2, 3, QuadratureType::Cube>,
-                             Configuration<3, 3, QuadratureType::Cube>,
-                             Configuration<1, 5, QuadratureType::Cube>,
-                             Configuration<2, 5, QuadratureType::Cube>,
-                             Configuration<3, 5, QuadratureType::Cube>,
-                             Configuration<1, 7, QuadratureType::Cube>,
-                             Configuration<2, 7, QuadratureType::Cube>,
-                             Configuration<3, 7, QuadratureType::Cube>,
-                             Configuration<1, 9, QuadratureType::Cube>,
-                             Configuration<2, 9, QuadratureType::Cube>,
-                             Configuration<3, 9, QuadratureType::Cube>,
-                             Configuration<2, 1, QuadratureType::Simplex>,
-                             Configuration<2, 2, QuadratureType::Simplex>,
-                             Configuration<2, 3, QuadratureType::Simplex>>;
+using Configurations = Types<Configuration<QuadratureType::Cube, 1, 1>,
+                             Configuration<QuadratureType::Cube, 2, 1>,
+                             Configuration<QuadratureType::Cube, 3, 1>,
+                             Configuration<QuadratureType::Cube, 1, 3>,
+                             Configuration<QuadratureType::Cube, 2, 3>,
+                             Configuration<QuadratureType::Cube, 3, 3>,
+                             Configuration<QuadratureType::Cube, 1, 5>,
+                             Configuration<QuadratureType::Cube, 2, 5>,
+                             Configuration<QuadratureType::Cube, 3, 5>,
+                             Configuration<QuadratureType::Cube, 1, 7>,
+                             Configuration<QuadratureType::Cube, 2, 7>,
+                             Configuration<QuadratureType::Cube, 3, 7>,
+                             Configuration<QuadratureType::Cube, 1, 9>,
+                             Configuration<QuadratureType::Cube, 2, 9>,
+                             Configuration<QuadratureType::Cube, 3, 9>,
+                             Configuration<QuadratureType::Simplex, 2, 1>,
+                             Configuration<QuadratureType::Simplex, 2, 2>,
+                             Configuration<QuadratureType::Simplex, 2, 3>>;
 INSTANTIATE_TYPED_TEST_CASE_P(Quadrature_Test, Quadrature_Test, Configurations);
 
 struct Quadrature_1D_Test : Test {

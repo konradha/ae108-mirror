@@ -75,8 +75,8 @@ template <class Configuration> struct Quadrature_Test : Test {
 TYPED_TEST_CASE_P(Quadrature_Test);
 
 TYPED_TEST_P(Quadrature_Test,
-             integrates_2n_minus_1_order_polynomial_correctly) {
-  constexpr auto maximum_order = std::size_t{2 * TestFixture::Order - 1};
+             integrates_maximum_order_polynomial_correctly) {
+  constexpr auto maximum_order = TestFixture::Order;
   const auto f = [&](std::size_t,
                      const tensor::Tensor<double, TestFixture::Dimension> &x) {
     return this->polynomial_of_order_at(maximum_order, x);
@@ -89,8 +89,8 @@ TYPED_TEST_P(Quadrature_Test,
   EXPECT_THAT(result, DoubleNear(1., 1e-13));
 }
 
-TYPED_TEST_P(Quadrature_Test, integrates_2n_order_polynomial_incorrectly) {
-  constexpr auto too_high_order = std::size_t{2 * TestFixture::Order};
+TYPED_TEST_P(Quadrature_Test, integrates_maximum_plus_1_order_polynomial_incorrectly) {
+  constexpr auto too_high_order = std::size_t{TestFixture::Order + 1};
   const auto f = [&](std::size_t,
                      const tensor::Tensor<double, TestFixture::Dimension> &x) {
     return this->polynomial_of_order_at(too_high_order, x);
@@ -104,8 +104,8 @@ TYPED_TEST_P(Quadrature_Test, integrates_2n_order_polynomial_incorrectly) {
 }
 
 REGISTER_TYPED_TEST_CASE_P(Quadrature_Test,
-                           integrates_2n_minus_1_order_polynomial_correctly,
-                           integrates_2n_order_polynomial_incorrectly);
+                           integrates_maximum_order_polynomial_correctly,
+                           integrates_maximum_plus_1_order_polynomial_incorrectly);
 
 template <std::size_t Dimension_, std::size_t Order_, QuadratureType Type_>
 struct Configuration {
@@ -117,19 +117,18 @@ struct Configuration {
 using Configurations = Types<Configuration<1, 1, QuadratureType::Cube>,
                              Configuration<2, 1, QuadratureType::Cube>,
                              Configuration<3, 1, QuadratureType::Cube>,
-                             Configuration<1, 2, QuadratureType::Cube>,
-                             Configuration<2, 2, QuadratureType::Cube>,
-                             Configuration<3, 2, QuadratureType::Cube>,
                              Configuration<1, 3, QuadratureType::Cube>,
                              Configuration<2, 3, QuadratureType::Cube>,
                              Configuration<3, 3, QuadratureType::Cube>,
-                             Configuration<1, 4, QuadratureType::Cube>,
-                             Configuration<2, 4, QuadratureType::Cube>,
-                             Configuration<3, 4, QuadratureType::Cube>,
                              Configuration<1, 5, QuadratureType::Cube>,
                              Configuration<2, 5, QuadratureType::Cube>,
                              Configuration<3, 5, QuadratureType::Cube>,
-                             Configuration<3, 5, QuadratureType::Cube>,
+                             Configuration<1, 7, QuadratureType::Cube>,
+                             Configuration<2, 7, QuadratureType::Cube>,
+                             Configuration<3, 7, QuadratureType::Cube>,
+                             Configuration<1, 9, QuadratureType::Cube>,
+                             Configuration<2, 9, QuadratureType::Cube>,
+                             Configuration<3, 9, QuadratureType::Cube>,
                              Configuration<2, 1, QuadratureType::Simplex>,
                              Configuration<2, 2, QuadratureType::Simplex>,
                              Configuration<2, 3, QuadratureType::Simplex>>;
@@ -158,7 +157,7 @@ TEST_F(Quadrature_1D_Test, passes_on_ids) {
   };
 
   const auto result =
-      integrate<Quadrature<QuadratureType::Cube, Dimension, 2>>(f, 0.);
+      integrate<Quadrature<QuadratureType::Cube, Dimension, 3>>(f, 0.);
 
   EXPECT_THAT(result, DoubleEq((1. + 0.) + (1. + 1.)));
 }
@@ -169,7 +168,7 @@ TEST_F(Quadrature_1D_Test, adds_to_initial_value) {
   };
 
   const auto result =
-      integrate<Quadrature<QuadratureType::Cube, Dimension, 2>>(f, 7.);
+      integrate<Quadrature<QuadratureType::Cube, Dimension, 3>>(f, 7.);
 
   EXPECT_THAT(result, DoubleEq(2. * 1. + 7.));
 }

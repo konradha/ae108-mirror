@@ -24,6 +24,8 @@ namespace ae108 {
 namespace elements {
 namespace shape {
 
+// refer to Cook et. al (2002), "Concepts and applications of Finite Element
+// Analysis", 4th ed., p.265
 struct Tri6 : ShapeBase<std::size_t, double, 2, 6> {};
 
 AE108_ELEMENTS_SHAPE_DEFINE_VALUE(Tri6, {{

@@ -48,3 +48,10 @@ add_executable(${PROJECT_NAME}-Input Input.cc)
 target_link_libraries(${PROJECT_NAME}-Input
                       PRIVATE ae108::cpppetsc
 )
+
+add_executable(${PROJECT_NAME}-QuadraticTriangles QuadraticTriangles.cc)
+target_link_libraries(${PROJECT_NAME}-QuadraticTriangles
+                      PRIVATE ae108::solve
+                      PRIVATE ae108::assembly
+                      PRIVATE ae108::elements
+)

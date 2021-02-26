@@ -28,6 +28,8 @@ enum class QuadratureType { Cube, Simplex };
 
 /**
  * @brief Contains a static member "data" that contains the points and weights.
+ * @tparam Order_ The maximum order of a polynomial that the quadrature rule
+ * integrates exactly.
  * @remark Derives from QuadratureBase.
  */
 template <QuadratureType Type_, std::size_t Dimension_, std::size_t Order_>
@@ -61,7 +63,7 @@ AE108_ELEMENTS_QUADRATURE_DEFINE(
      }},
      {{+8.0000000000000000}}});
 
-AE108_ELEMENTS_QUADRATURE_DEFINE(QuadratureType::Cube, 1, 2, 2,
+AE108_ELEMENTS_QUADRATURE_DEFINE(QuadratureType::Cube, 1, 3, 2,
                                  {{{
                                       {{-0.5773502691896257}},
                                       {{+0.5773502691896257}},
@@ -70,7 +72,7 @@ AE108_ELEMENTS_QUADRATURE_DEFINE(QuadratureType::Cube, 1, 2, 2,
                                     +1.0000000000000000}}});
 
 AE108_ELEMENTS_QUADRATURE_DEFINE(
-    QuadratureType::Cube, 2, 2, 4,
+    QuadratureType::Cube, 2, 3, 4,
     {{{
          {{-0.5773502691896257, -0.5773502691896257}},
          {{-0.5773502691896257, +0.5773502691896257}},
@@ -81,7 +83,7 @@ AE108_ELEMENTS_QUADRATURE_DEFINE(
        +1.0000000000000000}}});
 
 AE108_ELEMENTS_QUADRATURE_DEFINE(
-    QuadratureType::Cube, 3, 2, 8,
+    QuadratureType::Cube, 3, 3, 8,
     {{{
          {{-0.5773502691896257, -0.5773502691896257, -0.5773502691896257}},
          {{-0.5773502691896257, -0.5773502691896257, +0.5773502691896257}},
@@ -96,7 +98,7 @@ AE108_ELEMENTS_QUADRATURE_DEFINE(
        +1.0000000000000000, +1.0000000000000000, +1.0000000000000000,
        +1.0000000000000000, +1.0000000000000000}}});
 
-AE108_ELEMENTS_QUADRATURE_DEFINE(QuadratureType::Cube, 1, 3, 3,
+AE108_ELEMENTS_QUADRATURE_DEFINE(QuadratureType::Cube, 1, 5, 3,
                                  {{{
                                       {{-0.7745966692414834}},
                                       {{+0.0000000000000000}},
@@ -106,7 +108,7 @@ AE108_ELEMENTS_QUADRATURE_DEFINE(QuadratureType::Cube, 1, 3, 3,
                                     +0.5555555555555556}}});
 
 AE108_ELEMENTS_QUADRATURE_DEFINE(
-    QuadratureType::Cube, 2, 3, 9,
+    QuadratureType::Cube, 2, 5, 9,
     {{{
          {{-0.7745966692414834, -0.7745966692414834}},
          {{-0.7745966692414834, +0.0000000000000000}},
@@ -123,7 +125,7 @@ AE108_ELEMENTS_QUADRATURE_DEFINE(
        +0.3086419753086420, +0.4938271604938271, +0.3086419753086420}}});
 
 AE108_ELEMENTS_QUADRATURE_DEFINE(
-    QuadratureType::Cube, 3, 3, 27,
+    QuadratureType::Cube, 3, 5, 27,
     {{{
          {{-0.7745966692414834, -0.7745966692414834, -0.7745966692414834}},
          {{-0.7745966692414834, -0.7745966692414834, +0.0000000000000000}},
@@ -163,7 +165,7 @@ AE108_ELEMENTS_QUADRATURE_DEFINE(
        +0.2743484224965707, +0.4389574759945130, +0.2743484224965707,
        +0.1714677640603567, +0.2743484224965707, +0.1714677640603567}}});
 
-AE108_ELEMENTS_QUADRATURE_DEFINE(QuadratureType::Cube, 1, 4, 4,
+AE108_ELEMENTS_QUADRATURE_DEFINE(QuadratureType::Cube, 1, 7, 4,
                                  {{{
                                       {{-0.8611363115940526}},
                                       {{-0.3399810435848563}},
@@ -175,7 +177,7 @@ AE108_ELEMENTS_QUADRATURE_DEFINE(QuadratureType::Cube, 1, 4, 4,
                                     +0.3478548451374538}}});
 
 AE108_ELEMENTS_QUADRATURE_DEFINE(
-    QuadratureType::Cube, 2, 4, 16,
+    QuadratureType::Cube, 2, 7, 16,
     {{{
          {{-0.8611363115940526, -0.8611363115940526}},
          {{-0.8611363115940526, -0.3399810435848563}},
@@ -202,7 +204,7 @@ AE108_ELEMENTS_QUADRATURE_DEFINE(
        +0.1210029932856020}}});
 
 AE108_ELEMENTS_QUADRATURE_DEFINE(
-    QuadratureType::Cube, 3, 4, 64,
+    QuadratureType::Cube, 3, 7, 64,
     {{{
          {{-0.8611363115940526, -0.8611363115940526, -0.8611363115940526}},
          {{-0.8611363115940526, -0.8611363115940526, -0.3399810435848563}},
@@ -292,7 +294,7 @@ AE108_ELEMENTS_QUADRATURE_DEFINE(
        +0.0420914774905315, +0.0789115157950706, +0.0789115157950706,
        +0.0420914774905315}}});
 
-AE108_ELEMENTS_QUADRATURE_DEFINE(QuadratureType::Cube, 1, 5, 5,
+AE108_ELEMENTS_QUADRATURE_DEFINE(QuadratureType::Cube, 1, 9, 5,
                                  {{{
                                       {{-0.9061798459386640}},
                                       {{-0.5384693101056831}},
@@ -305,7 +307,7 @@ AE108_ELEMENTS_QUADRATURE_DEFINE(QuadratureType::Cube, 1, 5, 5,
                                     +0.2369268850561891}}});
 
 AE108_ELEMENTS_QUADRATURE_DEFINE(
-    QuadratureType::Cube, 2, 5, 25,
+    QuadratureType::Cube, 2, 9, 25,
     {{{
          {{-0.9061798459386640, -0.9061798459386640}},
          {{-0.9061798459386640, -0.5384693101056831}},
@@ -344,7 +346,7 @@ AE108_ELEMENTS_QUADRATURE_DEFINE(
        +0.0561343488624286}}});
 
 AE108_ELEMENTS_QUADRATURE_DEFINE(
-    QuadratureType::Cube, 3, 5, 125,
+    QuadratureType::Cube, 3, 9, 125,
     {{{
          {{-0.9061798459386640, -0.9061798459386640, -0.9061798459386640}},
          {{-0.9061798459386640, -0.9061798459386640, -0.5384693101056831}},
@@ -514,6 +516,39 @@ AE108_ELEMENTS_QUADRATURE_DEFINE(
        +0.0645120000000000, +0.0542764912346282, +0.0268675087653718,
        +0.0132997364206326, +0.0268675087653718, +0.0319342073528483,
        +0.0268675087653718, +0.0132997364206326}}});
+
+// see Cook et. al (2002), "Concepts and applications of Finite Element
+// Analysis", 4th ed., p.267
+AE108_ELEMENTS_QUADRATURE_DEFINE(
+    QuadratureType::Simplex, 2, 1, 1,
+    {{{
+         {{+0.3333333333333333, +0.3333333333333333}},
+     }},
+     {{+0.5000000000000000}}});
+
+// see Cook et. al (2002), "Concepts and applications of Finite Element
+// Analysis", 4th ed., p.267
+AE108_ELEMENTS_QUADRATURE_DEFINE(
+    QuadratureType::Simplex, 2, 2, 3,
+    {{{
+         {{+0.6666666666666667, +0.1666666666666667}},
+         {{+0.1666666666666667, +0.1666666666666667}},
+         {{+0.1666666666666667, +0.6666666666666667}},
+     }},
+     {{+0.1666666666666667, +0.1666666666666667, +0.1666666666666667}}});
+
+// see Cook et. al (2002), "Concepts and applications of Finite Element
+// Analysis", 4th ed., p.267
+AE108_ELEMENTS_QUADRATURE_DEFINE(
+    QuadratureType::Simplex, 2, 3, 4,
+    {{{
+         {{+0.3333333333333333, +0.3333333333333333}},
+         {{+0.6000000000000000, +0.2000000000000000}},
+         {{+0.2000000000000000, +0.2000000000000000}},
+         {{+0.2000000000000000, +0.6000000000000000}},
+     }},
+     {{-0.2812500000000000, +0.2604166666666667, +0.2604166666666667,
+       +0.2604166666666667}}});
 
 template <QuadratureType Type_, std::size_t Dimension_, std::size_t Order_>
 struct IntegrateTrait<Quadrature<Type_, Dimension_, Order_>> {

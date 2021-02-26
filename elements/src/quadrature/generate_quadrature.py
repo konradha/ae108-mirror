@@ -152,7 +152,7 @@ def quadrature_definition(order: int, dimension: int) -> str:
         "QuadratureType::Cube, {}, {}, {}, {{{}, {}}}"
         ");".format(
             dimension,
-            order,
+            2 * order - 1,
             len(nodes),
             to_initializer_list(nodes),
             to_initializer_list(weights),

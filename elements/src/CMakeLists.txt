@@ -70,6 +70,7 @@ add_library(${PROJECT_NAME}-elements
             shape/Quad4.cc
             shape/Seg2.cc
             shape/Tri3.cc
+            shape/Tri6.cc
             shape/ShapeBase.cc
             shape/ValueTrait.cc
             shape/automatic_gradients.cc

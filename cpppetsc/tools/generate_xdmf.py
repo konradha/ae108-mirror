@@ -79,6 +79,8 @@ def number_of_corners_to_type(
     'Triangle'
     >>> number_of_corners_to_type(4, 2)
     'Quadrilateral'
+    >>> number_of_corners_to_type(6, 2)
+    'Tri_6'
     >>> number_of_corners_to_type(2, 2)
     Traceback (most recent call last):
     generate_xdmf.UnsupportedElementType
@@ -104,6 +106,7 @@ def number_of_corners_to_type(
             2: {
                 3: "Triangle",
                 4: "Quadrilateral",
+                6: "Tri_6",
             },
             3: {
                 4: "Tetrahedron",

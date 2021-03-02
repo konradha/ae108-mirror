@@ -42,6 +42,11 @@ AE108_ELEMENTS_QUADRATURE_DEFINE_CC(QuadratureType::Simplex, 2, 1);
 AE108_ELEMENTS_QUADRATURE_DEFINE_CC(QuadratureType::Simplex, 2, 2);
 AE108_ELEMENTS_QUADRATURE_DEFINE_CC(QuadratureType::Simplex, 2, 3);
 
+AE108_ELEMENTS_QUADRATURE_DEFINE_CC(QuadratureType::Simplex, 3, 1);
+AE108_ELEMENTS_QUADRATURE_DEFINE_CC(QuadratureType::Simplex, 3, 2);
+AE108_ELEMENTS_QUADRATURE_DEFINE_CC(QuadratureType::Simplex, 3, 3);
+AE108_ELEMENTS_QUADRATURE_DEFINE_CC(QuadratureType::Simplex, 3, 4);
+
 } // namespace quadrature
 } // namespace elements
 } // namespace ae108

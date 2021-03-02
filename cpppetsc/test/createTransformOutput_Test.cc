@@ -49,6 +49,18 @@ TYPED_TEST(createTransformOutput_Test, vector_has_correct_size) {
   EXPECT_THAT(result.unwrap(), SizeIs(rows));
 }
 
+TYPED_TEST(createTransformOutput_Test, vector_has_zero_norm) {
+  using size_type = typename TestFixture::size_type;
+  using matrix_type = typename TestFixture::matrix_type;
+
+  const auto rows = size_type{3};
+  const auto cols = size_type{7};
+  const auto matrix = matrix_type(rows, cols);
+
+  const auto result = createTransformOutput(matrix);
+  EXPECT_THAT(result.unwrap().norm(), DoubleEq(0.));
+}
+
 TYPED_TEST(createTransformOutput_Test, multiplication_works) {
   using matrix_type = typename TestFixture::matrix_type;
   using size_type = typename TestFixture::size_type;

@@ -69,6 +69,7 @@ add_library(${PROJECT_NAME}-elements
             shape/PointTrait.cc
             shape/Quad4.cc
             shape/Seg2.cc
+            shape/Tet10.cc
             shape/Tri3.cc
             shape/Tri6.cc
             shape/ShapeBase.cc

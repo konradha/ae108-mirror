@@ -25,13 +25,16 @@ namespace cpppetsc {
 
 /**
  * @brief Creates a vector that can be multiplied with the provided matrix.
+ * It is initialized with zeroes.
  */
 template <class Policy>
 distributed<Vector<Policy>>
 createTransformInput(const Matrix<Policy> &transform) {
   auto in = Vec{};
   Policy::handleError(MatCreateVecs(transform.data(), &in, nullptr));
-  return distributed<Vector<Policy>>(makeUniqueEntity<Policy>(in));
+  auto result = distributed<Vector<Policy>>(makeUniqueEntity<Policy>(in));
+  result.unwrap().setZero();
+  return result;
 }
 
 extern template distributed<Vector<SequentialComputePolicy>>

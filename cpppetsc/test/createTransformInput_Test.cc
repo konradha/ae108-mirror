@@ -18,6 +18,7 @@
 #include "ae108/cpppetsc/createTransformInput.h"
 #include <gmock/gmock.h>
 
+using testing::DoubleEq;
 using testing::SizeIs;
 using testing::Test;
 using testing::Types;
@@ -44,6 +45,18 @@ TYPED_TEST(createTransformInput_Test, vector_has_correct_size) {
 
   const auto result = createTransformInput(matrix);
   EXPECT_THAT(result.unwrap(), SizeIs(cols));
+}
+
+TYPED_TEST(createTransformInput_Test, vector_has_zero_norm) {
+  using size_type = typename TestFixture::size_type;
+  using matrix_type = typename TestFixture::matrix_type;
+
+  const auto rows = size_type{3};
+  const auto cols = size_type{7};
+  const auto matrix = matrix_type(rows, cols);
+
+  const auto result = createTransformInput(matrix);
+  EXPECT_THAT(result.unwrap().norm(), DoubleEq(0.));
 }
 
 } // namespace cpppetsc

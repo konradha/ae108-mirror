@@ -131,7 +131,11 @@ using Configurations = Types<Configuration<QuadratureType::Cube, 1, 1>,
                              Configuration<QuadratureType::Cube, 3, 9>,
                              Configuration<QuadratureType::Simplex, 2, 1>,
                              Configuration<QuadratureType::Simplex, 2, 2>,
-                             Configuration<QuadratureType::Simplex, 2, 3>>;
+                             Configuration<QuadratureType::Simplex, 2, 3>,
+                             Configuration<QuadratureType::Simplex, 3, 1>,
+                             Configuration<QuadratureType::Simplex, 3, 2>,
+                             Configuration<QuadratureType::Simplex, 3, 3>,
+                             Configuration<QuadratureType::Simplex, 3, 4>>;
 INSTANTIATE_TYPED_TEST_CASE_P(Quadrature_Test, Quadrature_Test, Configurations);
 
 struct Quadrature_1D_Test : Test {

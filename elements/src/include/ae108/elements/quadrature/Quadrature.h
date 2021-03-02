@@ -550,6 +550,130 @@ AE108_ELEMENTS_QUADRATURE_DEFINE(
      {{-0.2812500000000000, +0.2604166666666667, +0.2604166666666667,
        +0.2604166666666667}}});
 
+// see G. Dhatt, G. Touzot, E. Lefrançois, "Finite Element Method"
+// ISTE Ltd, London, 2012, p. 370
+AE108_ELEMENTS_QUADRATURE_DEFINE(QuadratureType::Simplex, 3, 1, 1,
+                                 {
+                                     {{
+                                         {{
+                                             1. / 4.,
+                                             1. / 4.,
+                                             1. / 4.,
+                                         }},
+                                     }},
+                                     {{1. / 6.}},
+                                 });
+
+// see G. Dhatt, G. Touzot, E. Lefrançois, "Finite Element Method"
+// ISTE Ltd, London, 2012, p. 370
+AE108_ELEMENTS_QUADRATURE_DEFINE(QuadratureType::Simplex, 3, 2, 4,
+                                 {
+                                     {{
+                                         {{
+                                             (5. - std::sqrt(5.)) / 20.,
+                                             (5. - std::sqrt(5.)) / 20.,
+                                             (5. - std::sqrt(5.)) / 20.,
+                                         }},
+                                         {{
+                                             (5. - std::sqrt(5.)) / 20.,
+                                             (5. - std::sqrt(5.)) / 20.,
+                                             (5. + 3. * std::sqrt(5.)) / 20.,
+                                         }},
+                                         {{
+                                             (5. - std::sqrt(5.)) / 20.,
+                                             (5. + 3. * std::sqrt(5.)) / 20.,
+                                             (5. - std::sqrt(5.)) / 20.,
+                                         }},
+                                         {{
+                                             (5. + 3. * std::sqrt(5.)) / 20.,
+                                             (5. - std::sqrt(5.)) / 20.,
+                                             (5. - std::sqrt(5.)) / 20.,
+                                         }},
+                                     }},
+                                     {{
+                                         1. / 24.,
+                                         1. / 24.,
+                                         1. / 24.,
+                                         1. / 24.,
+                                     }},
+                                 });
+
+// see G. Dhatt, G. Touzot, E. Lefrançois, "Finite Element Method"
+// ISTE Ltd, London, 2012, p. 370
+AE108_ELEMENTS_QUADRATURE_DEFINE(QuadratureType::Simplex, 3, 3, 5,
+                                 {
+                                     {{
+                                         {{1. / 4., 1. / 4., 1. / 4.}},
+                                         {{1. / 6., 1. / 6., 1. / 6.}},
+                                         {{1. / 6., 1. / 6., 1. / 2.}},
+                                         {{1. / 6., 1. / 2., 1. / 6.}},
+                                         {{1. / 2., 1. / 6., 1. / 6.}},
+                                     }},
+                                     {{
+                                         -2. / 15.,
+                                         3. / 40.,
+                                         3. / 40.,
+                                         3. / 40.,
+                                         3. / 40.,
+                                     }},
+                                 });
+
+// see G. Dhatt, G. Touzot, E. Lefrançois, "Finite Element Method"
+// ISTE Ltd, London, 2012, p. 371
+AE108_ELEMENTS_QUADRATURE_DEFINE(QuadratureType::Simplex, 3, 4, 11,
+                                 {
+                                     {{
+                                         {{1. / 4., 1. / 4., 1. / 4.}},
+                                         {{11. / 14., 1. / 14., 1. / 14.}},
+                                         {{1. / 14., 11. / 14., 1. / 14.}},
+                                         {{1. / 14., 1. / 14., 11. / 14.}},
+                                         {{1. / 14., 1. / 14., 1. / 14.}},
+                                         {{
+                                             std::sqrt(70.) / 56. + 1. / 4.,
+                                             std::sqrt(70.) / 56. + 1. / 4.,
+                                             -std::sqrt(70.) / 56. + 1. / 4.,
+                                         }},
+                                         {{
+                                             std::sqrt(70.) / 56. + 1. / 4.,
+                                             -std::sqrt(70.) / 56. + 1. / 4.,
+                                             std::sqrt(70.) / 56. + 1. / 4.,
+                                         }},
+                                         {{
+                                             std::sqrt(70.) / 56. + 1. / 4.,
+                                             -std::sqrt(70.) / 56. + 1. / 4.,
+                                             -std::sqrt(70.) / 56. + 1. / 4.,
+                                         }},
+                                         {{
+                                             -std::sqrt(70.) / 56. + 1. / 4.,
+                                             std::sqrt(70.) / 56. + 1. / 4.,
+                                             std::sqrt(70.) / 56. + 1. / 4.,
+                                         }},
+                                         {{
+                                             -std::sqrt(70.) / 56. + 1. / 4.,
+                                             -std::sqrt(70.) / 56. + 1. / 4.,
+                                             std::sqrt(70.) / 56. + 1. / 4.,
+                                         }},
+                                         {{
+                                             -std::sqrt(70.) / 56. + 1. / 4.,
+                                             std::sqrt(70.) / 56. + 1. / 4.,
+                                             -std::sqrt(70.) / 56. + 1. / 4.,
+                                         }},
+                                     }},
+                                     {{
+                                         -74. / 5625,
+                                         343. / 45000,
+                                         343. / 45000,
+                                         343. / 45000,
+                                         343. / 45000,
+                                         56. / 2250.,
+                                         56. / 2250.,
+                                         56. / 2250.,
+                                         56. / 2250.,
+                                         56. / 2250.,
+                                         56. / 2250.,
+                                     }},
+                                 });
+
 template <QuadratureType Type_, std::size_t Dimension_, std::size_t Order_>
 struct IntegrateTrait<Quadrature<Type_, Dimension_, Order_>> {
   template <class Quadrature, class R, class F, class... Args>

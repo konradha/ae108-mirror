@@ -18,17 +18,22 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 FROM $BASE_IMAGE
 
-RUN apt-get update && apt-get install -y clang-format
-RUN apt-get update && apt-get install -y cmake
-RUN apt-get update && apt-get install -y g++
-RUN apt-get update && apt-get install -y git
-RUN apt-get update && apt-get install -y googletest
-RUN apt-get update && apt-get install -y libboost-program-options-dev
-RUN apt-get update && apt-get install -y libeigen3-dev
-RUN apt-get update && apt-get install -y ninja-build
-RUN apt-get update && apt-get install -y petsc-dev
-RUN apt-get update && apt-get install -y python3 python3-pip
-RUN apt-get update && apt-get install -y python3-h5py
-RUN pip3 install mypy==0.790 black==20.8b1 pylint==2.6.0 sympy==1.7.1
+RUN apt-get update && apt-get install -y \
+        clang-format \
+        cmake \
+        g++ \
+        git \
+        googletest \
+        libboost-program-options-dev \
+        libeigen3-dev \
+        ninja-build \
+        petsc-dev \
+        python3 python3-pip \
+        python3-h5py
 
-RUN pip3 install gcovr
+RUN pip3 install \
+        mypy==0.790 \
+        black==20.8b1 \
+        pylint==2.6.0 \
+        sympy==1.7.1 \
+        gcovr

@@ -17,11 +17,11 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 FROM $BASE_IMAGE
 
-RUN apt-get update && apt-get install -y doxygen
-RUN apt-get update && apt-get install -y git
-RUN apt-get update && apt-get install -y pandoc
-RUN apt-get update && apt-get install -y python3 python3-pip
-RUN apt-get update && apt-get install -y texlive texlive-latex-extra latexmk
+RUN apt-get update && apt-get install -y \
+      doxygen \
+      git \
+      pandoc \
+      python3 python3-pip \
+      texlive texlive-latex-extra latexmk
 
-RUN pip3 install sphinx
-RUN pip3 install breathe
+RUN pip3 install sphinx breathe

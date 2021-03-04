@@ -91,6 +91,8 @@ def number_of_corners_to_type(
     'Tetrahedron'
     >>> number_of_corners_to_type(8, 3)
     'Hexahedron'
+    >>> number_of_corners_to_type(10, 3)
+    'Tet_10'
     >>> number_of_corners_to_type(3, 3)
     Traceback (most recent call last):
     generate_xdmf.UnsupportedElementType
@@ -111,6 +113,7 @@ def number_of_corners_to_type(
             3: {
                 4: "Tetrahedron",
                 8: "Hexahedron",
+                10: "Tet_10",
             },
         }
         return type_map[topological_dimension][number_of_vertices]

@@ -17,6 +17,7 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
 add_library(${PROJECT_NAME}-assembly
             ./AssembleEnergyPlugin.cc
+            ./AssembleForceIfPlugin.cc
             ./AssembleForceVectorPlugin.cc
             ./AssembleLumpedMassMatrixPlugin.cc
             ./AssembleConsistentMassMatrixPlugin.cc

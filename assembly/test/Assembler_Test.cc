@@ -78,7 +78,7 @@ template <class Policy> struct Assembler_Test : Test {
       plugins::AssembleStiffnessMatrixPlugin,
       plugins::UpdateInternalVariablesPlugin,
       plugins::AssembleConsistentMassMatrixPlugin,
-      plugins::AssembleLumpedMassMatrixPlugin, plugins::AssembleForceIf,
+      plugins::AssembleLumpedMassMatrixPlugin, plugins::AssembleForceIfPlugin,
       SumUpElementIndicesPlugin, SumUpElementIndicesPluginNonConst>;
   using AssemblerWithPlugins = Assembler<Element, Plugins, Policy>;
 

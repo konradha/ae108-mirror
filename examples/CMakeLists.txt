@@ -55,3 +55,10 @@ target_link_libraries(${PROJECT_NAME}-QuadraticTriangles
                       PRIVATE ae108::assembly
                       PRIVATE ae108::elements
 )
+
+add_executable(${PROJECT_NAME}-QuadraticTetrahedra QuadraticTetrahedra.cc)
+target_link_libraries(${PROJECT_NAME}-QuadraticTetrahedra
+                      PRIVATE ae108::solve
+                      PRIVATE ae108::assembly
+                      PRIVATE ae108::elements
+)

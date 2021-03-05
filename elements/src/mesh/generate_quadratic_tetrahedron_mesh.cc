@@ -245,6 +245,9 @@ Connectivity generate_connectivity(const Point &size,
 Mesh<Point>
 generate_quadratic_tetrahedron_mesh(const Point &size,
                                     const Index &granularity) noexcept {
+  if (number_of_cuboids(granularity) == 0) {
+    return Mesh<Point>({}, {});
+  }
 
   return Mesh<Point>(generate_connectivity(size, granularity),
                      generate_positions(size, granularity));

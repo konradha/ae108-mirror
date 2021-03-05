@@ -18,6 +18,7 @@
 using testing::DoubleEq;
 using testing::ElementsAre;
 using testing::Eq;
+using testing::IsEmpty;
 using testing::Test;
 
 namespace ae108 {
@@ -26,6 +27,30 @@ namespace mesh {
 namespace {
 
 struct generate_tetrahedron_mesh_Test : Test {};
+
+TEST_F(generate_tetrahedron_mesh_Test,
+       returns_empty_mesh_for_zero_x_granularity) {
+  const auto mesh = generate_tetrahedron_mesh({{1., 1., 1.}}, {{0, 1, 1}});
+
+  EXPECT_THAT(mesh.number_of_positions(), Eq(0));
+  EXPECT_THAT(mesh.connectivity(), IsEmpty());
+}
+
+TEST_F(generate_tetrahedron_mesh_Test,
+       returns_empty_mesh_for_zero_y_granularity) {
+  const auto mesh = generate_tetrahedron_mesh({{1., 1., 1.}}, {{1, 0, 1}});
+
+  EXPECT_THAT(mesh.number_of_positions(), Eq(0));
+  EXPECT_THAT(mesh.connectivity(), IsEmpty());
+}
+
+TEST_F(generate_tetrahedron_mesh_Test,
+       returns_empty_mesh_for_zero_z_granularity) {
+  const auto mesh = generate_tetrahedron_mesh({{1., 1., 1.}}, {{1, 1, 0}});
+
+  EXPECT_THAT(mesh.number_of_positions(), Eq(0));
+  EXPECT_THAT(mesh.connectivity(), IsEmpty());
+}
 
 TEST_F(generate_tetrahedron_mesh_Test, has_correct_positions_for_cube) {
   const auto mesh = generate_tetrahedron_mesh({{1., 1., 1.}}, {{1, 1, 1}});

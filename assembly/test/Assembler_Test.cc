@@ -19,6 +19,7 @@
 #include "ae108/assembly/FeaturePlugins.h"
 #include "ae108/assembly/plugins/AssembleConsistentMassMatrixPlugin.h"
 #include "ae108/assembly/plugins/AssembleEnergyPlugin.h"
+#include "ae108/assembly/plugins/AssembleForceIfPlugin.h"
 #include "ae108/assembly/plugins/AssembleForceVectorPlugin.h"
 #include "ae108/assembly/plugins/AssembleLumpedMassMatrixPlugin.h"
 #include "ae108/assembly/plugins/AssembleStiffnessMatrixPlugin.h"
@@ -40,6 +41,7 @@
 
 using ae108::cppptest::AlmostEqIfLocal;
 using testing::DoubleEq;
+using testing::ElementsAre;
 using testing::Eq;
 using testing::NiceMock;
 using testing::Pair;
@@ -76,8 +78,8 @@ template <class Policy> struct Assembler_Test : Test {
       plugins::AssembleStiffnessMatrixPlugin,
       plugins::UpdateInternalVariablesPlugin,
       plugins::AssembleConsistentMassMatrixPlugin,
-      plugins::AssembleLumpedMassMatrixPlugin, SumUpElementIndicesPlugin,
-      SumUpElementIndicesPluginNonConst>;
+      plugins::AssembleLumpedMassMatrixPlugin, plugins::AssembleForceIfPlugin,
+      SumUpElementIndicesPlugin, SumUpElementIndicesPluginNonConst>;
   using AssemblerWithPlugins = Assembler<Element, Plugins, Policy>;
 
   using mesh_type = cpppetsc::Mesh<Policy>;
@@ -326,6 +328,35 @@ TYPED_TEST(Assembler_Test, assembling_consistent_mass_matrix_works) {
   EXPECT_THAT(matrix, AlmostEqIfLocal(0, 1, 0.));
   EXPECT_THAT(matrix, AlmostEqIfLocal(1, 0, 0.));
   EXPECT_THAT(matrix, AlmostEqIfLocal(1, 1, 3.));
+}
+
+TYPED_TEST(Assembler_Test, assembling_force_if_condition_holds_works) {
+  using value_type = typename TestFixture::mesh_type::value_type;
+  using size_type = typename TestFixture::mesh_type::size_type;
+
+  const auto fullInput = this->fullInput();
+
+  for (const auto &annotatedElement : this->assembler.meshElements()) {
+    const auto elementForces = typename TestFixture::Element::Forces(
+        {typename TestFixture::Element::Vector(
+            annotatedElement.meshView().index() + 1.)});
+    ON_CALL(annotatedElement.instance(),
+            computeForces(IsWrappedSingleValue(fullInput(
+                              annotatedElement.meshView().index() / 2)),
+                          this->time))
+        .WillByDefault(Return(elementForces));
+  }
+
+  auto forces = std::vector<value_type>(TestFixture::Element::DegreesOfFreedom);
+  this->assembler.assembleForceIf(
+      this->localInput(), this->time,
+      [&](size_type, const size_type vertexIndex) { return vertexIndex == 0; },
+      forces.data());
+
+  ASSERT_THAT(MPI_Allreduce(MPI_IN_PLACE, forces.data(), forces.size(),
+                            MPIU_SCALAR, MPIU_SUM, TypeParam::communicator()),
+              Eq(0));
+  EXPECT_THAT(forces, ElementsAre(DoubleEq(1. + 2.)));
 }
 
 TYPED_TEST(Assembler_Test, updating_internal_variables_works) {

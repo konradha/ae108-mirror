@@ -25,6 +25,7 @@ add_library(${PROJECT_NAME}-solve
             ./NonlinearSolver.cc
             ./TAOSolver.cc
             ./TransformingSolver.cc
+            ./boundaryConditionsToTransform.cc
 )
 
 add_library(${PROJECT_NAME}::solve ALIAS ${PROJECT_NAME}-solve)

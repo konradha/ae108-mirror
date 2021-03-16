@@ -54,6 +54,7 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./getName.cc
             ./readFromViewer.cc
             ./setName.cc
+            ./vertexDataOffsets.cc
             ./writeToViewer.cc
 )
 

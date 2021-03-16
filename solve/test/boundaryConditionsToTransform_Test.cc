@@ -18,6 +18,7 @@
 #include "ae108/cpppetsc/createTransformInput.h"
 #include "ae108/cppptest/Matchers.h"
 #include "ae108/solve/InconsistentBoundaryConditionsException.h"
+#include "ae108/solve/InvalidVertexException.h"
 #include "ae108/solve/boundaryConditionsToTransform.h"
 #include <array>
 #include <gmock/gmock.h>
@@ -204,13 +205,57 @@ TYPED_TEST(boundaryConditionsToTransform_Test,
   const auto call = [&]() {
     return boundaryConditionsToTransform(
         {
-            {{targetVertex, targetDof}, {{1., {sourceVertex, sourceDof}}}, 0.},
+            {{targetVertex, targetDof},
+             {{1., {sourceVertex, sourceDof}}},
+             value},
             {{sourceVertex, sourceDof}, {}, value},
         },
         this->mesh);
   };
 
   EXPECT_THROW(call(), InconsistentBoundaryConditionsException);
+}
+
+TYPED_TEST(boundaryConditionsToTransform_Test,
+           throws_if_target_vertex_is_invalid) {
+  using size_type = typename TestFixture::size_type;
+  using value_type = typename TestFixture::value_type;
+
+  constexpr auto targetVertex = size_type{7};
+  constexpr auto targetDof = size_type{1};
+  constexpr auto value = value_type{.7};
+
+  const auto call = [&]() {
+    return boundaryConditionsToTransform(
+        {
+            {{targetVertex, targetDof}, {}, value},
+        },
+        this->mesh);
+  };
+
+  EXPECT_THROW(call(), InvalidVertexException);
+}
+
+TYPED_TEST(boundaryConditionsToTransform_Test,
+           throws_if_source_vertex_is_invalid) {
+  using size_type = typename TestFixture::size_type;
+  using value_type = typename TestFixture::value_type;
+
+  constexpr auto targetVertex = size_type{0};
+  constexpr auto targetDof = size_type{1};
+  constexpr auto sourceVertex = size_type{7};
+  constexpr auto sourceDof = size_type{2};
+  constexpr auto value = value_type{.7};
+
+  const auto call = [&]() {
+    return boundaryConditionsToTransform(
+        {
+            {{targetVertex, targetDof}, {{1., {sourceVertex, sourceDof}}}, 0.},
+        },
+        this->mesh);
+  };
+
+  EXPECT_THROW(call(), InvalidVertexException);
 }
 
 } // namespace

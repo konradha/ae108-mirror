@@ -23,6 +23,7 @@
 #include "ae108/cpppetsc/vertexDataOffsets.h"
 #include "ae108/solve/AffineTransform.h"
 #include "ae108/solve/InconsistentBoundaryConditionsException.h"
+#include "ae108/solve/InvalidVertexException.h"
 #include <algorithm>
 #include <utility>
 #include <vector>
@@ -37,6 +38,9 @@ namespace solve {
  *
  * @throw InconsistentBoundaryConditionsException if a degree of degree of
  * freedom appears as both a source and a target.
+ *
+ * @throw InvalidVertexException if the boundary conditions
+ * contain a vertex that does not exist.
  */
 template <class Policy>
 AffineTransform<Policy> boundaryConditionsToTransform(
@@ -75,8 +79,12 @@ AffineTransform<Policy> boundaryConditionsToTransform(
   using value_type = typename Mesh::value_type;
 
   const auto vertexDataOffsets = cpppetsc::vertexDataOffsets(mesh);
-  const auto conditionToRow = [&](const BoundaryCondition &condition) {
-    return vertexDataOffsets[condition.target.vertex] + condition.target.dof;
+  const auto itemToRow = [&](const typename BoundaryCondition::Item &item) {
+    try {
+      return vertexDataOffsets.at(item.vertex) + item.dof;
+    } catch (std::out_of_range &) {
+      throw InvalidVertexException{};
+    }
   };
 
   const auto matrix = Mesh::matrix_type::fromMesh(mesh);
@@ -84,7 +92,7 @@ AffineTransform<Policy> boundaryConditionsToTransform(
   const auto eliminatedRows = [&](const size_type numberOfRows) {
     std::vector<size_type> rows(numberOfRows);
     for (auto &&condition : boundaryConditions) {
-      rows[conditionToRow(condition)] = size_type{1};
+      rows[itemToRow(condition.target)] = size_type{1};
     }
     Policy::handleError(MPI_Allreduce(MPI_IN_PLACE, rows.data(), rows.size(),
                                       MPIU_INT, MPIU_MAX,
@@ -115,10 +123,9 @@ AffineTransform<Policy> boundaryConditionsToTransform(
 
     auto vectorReplacer = shift.unwrap().replace();
     for (auto &&condition : boundaryConditions) {
-      const auto row = conditionToRow(condition);
+      const auto row = itemToRow(condition.target);
       for (auto &&source : condition.source) {
-        const auto col =
-            vertexDataOffsets[source.item.vertex] + source.item.dof;
+        const auto col = itemToRow(source.item);
         if (eliminatedRows[col]) {
           throw InconsistentBoundaryConditionsException{};
         }

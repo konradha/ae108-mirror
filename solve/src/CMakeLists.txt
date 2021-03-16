@@ -21,6 +21,7 @@ add_library(${PROJECT_NAME}-solve
             ./DynamicSolver.cc
             ./DynamicState.cc
             ./InconsistentBoundaryConditionsException.cc
+            ./InvalidVertexException.cc
             ./NewmarkParameters.cc
             ./NonlinearSolver.cc
             ./TAOSolver.cc

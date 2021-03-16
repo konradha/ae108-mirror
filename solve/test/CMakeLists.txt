@@ -19,6 +19,7 @@ add_executable(${PROJECT_NAME}-SolveTests
                ./AffineTransform_Test.cc
                ./DynamicSolver_Test.cc
                ./InconsistentBoundaryConditionsException_Test.cc
+               ./InvalidVertexException_Test.cc
                ./NonlinearSolver_Test.cc
                ./TAOSolver_Test.cc
                ./TransformingSolver_Test.cc

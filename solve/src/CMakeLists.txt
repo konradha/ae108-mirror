@@ -20,6 +20,7 @@ add_library(${PROJECT_NAME}-solve
             ./DampingParameters.cc
             ./DynamicSolver.cc
             ./DynamicState.cc
+            ./InconsistentBoundaryConditionsException.cc
             ./NewmarkParameters.cc
             ./NonlinearSolver.cc
             ./TAOSolver.cc

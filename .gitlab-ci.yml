@@ -14,12 +14,12 @@
 # limitations under the License.
 
 stages:
-    - images
+    - image-dev
+    - image-docu
     - analyze
     - build
 
 .build-image: &build-image
-    stage: images
     image:
         name: gcr.io/kaniko-project/executor:debug
         entrypoint:
@@ -40,12 +40,14 @@ stages:
                 --dockerfile docker/$DOCKERFILE_NAME
 
 build-image-dev:
+    stage: image-dev
     variables:
         DOCKERFILE_NAME: "Dockerfile"
         IMAGE_NAME: "dev"
     <<: *build-image
 
 build-image-docu:
+    stage: image-docu
     variables:
         DOCKERFILE_NAME: "Dockerfile_docu"
         IMAGE_NAME: "docu"

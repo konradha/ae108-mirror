@@ -20,10 +20,13 @@ add_library(${PROJECT_NAME}-solve
             ./DampingParameters.cc
             ./DynamicSolver.cc
             ./DynamicState.cc
+            ./InconsistentBoundaryConditionsException.cc
+            ./InvalidVertexException.cc
             ./NewmarkParameters.cc
             ./NonlinearSolver.cc
             ./TAOSolver.cc
             ./TransformingSolver.cc
+            ./boundaryConditionsToTransform.cc
 )
 
 add_library(${PROJECT_NAME}::solve ALIAS ${PROJECT_NAME}-solve)

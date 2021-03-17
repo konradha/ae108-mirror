@@ -17,6 +17,7 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
 add_library(${PROJECT_NAME}-cpppetsc
             ./Exception.cc
+            ./GeneralizedMeshBoundaryConditition.cc
             ./IndexBasedAccessIterator.cc
             ./InvalidParametersException.cc
             ./IteratorRange.cc
@@ -53,6 +54,7 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./getName.cc
             ./readFromViewer.cc
             ./setName.cc
+            ./vertexDataOffsets.cc
             ./writeToViewer.cc
 )
 

@@ -23,14 +23,16 @@ namespace cpppetsc {
 
 /**
  * @brief Creates a vector that can store the result of a multiplication with
- * the provided matrix.
+ * the provided matrix. It is initialized with zeroes.
  */
 template <class Policy>
 distributed<Vector<Policy>>
 createTransformOutput(const Matrix<Policy> &transform) {
   auto out = Vec{};
   Policy::handleError(MatCreateVecs(transform.data(), nullptr, &out));
-  return distributed<Vector<Policy>>(makeUniqueEntity<Policy>(out));
+  auto result = distributed<Vector<Policy>>(makeUniqueEntity<Policy>(out));
+  result.unwrap().setZero();
+  return result;
 }
 
 extern template distributed<Vector<SequentialComputePolicy>>

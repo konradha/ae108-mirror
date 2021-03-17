@@ -38,6 +38,7 @@ add_executable(${PROJECT_NAME}-CppPetscTests
                ./createTransformOutput_Test.cc
                ./createVectorFromSource_Test.cc
                ./setName_Test.cc
+               ./vertexDataOffsets_Test.cc
 )
 
 target_include_directories(${PROJECT_NAME}-CppPetscTests PRIVATE include)

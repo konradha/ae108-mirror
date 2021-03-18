@@ -248,7 +248,7 @@ public:
         timoshenko::rotation_matrix<value_type, BeamElement::dimension()>(
             element_axis_);
 
-    stiffnessMatrix_ = rotation_matrix.transpose() *
+    stiffness_matrix_ = rotation_matrix.transpose() *
                        reference_stiffness_matrix * rotation_matrix;
   }
 

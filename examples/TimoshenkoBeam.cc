@@ -191,8 +191,8 @@ int main(int argc, char **argv) {
     cpppetsc::setName("coordinates", &coordinates);
 
     // Now we write the mesh to a file.
-    auto viewer = Viewer::fromHdf5FilePath("timoshenko_beam.ae108",
-                                           Viewer::Mode::write);
+    auto viewer =
+        Viewer::fromHdf5FilePath("timoshenko_beam.ae108", Viewer::Mode::write);
     cpppetsc::writeToViewer(mesh, coordinates, &viewer);
 
     // Let's write the result to the file.

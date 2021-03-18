@@ -249,7 +249,7 @@ public:
             element_axis_);
 
     stiffness_matrix_ = rotation_matrix.transpose() *
-                       reference_stiffness_matrix * rotation_matrix;
+                        reference_stiffness_matrix * rotation_matrix;
   }
 
   const Properties<value_type, Dimension_> &properties() const {

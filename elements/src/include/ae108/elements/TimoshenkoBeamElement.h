@@ -1,0 +1,339 @@
+// © 2021 ETH Zurich, Mechanics and Materials Lab
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#pragma once
+
+#include "ae108/elements/ComputeEnergyTrait.h"
+#include "ae108/elements/ComputeForcesTrait.h"
+#include "ae108/elements/ComputeStiffnessMatrixTrait.h"
+#include "ae108/elements/ElementBase.h"
+#include "ae108/elements/compute_stiffness_matrix.h"
+#include "ae108/elements/tensor/as_vector.h"
+
+#include <iostream>
+
+namespace ae108 {
+namespace elements {
+namespace timoshenko {
+
+template <class ValueType_, std::size_t Dimension_> struct Properties {};
+
+template <class ValueType_> struct Properties<ValueType_, 3> {
+  Properties(const ValueType_ _young_modulus, const ValueType_ _shear_modulus,
+             const ValueType_ _shear_correction_factor_y,
+             const ValueType_ _density, const ValueType_ _area,
+             const ValueType_ _area_moment_z, const ValueType_ _area_moment_y,
+             const ValueType_ _polar_moment_x,
+             const ValueType_ _shear_correction_factor_z)
+      : young_modulus(_young_modulus), shear_modulus(_shear_modulus),
+        shear_correction_factor_y(_shear_correction_factor_y),
+        shear_correction_factor_z(_shear_correction_factor_z),
+        density(_density), area(_area), area_moment_z(_area_moment_z),
+        area_moment_y(_area_moment_y), polar_moment_x(_polar_moment_x) {}
+
+public:
+  ValueType_ young_modulus, shear_modulus, shear_correction_factor_y,
+      shear_correction_factor_z, density, area, area_moment_z, area_moment_y,
+      polar_moment_x;
+};
+
+template <class ValueType_> struct Properties<ValueType_, 2> {
+  Properties(const ValueType_ _young_modulus, const ValueType_ _shear_modulus,
+             const ValueType_ _shear_correction_factor_y,
+             const ValueType_ _density, const ValueType_ _area,
+             const ValueType_ _area_moment_z)
+      : young_modulus(_young_modulus), shear_modulus(_shear_modulus),
+        shear_correction_factor_y(_shear_correction_factor_y),
+        density(_density), area(_area), area_moment_z(_area_moment_z) {}
+
+public:
+  ValueType_ young_modulus, shear_modulus, shear_correction_factor_y, density,
+      area, area_moment_z;
+};
+
+template <class ValueType_, std::size_t Dimension_>
+Eigen::Matrix<
+    ValueType_,
+    2 * (Dimension_ + ((std::size_t)std::pow(Dimension_, 2) - Dimension_) / 2),
+    2 * (Dimension_ + ((std::size_t)std::pow(Dimension_, 2) - Dimension_) / 2),
+    Eigen::RowMajor>
+stiffness_matrix(const Properties<ValueType_, Dimension_> &beam_properties,
+                 const ValueType_ &beam_length) {
+  exit(1);
+}
+
+// refer to Cook et. al (2002), "Concepts and applications of Finite Element
+// Analysis", 4th ed., p.27
+template <>
+inline Eigen::Matrix<double, 12, 12, Eigen::RowMajor>
+stiffness_matrix<double, 3>(const Properties<double, 3> &beam_properties,
+                            const double &beam_length) {
+
+  const auto &L = beam_length;
+  const auto &A = beam_properties.area;
+  const auto &E = beam_properties.young_modulus;
+  const auto &G = beam_properties.shear_modulus;
+  const auto &I_z = beam_properties.area_moment_z;
+  const auto &k_y = beam_properties.shear_correction_factor_y;
+
+  double Phi_y = 12 * E * I_z * k_y / A / G / L / L; // Phi_y
+
+  Eigen::Matrix<double, 12, 12, Eigen::RowMajor> K =
+      Eigen::Matrix<double, 12, 12, Eigen::RowMajor>::Zero();
+
+  K(0, 0) = K(6, 6) = A * E / L;                                 //  X
+  K(0, 6) = K(6, 0) = -A * E / L;                                // -X
+  K(1, 1) = K(7, 7) = 12 * E * I_z / (1 + Phi_y) / L / L / L;    //  Y1
+  K(1, 7) = K(7, 1) = -12 * E * I_z / (1 + Phi_y) / L / L / L;   // -Y1
+  K(1, 5) = K(5, 1) = 6 * E * I_z / (1 + Phi_y) / L / L;         //  Y2
+  K(1, 11) = K(11, 1) = 6 * E * I_z / (1 + Phi_y) / L / L;       //  Y2
+  K(5, 7) = K(7, 5) = -6 * E * I_z / (1 + Phi_y) / L / L;        // -Y2
+  K(7, 11) = K(11, 7) = -6 * E * I_z / (1 + Phi_y) / L / L;      // -Y2
+  K(5, 5) = K(11, 11) = (4 + Phi_y) * E * I_z;                   //  Y3
+  K(5, 11) = K(11, 5) = (2 - Phi_y) * E * I_z / (1 + Phi_y) / L; //  Y4
+
+  const auto &I_y = beam_properties.area_moment_y;
+  const auto &J_x = beam_properties.polar_moment_x;
+  const auto &k_z = beam_properties.shear_correction_factor_z;
+
+  double Phi_z = 12 * E * I_y * k_z / A / G / L / L; // Phi_z
+
+  K(2, 2) = K(8, 8) = 12 * E * I_y / (1 + Phi_z) / L / L / L;    //  Z1
+  K(2, 8) = K(8, 2) = -12 * E * I_y / (1 + Phi_z) / L / L / L;   // -Z1
+  K(2, 4) = K(4, 2) = -6 * E * I_y / (1 + Phi_z) / L / L;        // -Z2
+  K(2, 10) = K(10, 2) = -6 * E * I_y / (1 + Phi_z) / L / L;      // -Z2
+  K(4, 8) = K(8, 4) = 6 * E * I_y / (1 + Phi_z) / L / L;         //  Z2
+  K(8, 10) = K(10, 8) = 6 * E * I_y / (1 + Phi_z) / L / L;       //  Z2
+  K(4, 4) = K(10, 10) = (4 + Phi_z) * E * I_y;                   //  Z3
+  K(4, 10) = K(10, 4) = (2 - Phi_z) * E * I_y / (1 + Phi_z) / L; //  Z4
+  K(3, 3) = K(9, 9) = G * J_x / L;                               //  S
+  K(3, 9) = K(9, 3) = -G * J_x / L;                              //  S
+
+  return K;
+}
+
+// refer to Cook et. al (2002), "Concepts and applications of Finite Element
+// Analysis", 4th ed., p.26
+template <>
+inline Eigen::Matrix<double, 6, 6, Eigen::RowMajor>
+stiffness_matrix<double, 2>(const Properties<double, 2> &beam_properties,
+                            const double &beam_length) {
+
+  const auto &L = beam_length;
+  const auto &A = beam_properties.area;
+  const auto &E = beam_properties.young_modulus;
+  const auto &G = beam_properties.shear_modulus;
+  const auto &I_z = beam_properties.area_moment_z;
+  const auto &k_y = beam_properties.shear_correction_factor_y;
+
+  double Phi_y = 12 * E * I_z * k_y / A / G / L / L; // Phi_y
+
+  Eigen::Matrix<double, 6, 6, Eigen::RowMajor> K =
+      Eigen::Matrix<double, 6, 6, Eigen::RowMajor>::Zero();
+
+  K(0, 0) = K(3, 3) = A * E / L;                               //  X
+  K(0, 3) = K(3, 0) = -A * E / L;                              // -X
+  K(1, 1) = K(4, 4) = 12 * E * I_z / (1 + Phi_y) / L / L / L;  //  Y1
+  K(1, 4) = K(4, 1) = -12 * E * I_z / (1 + Phi_y) / L / L / L; // -Y1
+  K(1, 2) = K(2, 1) = 6 * E * I_z / (1 + Phi_y) / L / L;       //  Y2
+  K(1, 5) = K(5, 1) = 6 * E * I_z / (1 + Phi_y) / L / L;       //  Y2
+  K(2, 4) = K(4, 2) = -6 * E * I_z / (1 + Phi_y) / L / L;      // -Y2
+  K(4, 5) = K(5, 4) = -6 * E * I_z / (1 + Phi_y) / L / L;      // -Y2
+  K(2, 2) = K(5, 5) = (4 + Phi_y) * E * I_z;                   //  Y3
+  K(2, 5) = K(5, 2) = (2 - Phi_y) * E * I_z / (1 + Phi_y) / L; //  Y4
+
+  return K;
+}
+
+template <class ValueType_, std::size_t Dimension_>
+Eigen::Matrix<
+    ValueType_,
+    2 * (Dimension_ + ((std::size_t)std::pow(Dimension_, 2) - Dimension_) / 2),
+    2 * (Dimension_ + ((std::size_t)std::pow(Dimension_, 2) - Dimension_) / 2),
+    Eigen::RowMajor>
+rotation_matrix(
+    const tensor::Tensor<ValueType_, Dimension_> &beam_orientation) {
+  exit(1);
+}
+
+// refer to Cook et. al (2002), "Concepts and applications of Finite Element
+// Analysis", 4th ed., p.32
+template <>
+inline Eigen::Matrix<double, 12, 12, Eigen::RowMajor>
+rotation_matrix<double, 3>(const tensor::Tensor<double, 3> &beam_orientation) {
+
+  const auto ax = tensor::as_vector(&beam_orientation) /
+                  tensor::as_vector(&beam_orientation).norm();
+
+  Eigen::Matrix<double, 3, 3, Eigen::RowMajor> Lambda =
+      Eigen::Matrix<double, 3, 3, Eigen::RowMajor>::Zero();
+  Lambda.col(0) << ax(0), -ax(0) * ax(1), -ax(2);              // l1,l2,l3
+  Lambda.col(1) << ax(1), (ax(0) * ax(0) + ax(2) * ax(2)), 0.; // m1,m2,m3
+  Lambda.col(2) << ax(2), -ax(1) * ax(2), ax(0);               // n1,n2,n3
+  Lambda.block(1, 0, 2, 3) /= std::sqrt(ax(0) * ax(0) + ax(2) * ax(2));
+
+  Eigen::Matrix<double, 12, 12, Eigen::RowMajor> T =
+      Eigen::Matrix<double, 12, 12, Eigen::RowMajor>::Zero();
+
+  T.block(0, 0, 3, 3) = Lambda;
+  T.block(3, 3, 3, 3) = Lambda;
+  T.block(6, 6, 3, 3) = Lambda;
+  T.block(9, 9, 3, 3) = Lambda;
+
+  return T;
+}
+
+// refer to Cook et. al (2002), "Concepts and applications of Finite Element
+// Analysis", 4th ed., p.31
+template <>
+inline Eigen::Matrix<double, 6, 6, Eigen::RowMajor>
+rotation_matrix<double, 2>(const tensor::Tensor<double, 2> &beam_orientation) {
+
+  const auto ax = tensor::as_vector(&beam_orientation) /
+                  tensor::as_vector(&beam_orientation).norm();
+
+  Eigen::Matrix<double, 3, 3, Eigen::RowMajor> Lambda =
+      Eigen::Matrix<double, 3, 3, Eigen::RowMajor>::Zero();
+
+  Lambda.col(0) << ax(0), -ax(1), 0.;
+  Lambda.col(1) << ax(1), ax(0), 0.;
+  Lambda.col(2) << 0., 0., 1.;
+
+  Eigen::Matrix<double, 6, 6, Eigen::RowMajor> T =
+      Eigen::Matrix<double, 6, 6, Eigen::RowMajor>::Zero();
+
+  T.block(0, 0, 3, 3) = Lambda;
+  T.block(3, 3, 3, 3) = Lambda;
+
+  return T;
+}
+
+/**
+ * @brief Implementation of the closed-form Timoshenko beam element as presented
+ * in Cook et. al (2002), "Concepts and applications of Finite Element
+ * Analysis", 4th ed., pp.24-32
+ */
+template <std::size_t Dimension_>
+struct BeamElement final
+    : ElementBase<BeamElement<Dimension_>, std::size_t, double, 2,
+                  Dimension_ +
+                      ((std::size_t)std::pow(Dimension_, 2) - Dimension_) / 2> {
+public:
+  using value_type = typename BeamElement::value_type;
+  using size_type = typename BeamElement::size_type;
+
+  using Vector = tensor::Tensor<value_type, Dimension_>;
+
+  explicit BeamElement(
+      const Vector &element_axis,
+      const Properties<value_type, Dimension_> &properties) noexcept
+      : element_axis_(element_axis), properties_(properties) {
+
+    const auto reference_stiffness_matrix =
+        timoshenko::stiffness_matrix<value_type, BeamElement::dimension()>(
+            properties_, tensor::as_vector(&element_axis_).norm());
+
+    const auto rotation_matrix =
+        timoshenko::rotation_matrix<value_type, BeamElement::dimension()>(
+            element_axis_);
+
+    stiffnessMatrix_ = rotation_matrix.transpose() *
+                       reference_stiffness_matrix * rotation_matrix;
+  }
+
+  const Properties<value_type, Dimension_> &properties() const {
+    return properties_;
+  }
+
+  const Vector &element_axis() const { return element_axis_; }
+
+  const typename BeamElement::StiffnessMatrix &stiffness_matrix() const {
+    return stiffness_matrix_;
+  }
+
+  static constexpr size_type dimension() { return Dimension_; }
+
+private:
+  Properties<value_type, Dimension_> properties_;
+  Vector element_axis_;
+  typename BeamElement::StiffnessMatrix stiffness_matrix_;
+};
+} // namespace timoshenko
+
+template <std::size_t Dimension_>
+struct ComputeEnergyTrait<timoshenko::BeamElement<Dimension_>> {
+  template <class Element>
+  typename Element::Energy
+  operator()(const Element &element,
+             const typename Element::NodalDisplacements &u,
+             const typename Element::Time &) const noexcept {
+
+    using DisplacementVector =
+        Eigen::Matrix<double, Element::degrees_of_freedom() * Element::size(),
+                      1>;
+
+    DisplacementVector displacement_vector = DisplacementVector::Zero();
+    for (typename Element::size_type node = 0; node < Element::size(); node++)
+      displacement_vector.segment(node * Element::degrees_of_freedom(),
+                                  Element::degrees_of_freedom()) =
+          tensor::as_vector(&u[node]);
+
+    return .5 * displacement_vector.dot(element.stiffness_matrix() *
+                                        displacement_vector);
+  }
+};
+
+template <std::size_t Dimension_>
+struct ComputeForcesTrait<timoshenko::BeamElement<Dimension_>> {
+  template <class Element>
+  typename Element::Forces
+  operator()(const Element &element,
+             const typename Element::NodalDisplacements &u,
+             const typename Element::Time &) const noexcept {
+
+    using DisplacementVector =
+        Eigen::Matrix<double, Element::degrees_of_freedom() * Element::size(),
+                      1>;
+
+    DisplacementVector displacement_vector = DisplacementVector::Zero();
+    for (typename Element::size_type node = 0; node < Element::size(); node++)
+      displacement_vector.segment(node * Element::degrees_of_freedom(),
+                                  Element::degrees_of_freedom()) =
+          tensor::as_vector(&u[node]);
+
+    auto element_forces = element.stiffness_matrix() * displacement_vector;
+
+    typename Element::Forces forces;
+    for (typename Element::size_type node = 0; node < Element::size(); node++)
+      tensor::as_vector(&forces[node]) = element_forces.segment(
+          node * Element::degrees_of_freedom(), Element::degrees_of_freedom());
+
+    return forces;
+  }
+};
+
+template <std::size_t Dimension_>
+struct ComputeStiffnessMatrixTrait<timoshenko::BeamElement<Dimension_>> {
+  template <class Element>
+  typename Element::StiffnessMatrix
+  operator()(const Element &element,
+             const typename Element::NodalDisplacements &,
+             const typename Element::Time &) const noexcept {
+
+    return element.stiffness_matrix();
+  };
+};
+
+} // namespace elements
+} // namespace ae108

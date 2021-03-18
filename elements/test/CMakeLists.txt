@@ -17,6 +17,7 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 add_executable(${PROJECT_NAME}-ElementsTests
                CoreElement_Test.cc
                ForceElement_Test.cc
+               TimoshenkoBeamElement_Test.cc
                Minimal_Test.cc
                embedding/IsoparametricEmbedding_Test.cc
                integrator/IsoperimetricIntegrator_Test.cc

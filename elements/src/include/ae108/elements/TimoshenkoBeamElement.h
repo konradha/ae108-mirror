@@ -122,7 +122,7 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &beam_properties,
   K(1, 11) = K(11, 1) = 6 * E * I_z / (1 + Phi_y) / L / L;       //  Y2
   K(5, 7) = K(7, 5) = -6 * E * I_z / (1 + Phi_y) / L / L;        // -Y2
   K(7, 11) = K(11, 7) = -6 * E * I_z / (1 + Phi_y) / L / L;      // -Y2
-  K(5, 5) = K(11, 11) = (4 + Phi_y) * E * I_z;                   //  Y3
+  K(5, 5) = K(11, 11) = (4 + Phi_y) * E * I_z / (1 + Phi_y) / L; //  Y3
   K(5, 11) = K(11, 5) = (2 - Phi_y) * E * I_z / (1 + Phi_y) / L; //  Y4
 
   const auto &I_y = beam_properties.area_moment_y();
@@ -172,7 +172,7 @@ stiffness_matrix<double, 2>(const Properties<double, 2> &beam_properties,
   K(1, 5) = K(5, 1) = 6 * E * I_z / (1 + Phi_y) / L / L;       //  Y2
   K(2, 4) = K(4, 2) = -6 * E * I_z / (1 + Phi_y) / L / L;      // -Y2
   K(4, 5) = K(5, 4) = -6 * E * I_z / (1 + Phi_y) / L / L;      // -Y2
-  K(2, 2) = K(5, 5) = (4 + Phi_y) * E * I_z;                   //  Y3
+  K(2, 2) = K(5, 5) = (4 + Phi_y) * E * I_z / (1 + Phi_y) / L; //  Y3
   K(2, 5) = K(5, 2) = (2 - Phi_y) * E * I_z / (1 + Phi_y) / L; //  Y4
 
   return K;

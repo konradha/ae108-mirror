@@ -21,7 +21,8 @@ namespace ae108 {
 namespace elements {
 namespace materialmodels {
 
-template <class SizeType_, class ValueType_, SizeType_ Dimension_>
+template <class SizeType_, class ValueType_, SizeType_ Dimension_,
+          SizeType_ DegreesOfFreedom_ = Dimension_>
 struct MaterialModelBase {
   using size_type = SizeType_;
   using value_type = ValueType_;
@@ -38,11 +39,15 @@ struct MaterialModelBase {
 
   static constexpr size_type dimension() noexcept { return Dimension_; };
 
+  static constexpr size_type degrees_of_freedom() noexcept {
+    return DegreesOfFreedom_;
+  };
+
   /**
    * @brief Displacement gradient $v_{ij}$ in row-major format v[i][j].
    */
   using DisplacementGradient =
-      tensor::Tensor<value_type, dimension(), dimension()>;
+      tensor::Tensor<value_type, dimension(), degrees_of_freedom()>;
 
   /**
    * @brief Stress $P_{ij} = \delta_{v_{ij}} E(v)$ in row-major format P[i][j].
@@ -54,8 +59,9 @@ struct MaterialModelBase {
    * @brief Tangent matrix $C_{ijkl} = \delta_{v_{kl}} \delta_{v_{ij}} E(v)$ in
    * row-major format C[i][j][k][l].
    */
-  using TangentMatrix = tensor::Tensor<value_type, dimension(), dimension(),
-                                       dimension(), dimension()>;
+  using TangentMatrix =
+      tensor::Tensor<value_type, dimension(), degrees_of_freedom(), dimension(),
+                     degrees_of_freedom()>;
 
 protected:
   ~MaterialModelBase() = default;

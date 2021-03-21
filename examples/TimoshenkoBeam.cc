@@ -23,7 +23,6 @@
 #include "ae108/elements/TimoshenkoBeamElement.h"
 #include "ae108/elements/tensor/as_vector.h"
 #include "ae108/solve/NonlinearSolver.h"
-#include <array>
 
 using namespace ae108;
 
@@ -77,12 +76,29 @@ constexpr auto vertex_positions = VertexPositions{{
     {{0., 1.}},
 }};
 
-// Now we are ready to select our element type.
+// Now we are ready to select the Timoshenko beam element
 
 using Element = elements::timoshenko::BeamElement<dimension>;
 
+// The Timoshenko beam element comes with a number of geometrical and material
+// related properties. These are stored in the Properties struct
+
 using Properties =
     elements::timoshenko::Properties<Mesh::value_type, dimension>;
+
+// Let us define some parameters the linear elastic beam of rectangular cross
+// section
+
+constexpr Mesh::value_type young_modulus = 1.;
+constexpr Mesh::value_type poisson_ratio = 0.3;
+constexpr Mesh::value_type shear_modulus =
+    young_modulus / (2 * (1 + poisson_ratio));
+constexpr Mesh::value_type density = 1.;
+constexpr Mesh::value_type shear_correction_factor_y = 1.2;
+constexpr Mesh::value_type thickness = 1.;
+constexpr Mesh::value_type width = 0.1;
+constexpr Mesh::value_type area = width * thickness;
+constexpr Mesh::value_type area_moment_z = thickness * std::pow(width, 3) / 12.;
 
 // We will assemble e.g. energy using a collection of elements. This is done by
 // the assembler. (The list DefaultFeaturePlugins contain the features (e.g.
@@ -106,7 +122,9 @@ int main(int argc, char **argv) {
         dimension, connectivity, number_of_vertices, dof_per_vertex);
     auto assembler = Assembler();
 
-    auto properties = Properties(1., 1., 1., 1., 1., 1.);
+    auto properties =
+        Properties(young_modulus, shear_modulus, shear_correction_factor_y,
+                   density, area, area_moment_z);
 
     // Depending on whether we use MPI, our mesh may be distributed and not all
     // elements are present on this computational node.

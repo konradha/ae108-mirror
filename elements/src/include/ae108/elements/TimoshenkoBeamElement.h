@@ -205,6 +205,9 @@ rotation_matrix<double, 3>(const tensor::Tensor<double, 3> &beam_orientation) {
   Lambda.col(2) << ax(2), -ax(1) * ax(2), ax(0);               // n1,n2,n3
   Lambda.block(1, 0, 2, 3) /= std::sqrt(ax(0) * ax(0) + ax(2) * ax(2));
 
+  if (fabs(ax(0)) < 1e-4 && fabs(ax(2)) < 1e-4)
+    Lambda << 0, ax(1), 0, -ax(1), 0, 0, 0, 0, 1;
+
   Eigen::Matrix<double, 12, 12, Eigen::RowMajor> T =
       Eigen::Matrix<double, 12, 12, Eigen::RowMajor>::Zero();
 

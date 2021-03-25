@@ -137,7 +137,7 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &beam_properties,
   K(2, 10) = K(10, 2) = -6 * E * I_y / (1 + Phi_z) / L / L;      // -Z2
   K(4, 8) = K(8, 4) = 6 * E * I_y / (1 + Phi_z) / L / L;         //  Z2
   K(8, 10) = K(10, 8) = 6 * E * I_y / (1 + Phi_z) / L / L;       //  Z2
-  K(4, 4) = K(10, 10) = (4 + Phi_z) * E * I_y;                   //  Z3
+  K(4, 4) = K(10, 10) = (4 + Phi_z) * E * I_y / (1 + Phi_z) / L; //  Z3
   K(4, 10) = K(10, 4) = (2 - Phi_z) * E * I_y / (1 + Phi_z) / L; //  Z4
   K(3, 3) = K(9, 9) = G * J_x / L;                               //  S
   K(3, 9) = K(9, 3) = -G * J_x / L;                              //  S

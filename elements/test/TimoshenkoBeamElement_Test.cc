@@ -50,13 +50,12 @@ create_element_properties() noexcept {
 template <>
 inline typename timoshenko::Properties<double, 3>
 create_element_properties<double, 3>() noexcept {
-  return typename timoshenko::Properties<double, 3>(1., 1., 1., 1., 1., 1., 1.,
-                                                    1., 1.);
+  return {1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
 }
 template <>
 inline typename timoshenko::Properties<double, 2>
 create_element_properties<double, 2>() noexcept {
-  return typename timoshenko::Properties<double, 2>(1., 1., 1., 1., 1., 1.);
+  return {1., 1., 1., 1., 1., 1., 1.};
 }
 
 template <class Element_> struct ReferenceConfiguration {

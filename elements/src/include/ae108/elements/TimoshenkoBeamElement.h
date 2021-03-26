@@ -27,61 +27,14 @@ namespace timoshenko {
 template <class ValueType_, std::size_t Dimension_> struct Properties {};
 
 template <class ValueType_> struct Properties<ValueType_, 3> {
-  Properties(const ValueType_ _young_modulus, const ValueType_ _shear_modulus,
-             const ValueType_ _shear_correction_factor_y,
-             const ValueType_ _density, const ValueType_ _area,
-             const ValueType_ _area_moment_z, const ValueType_ _area_moment_y,
-             const ValueType_ _polar_moment_x,
-             const ValueType_ _shear_correction_factor_z)
-      : young_modulus_(_young_modulus), shear_modulus_(_shear_modulus),
-        shear_correction_factor_y_(_shear_correction_factor_y),
-        shear_correction_factor_z_(_shear_correction_factor_z),
-        density_(_density), area_(_area), area_moment_z_(_area_moment_z),
-        area_moment_y_(_area_moment_y), polar_moment_x_(_polar_moment_x) {}
-
-public:
-  const ValueType_ &young_modulus() const { return young_modulus_; }
-  const ValueType_ &shear_modulus() const { return shear_modulus_; }
-  const ValueType_ &shear_correction_factor_y() const {
-    return shear_correction_factor_y_;
-  }
-  const ValueType_ &shear_correction_factor_z() const {
-    return shear_correction_factor_z_;
-  }
-  const ValueType_ &density() const { return density_; }
-  const ValueType_ &area() const { return area_; }
-  const ValueType_ &area_moment_z() const { return area_moment_z_; }
-  const ValueType_ &area_moment_y() const { return area_moment_y_; }
-  const ValueType_ &polar_moment_x() const { return polar_moment_x_; }
-
-private:
-  ValueType_ young_modulus_, shear_modulus_, shear_correction_factor_y_,
-      shear_correction_factor_z_, density_, area_, area_moment_z_,
-      area_moment_y_, polar_moment_x_;
+  ValueType_ young_modulus, shear_modulus, shear_correction_factor_y,
+      shear_correction_factor_z, density, area, area_moment_z, area_moment_y,
+      polar_moment_x, element_weight;
 };
 
 template <class ValueType_> struct Properties<ValueType_, 2> {
-  Properties(const ValueType_ _young_modulus, const ValueType_ _shear_modulus,
-             const ValueType_ _shear_correction_factor_y,
-             const ValueType_ _density, const ValueType_ _area,
-             const ValueType_ _area_moment_z)
-      : young_modulus_(_young_modulus), shear_modulus_(_shear_modulus),
-        shear_correction_factor_y_(_shear_correction_factor_y),
-        density_(_density), area_(_area), area_moment_z_(_area_moment_z) {}
-
-public:
-  const ValueType_ &young_modulus() const { return young_modulus_; }
-  const ValueType_ &shear_modulus() const { return shear_modulus_; }
-  const ValueType_ &shear_correction_factor_y() const {
-    return shear_correction_factor_y_;
-  }
-  const ValueType_ &density() const { return density_; }
-  const ValueType_ &area() const { return area_; }
-  const ValueType_ &area_moment_z() const { return area_moment_z_; }
-
-private:
-  ValueType_ young_modulus_, shear_modulus_, shear_correction_factor_y_,
-      density_, area_, area_moment_z_;
+  ValueType_ young_modulus, shear_modulus, shear_correction_factor_y, density,
+      area, area_moment_z, element_weight;
 };
 
 template <class ValueType_, std::size_t Dimension_>
@@ -103,11 +56,11 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &beam_properties,
                             const double &beam_length) {
 
   const auto &L = beam_length;
-  const auto &A = beam_properties.area();
-  const auto &E = beam_properties.young_modulus();
-  const auto &G = beam_properties.shear_modulus();
-  const auto &I_z = beam_properties.area_moment_z();
-  const auto &k_y = beam_properties.shear_correction_factor_y();
+  const auto &A = beam_properties.area;
+  const auto &E = beam_properties.young_modulus;
+  const auto &G = beam_properties.shear_modulus;
+  const auto &I_z = beam_properties.area_moment_z;
+  const auto &k_y = beam_properties.shear_correction_factor_y;
 
   double Phi_y = 12 * E * I_z * k_y / A / G / L / L; // Phi_y
 
@@ -125,9 +78,9 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &beam_properties,
   K(5, 5) = K(11, 11) = (4 + Phi_y) * E * I_z / (1 + Phi_y) / L; //  Y3
   K(5, 11) = K(11, 5) = (2 - Phi_y) * E * I_z / (1 + Phi_y) / L; //  Y4
 
-  const auto &I_y = beam_properties.area_moment_y();
-  const auto &J_x = beam_properties.polar_moment_x();
-  const auto &k_z = beam_properties.shear_correction_factor_z();
+  const auto &I_y = beam_properties.area_moment_y;
+  const auto &J_x = beam_properties.polar_moment_x;
+  const auto &k_z = beam_properties.shear_correction_factor_z;
 
   double Phi_z = 12 * E * I_y * k_z / A / G / L / L; // Phi_z
 
@@ -142,7 +95,7 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &beam_properties,
   K(3, 3) = K(9, 9) = G * J_x / L;                               //  S
   K(3, 9) = K(9, 3) = -G * J_x / L;                              //  S
 
-  return K;
+  return K * beam_properties.element_weight;
 }
 
 // refer to Cook et. al (2002), "Concepts and applications of Finite Element
@@ -153,11 +106,11 @@ stiffness_matrix<double, 2>(const Properties<double, 2> &beam_properties,
                             const double &beam_length) {
 
   const auto &L = beam_length;
-  const auto &A = beam_properties.area();
-  const auto &E = beam_properties.young_modulus();
-  const auto &G = beam_properties.shear_modulus();
-  const auto &I_z = beam_properties.area_moment_z();
-  const auto &k_y = beam_properties.shear_correction_factor_y();
+  const auto &A = beam_properties.area;
+  const auto &E = beam_properties.young_modulus;
+  const auto &G = beam_properties.shear_modulus;
+  const auto &I_z = beam_properties.area_moment_z;
+  const auto &k_y = beam_properties.shear_correction_factor_y;
 
   double Phi_y = 12 * E * I_z * k_y / A / G / L / L; // Phi_y
 

@@ -86,7 +86,7 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &beam_properties,
   const auto I_z = beam_properties.area_moment_z;
   const auto k_y = beam_properties.shear_correction_factor_y;
 
-  const double Phi_y = 12 * E * I_z * k_y / A / G / L / L; // Phi_y
+  const double Phi_y = 12 * E * I_z * k_y / A / G / L / L;
 
   auto K = Eigen::Matrix<double, 12, 12, Eigen::RowMajor>::Zero().eval();
 

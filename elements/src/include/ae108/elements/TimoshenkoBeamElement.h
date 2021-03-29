@@ -69,22 +69,22 @@ template <class ValueType_, std::size_t Dimension_>
 Eigen::Matrix<
     ValueType_, 2 * (Dimension_ + (Dimension_ * (Dimension_ - 1)) / 2),
     2 * (Dimension_ + (Dimension_ * (Dimension_ - 1)) / 2), Eigen::RowMajor>
-stiffness_matrix(const Properties<ValueType_, Dimension_> &beam_properties,
-                 const ValueType_ beam_length);
+stiffness_matrix(const Properties<ValueType_, Dimension_> &properties,
+                 const ValueType_ length);
 
 // refer to Cook et. al (2002), "Concepts and applications of Finite Element
 // Analysis", 4th ed., p.27
 template <>
 inline Eigen::Matrix<double, 12, 12, Eigen::RowMajor>
-stiffness_matrix<double, 3>(const Properties<double, 3> &beam_properties,
-                            const double beam_length) {
+stiffness_matrix<double, 3>(const Properties<double, 3> &properties,
+                            const double length) {
 
-  const auto L = beam_length;
-  const auto A = beam_properties.area;
-  const auto E = beam_properties.young_modulus;
-  const auto G = beam_properties.shear_modulus;
-  const auto I_z = beam_properties.area_moment_z;
-  const auto k_y = beam_properties.shear_correction_factor_y;
+  const auto L = length;
+  const auto A = properties.area;
+  const auto E = properties.young_modulus;
+  const auto G = properties.shear_modulus;
+  const auto I_z = properties.area_moment_z;
+  const auto k_y = properties.shear_correction_factor_y;
 
   const double Phi_y = 12 * E * I_z * k_y / A / G / L / L;
 
@@ -107,9 +107,9 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &beam_properties,
   K(5, 5) = K(11, 11) = Y3;
   K(5, 11) = K(11, 5) = Y4;
 
-  const auto I_y = beam_properties.area_moment_y;
-  const auto J_x = beam_properties.polar_moment_x;
-  const auto k_z = beam_properties.shear_correction_factor_z;
+  const auto I_y = properties.area_moment_y;
+  const auto J_x = properties.polar_moment_x;
+  const auto k_z = properties.shear_correction_factor_z;
 
   const double Phi_z = 12 * E * I_y * k_z / A / G / L / L;
 
@@ -130,22 +130,22 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &beam_properties,
   K(3, 3) = K(9, 9) = S;
   K(3, 9) = K(9, 3) = -S;
 
-  return K * beam_properties.weight;
+  return K * properties.weight;
 }
 
 // refer to Cook et. al (2002), "Concepts and applications of Finite Element
 // Analysis", 4th ed., p.26
 template <>
 inline Eigen::Matrix<double, 6, 6, Eigen::RowMajor>
-stiffness_matrix<double, 2>(const Properties<double, 2> &beam_properties,
-                            const double beam_length) {
+stiffness_matrix<double, 2>(const Properties<double, 2> &properties,
+                            const double length) {
 
-  const auto L = beam_length;
-  const auto A = beam_properties.area;
-  const auto E = beam_properties.young_modulus;
-  const auto G = beam_properties.shear_modulus;
-  const auto I_z = beam_properties.area_moment_z;
-  const auto k_y = beam_properties.shear_correction_factor_y;
+  const auto L = length;
+  const auto A = properties.area;
+  const auto E = properties.young_modulus;
+  const auto G = properties.shear_modulus;
+  const auto I_z = properties.area_moment_z;
+  const auto k_y = properties.shear_correction_factor_y;
 
   const double Phi_y = 12 * E * I_z * k_y / A / G / L / L;
 

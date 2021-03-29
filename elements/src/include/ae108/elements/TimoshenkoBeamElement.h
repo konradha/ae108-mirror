@@ -157,10 +157,7 @@ template <class ValueType_, std::size_t Dimension_>
 Eigen::Matrix<
     ValueType_, 2 * (Dimension_ + (Dimension_ * (Dimension_ - 1)) / 2),
     2 * (Dimension_ + (Dimension_ * (Dimension_ - 1)) / 2), Eigen::RowMajor>
-rotation_matrix(
-    const tensor::Tensor<ValueType_, Dimension_> &beam_orientation) {
-  exit(1);
-}
+rotation_matrix(const tensor::Tensor<ValueType_, Dimension_> &beam_orientation);
 
 // refer to Cook et. al (2002), "Concepts and applications of Finite Element
 // Analysis", 4th ed., p.32

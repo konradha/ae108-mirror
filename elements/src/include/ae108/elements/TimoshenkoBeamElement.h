@@ -24,7 +24,7 @@ namespace ae108 {
 namespace elements {
 namespace timoshenko {
 
-template <class ValueType_, std::size_t Dimension_> struct Properties {};
+template <class ValueType_, std::size_t Dimension_> struct Properties;
 
 template <class ValueType_> struct Properties<ValueType_, 3> {
   using value_type = ValueType_;

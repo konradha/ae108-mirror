@@ -63,10 +63,8 @@ template <class ValueType_> struct Properties<ValueType_, 2> {
 
 template <class ValueType_, std::size_t Dimension_>
 Eigen::Matrix<
-    ValueType_,
-    2 * (Dimension_ + ((std::size_t)std::pow(Dimension_, 2) - Dimension_) / 2),
-    2 * (Dimension_ + ((std::size_t)std::pow(Dimension_, 2) - Dimension_) / 2),
-    Eigen::RowMajor>
+    ValueType_, 2 * (Dimension_ + (Dimension_ * (Dimension_ - 1)) / 2),
+    2 * (Dimension_ + (Dimension_ * (Dimension_ - 1)) / 2), Eigen::RowMajor>
 stiffness_matrix(const Properties<ValueType_, Dimension_> &beam_properties,
                  const ValueType_ &beam_length) {
   exit(1);
@@ -157,10 +155,8 @@ stiffness_matrix<double, 2>(const Properties<double, 2> &beam_properties,
 
 template <class ValueType_, std::size_t Dimension_>
 Eigen::Matrix<
-    ValueType_,
-    2 * (Dimension_ + ((std::size_t)std::pow(Dimension_, 2) - Dimension_) / 2),
-    2 * (Dimension_ + ((std::size_t)std::pow(Dimension_, 2) - Dimension_) / 2),
-    Eigen::RowMajor>
+    ValueType_, 2 * (Dimension_ + (Dimension_ * (Dimension_ - 1)) / 2),
+    2 * (Dimension_ + (Dimension_ * (Dimension_ - 1)) / 2), Eigen::RowMajor>
 rotation_matrix(
     const tensor::Tensor<ValueType_, Dimension_> &beam_orientation) {
   exit(1);
@@ -229,8 +225,7 @@ rotation_matrix<double, 2>(const tensor::Tensor<double, 2> &beam_orientation) {
 template <std::size_t Dimension_>
 struct BeamElement final
     : ElementBase<BeamElement<Dimension_>, std::size_t, double, 2,
-                  Dimension_ +
-                      ((std::size_t)std::pow(Dimension_, 2) - Dimension_) / 2> {
+                  Dimension_ + (Dimension_ * (Dimension_ - 1)) / 2> {
 public:
   using value_type = typename BeamElement::value_type;
   using size_type = typename BeamElement::size_type;

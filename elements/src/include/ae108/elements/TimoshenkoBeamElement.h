@@ -90,33 +90,45 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &beam_properties,
 
   auto K = Eigen::Matrix<double, 12, 12, Eigen::RowMajor>::Zero().eval();
 
-  K(0, 0) = K(6, 6) = A * E / L;                                 //  X
-  K(0, 6) = K(6, 0) = -A * E / L;                                // -X
-  K(1, 1) = K(7, 7) = 12 * E * I_z / (1 + Phi_y) / L / L / L;    //  Y1
-  K(1, 7) = K(7, 1) = -12 * E * I_z / (1 + Phi_y) / L / L / L;   // -Y1
-  K(1, 5) = K(5, 1) = 6 * E * I_z / (1 + Phi_y) / L / L;         //  Y2
-  K(1, 11) = K(11, 1) = 6 * E * I_z / (1 + Phi_y) / L / L;       //  Y2
-  K(5, 7) = K(7, 5) = -6 * E * I_z / (1 + Phi_y) / L / L;        // -Y2
-  K(7, 11) = K(11, 7) = -6 * E * I_z / (1 + Phi_y) / L / L;      // -Y2
-  K(5, 5) = K(11, 11) = (4 + Phi_y) * E * I_z / (1 + Phi_y) / L; //  Y3
-  K(5, 11) = K(11, 5) = (2 - Phi_y) * E * I_z / (1 + Phi_y) / L; //  Y4
+  const auto X = A * E / L;
+  const auto Y1 = 12 * E * I_z / (1 + Phi_y) / L / L / L;
+  const auto Y2 = 6 * E * I_z / (1 + Phi_y) / L / L;
+  const auto Y3 = (4 + Phi_y) * E * I_z / (1 + Phi_y) / L;
+  const auto Y4 = (2 - Phi_y) * E * I_z / (1 + Phi_y) / L;
+
+  K(0, 0) = K(6, 6) = X;
+  K(0, 6) = K(6, 0) = -X;
+  K(1, 1) = K(7, 7) = Y1;
+  K(1, 7) = K(7, 1) = -Y1;
+  K(1, 5) = K(5, 1) = Y2;
+  K(1, 11) = K(11, 1) = Y2;
+  K(5, 7) = K(7, 5) = -Y2;
+  K(7, 11) = K(11, 7) = -Y2;
+  K(5, 5) = K(11, 11) = Y3;
+  K(5, 11) = K(11, 5) = Y4;
 
   const auto I_y = beam_properties.area_moment_y;
   const auto J_x = beam_properties.polar_moment_x;
   const auto k_z = beam_properties.shear_correction_factor_z;
 
-  const double Phi_z = 12 * E * I_y * k_z / A / G / L / L; // Phi_z
+  const double Phi_z = 12 * E * I_y * k_z / A / G / L / L;
 
-  K(2, 2) = K(8, 8) = 12 * E * I_y / (1 + Phi_z) / L / L / L;    //  Z1
-  K(2, 8) = K(8, 2) = -12 * E * I_y / (1 + Phi_z) / L / L / L;   // -Z1
-  K(2, 4) = K(4, 2) = -6 * E * I_y / (1 + Phi_z) / L / L;        // -Z2
-  K(2, 10) = K(10, 2) = -6 * E * I_y / (1 + Phi_z) / L / L;      // -Z2
-  K(4, 8) = K(8, 4) = 6 * E * I_y / (1 + Phi_z) / L / L;         //  Z2
-  K(8, 10) = K(10, 8) = 6 * E * I_y / (1 + Phi_z) / L / L;       //  Z2
-  K(4, 4) = K(10, 10) = (4 + Phi_z) * E * I_y / (1 + Phi_z) / L; //  Z3
-  K(4, 10) = K(10, 4) = (2 - Phi_z) * E * I_y / (1 + Phi_z) / L; //  Z4
-  K(3, 3) = K(9, 9) = G * J_x / L;                               //  S
-  K(3, 9) = K(9, 3) = -G * J_x / L;                              //  S
+  const auto Z1 = 12 * E * I_y / (1 + Phi_z) / L / L / L;
+  const auto Z2 = 6 * E * I_y / (1 + Phi_z) / L / L;
+  const auto Z3 = (4 + Phi_z) * E * I_y / (1 + Phi_z) / L;
+  const auto Z4 = (2 - Phi_z) * E * I_y / (1 + Phi_z) / L;
+  const auto S = G * J_x / L;
+
+  K(2, 2) = K(8, 8) = Z1;
+  K(2, 8) = K(8, 2) = -Z1;
+  K(2, 4) = K(4, 2) = -Z2;
+  K(2, 10) = K(10, 2) = -Z2;
+  K(4, 8) = K(8, 4) = Z2;
+  K(8, 10) = K(10, 8) = Z2;
+  K(4, 4) = K(10, 10) = Z3;
+  K(4, 10) = K(10, 4) = Z4;
+  K(3, 3) = K(9, 9) = S;
+  K(3, 9) = K(9, 3) = -S;
 
   return K * beam_properties.weight;
 }
@@ -135,20 +147,26 @@ stiffness_matrix<double, 2>(const Properties<double, 2> &beam_properties,
   const auto I_z = beam_properties.area_moment_z;
   const auto k_y = beam_properties.shear_correction_factor_y;
 
-  const double Phi_y = 12 * E * I_z * k_y / A / G / L / L; // Phi_y
+  const double Phi_y = 12 * E * I_z * k_y / A / G / L / L;
 
   auto K = Eigen::Matrix<double, 6, 6, Eigen::RowMajor>::Zero().eval();
 
-  K(0, 0) = K(3, 3) = A * E / L;                               //  X
-  K(0, 3) = K(3, 0) = -A * E / L;                              // -X
-  K(1, 1) = K(4, 4) = 12 * E * I_z / (1 + Phi_y) / L / L / L;  //  Y1
-  K(1, 4) = K(4, 1) = -12 * E * I_z / (1 + Phi_y) / L / L / L; // -Y1
-  K(1, 2) = K(2, 1) = 6 * E * I_z / (1 + Phi_y) / L / L;       //  Y2
-  K(1, 5) = K(5, 1) = 6 * E * I_z / (1 + Phi_y) / L / L;       //  Y2
-  K(2, 4) = K(4, 2) = -6 * E * I_z / (1 + Phi_y) / L / L;      // -Y2
-  K(4, 5) = K(5, 4) = -6 * E * I_z / (1 + Phi_y) / L / L;      // -Y2
-  K(2, 2) = K(5, 5) = (4 + Phi_y) * E * I_z / (1 + Phi_y) / L; //  Y3
-  K(2, 5) = K(5, 2) = (2 - Phi_y) * E * I_z / (1 + Phi_y) / L; //  Y4
+  const auto X = A * E / L;
+  const auto Y1 = 12 * E * I_z / (1 + Phi_y) / L / L / L;
+  const auto Y2 = 6 * E * I_z / (1 + Phi_y) / L / L;
+  const auto Y3 = (4 + Phi_y) * E * I_z / (1 + Phi_y) / L;
+  const auto Y4 = (2 - Phi_y) * E * I_z / (1 + Phi_y) / L;
+
+  K(0, 0) = K(3, 3) = X;
+  K(0, 3) = K(3, 0) = -X;
+  K(1, 1) = K(4, 4) = Y1;
+  K(1, 4) = K(4, 1) = -Y1;
+  K(1, 2) = K(2, 1) = Y2;
+  K(1, 5) = K(5, 1) = Y2;
+  K(2, 4) = K(4, 2) = -Y2;
+  K(4, 5) = K(5, 4) = -Y2;
+  K(2, 2) = K(5, 5) = Y3;
+  K(2, 5) = K(5, 2) = Y4;
 
   return K;
 }
@@ -283,7 +301,6 @@ struct ComputeForcesTrait<timoshenko::BeamElement<Dimension_>> {
   operator()(const Element &element,
              const typename Element::NodalDisplacements &u,
              const typename Element::Time &) const noexcept {
-
     using DisplacementVector =
         Eigen::Matrix<double, Element::degrees_of_freedom() * Element::size(),
                       1>;
@@ -312,7 +329,6 @@ struct ComputeStiffnessMatrixTrait<timoshenko::BeamElement<Dimension_>> {
   operator()(const Element &element,
              const typename Element::NodalDisplacements &,
              const typename Element::Time &) const noexcept {
-
     return element.stiffness_matrix();
   };
 };

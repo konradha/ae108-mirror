@@ -27,14 +27,38 @@ namespace timoshenko {
 template <class ValueType_, std::size_t Dimension_> struct Properties {};
 
 template <class ValueType_> struct Properties<ValueType_, 3> {
-  ValueType_ young_modulus, shear_modulus, shear_correction_factor_y,
-      shear_correction_factor_z, density, area, area_moment_z, area_moment_y,
-      polar_moment_x, element_weight;
+  using value_type = ValueType_;
+
+  value_type young_modulus;
+  value_type shear_modulus;
+
+  value_type shear_correction_factor_y;
+  value_type shear_correction_factor_z;
+
+  value_type density;
+
+  value_type area;
+  value_type area_moment_z;
+  value_type area_moment_y;
+
+  value_type polar_moment_x;
+  value_type element_weight;
 };
 
 template <class ValueType_> struct Properties<ValueType_, 2> {
-  ValueType_ young_modulus, shear_modulus, shear_correction_factor_y, density,
-      area, area_moment_z, element_weight;
+  using value_type = ValueType_;
+
+  value_type young_modulus;
+  value_type shear_modulus;
+
+  value_type shear_correction_factor_y;
+
+  value_type density;
+
+  value_type area;
+  value_type area_moment_z;
+
+  value_type element_weight;
 };
 
 template <class ValueType_, std::size_t Dimension_>

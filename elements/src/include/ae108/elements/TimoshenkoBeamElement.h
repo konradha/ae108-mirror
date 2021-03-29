@@ -79,12 +79,12 @@ inline Eigen::Matrix<double, 12, 12, Eigen::RowMajor>
 stiffness_matrix<double, 3>(const Properties<double, 3> &beam_properties,
                             const double &beam_length) {
 
-  const auto &L = beam_length;
-  const auto &A = beam_properties.area;
-  const auto &E = beam_properties.young_modulus;
-  const auto &G = beam_properties.shear_modulus;
-  const auto &I_z = beam_properties.area_moment_z;
-  const auto &k_y = beam_properties.shear_correction_factor_y;
+  const auto L = beam_length;
+  const auto A = beam_properties.area;
+  const auto E = beam_properties.young_modulus;
+  const auto G = beam_properties.shear_modulus;
+  const auto I_z = beam_properties.area_moment_z;
+  const auto k_y = beam_properties.shear_correction_factor_y;
 
   double Phi_y = 12 * E * I_z * k_y / A / G / L / L; // Phi_y
 
@@ -101,9 +101,9 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &beam_properties,
   K(5, 5) = K(11, 11) = (4 + Phi_y) * E * I_z / (1 + Phi_y) / L; //  Y3
   K(5, 11) = K(11, 5) = (2 - Phi_y) * E * I_z / (1 + Phi_y) / L; //  Y4
 
-  const auto &I_y = beam_properties.area_moment_y;
-  const auto &J_x = beam_properties.polar_moment_x;
-  const auto &k_z = beam_properties.shear_correction_factor_z;
+  const auto I_y = beam_properties.area_moment_y;
+  const auto J_x = beam_properties.polar_moment_x;
+  const auto k_z = beam_properties.shear_correction_factor_z;
 
   double Phi_z = 12 * E * I_y * k_z / A / G / L / L; // Phi_z
 
@@ -128,12 +128,12 @@ inline Eigen::Matrix<double, 6, 6, Eigen::RowMajor>
 stiffness_matrix<double, 2>(const Properties<double, 2> &beam_properties,
                             const double &beam_length) {
 
-  const auto &L = beam_length;
-  const auto &A = beam_properties.area;
-  const auto &E = beam_properties.young_modulus;
-  const auto &G = beam_properties.shear_modulus;
-  const auto &I_z = beam_properties.area_moment_z;
-  const auto &k_y = beam_properties.shear_correction_factor_y;
+  const auto L = beam_length;
+  const auto A = beam_properties.area;
+  const auto E = beam_properties.young_modulus;
+  const auto G = beam_properties.shear_modulus;
+  const auto I_z = beam_properties.area_moment_z;
+  const auto k_y = beam_properties.shear_correction_factor_y;
 
   double Phi_y = 12 * E * I_z * k_y / A / G / L / L; // Phi_y
 

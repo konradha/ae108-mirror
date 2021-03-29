@@ -70,14 +70,14 @@ Eigen::Matrix<
     ValueType_, 2 * (Dimension_ + (Dimension_ * (Dimension_ - 1)) / 2),
     2 * (Dimension_ + (Dimension_ * (Dimension_ - 1)) / 2), Eigen::RowMajor>
 stiffness_matrix(const Properties<ValueType_, Dimension_> &beam_properties,
-                 const ValueType_ &beam_length);
+                 const ValueType_ beam_length);
 
 // refer to Cook et. al (2002), "Concepts and applications of Finite Element
 // Analysis", 4th ed., p.27
 template <>
 inline Eigen::Matrix<double, 12, 12, Eigen::RowMajor>
 stiffness_matrix<double, 3>(const Properties<double, 3> &beam_properties,
-                            const double &beam_length) {
+                            const double beam_length) {
 
   const auto L = beam_length;
   const auto A = beam_properties.area;
@@ -126,7 +126,7 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &beam_properties,
 template <>
 inline Eigen::Matrix<double, 6, 6, Eigen::RowMajor>
 stiffness_matrix<double, 2>(const Properties<double, 2> &beam_properties,
-                            const double &beam_length) {
+                            const double beam_length) {
 
   const auto L = beam_length;
   const auto A = beam_properties.area;

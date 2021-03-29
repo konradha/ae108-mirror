@@ -14,6 +14,8 @@
 
 #pragma once
 
+#include <boost/version.hpp>
+
 #if BOOST_VERSION >= 107000
 #include <boost/math/differentiation/finite_difference.hpp>
 #else

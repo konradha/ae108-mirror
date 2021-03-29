@@ -278,19 +278,9 @@ struct ComputeEnergyTrait<timoshenko::BeamElement<Dimension_>> {
   operator()(const Element &element,
              const typename Element::NodalDisplacements &u,
              const typename Element::Time &) const noexcept {
-
-    using DisplacementVector =
-        Eigen::Matrix<double, Element::degrees_of_freedom() * Element::size(),
-                      1>;
-
-    auto displacement_vector = DisplacementVector::Zero().eval();
-    for (typename Element::size_type node = 0; node < Element::size(); node++)
-      displacement_vector.segment(node * Element::degrees_of_freedom(),
-                                  Element::degrees_of_freedom()) =
-          tensor::as_vector(&u[node]);
-
-    return .5 * displacement_vector.dot(element.stiffness_matrix() *
-                                        displacement_vector);
+    const auto v = tensor::as_vector(&u);
+    return typename Element::Energy{.5} * v.transpose() *
+           element.stiffness_matrix() * v;
   }
 };
 
@@ -301,23 +291,9 @@ struct ComputeForcesTrait<timoshenko::BeamElement<Dimension_>> {
   operator()(const Element &element,
              const typename Element::NodalDisplacements &u,
              const typename Element::Time &) const noexcept {
-    using DisplacementVector =
-        Eigen::Matrix<double, Element::degrees_of_freedom() * Element::size(),
-                      1>;
-
-    auto displacement_vector = DisplacementVector::Zero().eval();
-    for (typename Element::size_type node = 0; node < Element::size(); node++)
-      displacement_vector.segment(node * Element::degrees_of_freedom(),
-                                  Element::degrees_of_freedom()) =
-          tensor::as_vector(&u[node]);
-
-    auto element_forces = element.stiffness_matrix() * displacement_vector;
-
     typename Element::Forces forces;
-    for (typename Element::size_type node = 0; node < Element::size(); node++)
-      tensor::as_vector(&forces[node]) = element_forces.segment(
-          node * Element::degrees_of_freedom(), Element::degrees_of_freedom());
-
+    tensor::as_vector(&forces) =
+        element.stiffness_matrix() * tensor::as_vector(&u);
     return forces;
   }
 };

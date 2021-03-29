@@ -231,22 +231,19 @@ public:
 
   explicit BeamElement(
       const Vector &element_axis,
-      const Properties<value_type, Dimension_> &properties) noexcept
-      : element_axis_(element_axis) {
+      const Properties<value_type, Dimension_> &properties) noexcept {
 
     const auto reference_stiffness_matrix =
         timoshenko::stiffness_matrix<value_type, BeamElement::dimension()>(
-            properties, tensor::as_vector(&element_axis_).norm());
+            properties, tensor::as_vector(&element_axis).norm());
 
     const auto rotation_matrix =
         timoshenko::rotation_matrix<value_type, BeamElement::dimension()>(
-            element_axis_);
+            element_axis);
 
     stiffness_matrix_ = rotation_matrix.transpose() *
                         reference_stiffness_matrix * rotation_matrix;
   }
-
-  const Vector &element_axis() const { return element_axis_; }
 
   const typename BeamElement::StiffnessMatrix &stiffness_matrix() const {
     return stiffness_matrix_;
@@ -255,7 +252,6 @@ public:
   static constexpr size_type dimension() { return Dimension_; }
 
 private:
-  Vector element_axis_;
   typename BeamElement::StiffnessMatrix stiffness_matrix_;
 };
 } // namespace timoshenko

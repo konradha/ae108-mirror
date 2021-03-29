@@ -135,8 +135,8 @@ TEST_F(TimoshenkoBeamElement2D_Test,
 struct TimoshenkoBeamElement3D_Test : Test {
   using Element = timoshenko::BeamElement<3>;
   const Element element = ReferenceConfiguration<Element>::create_element();
-  const Element::value_type L =
-      tensor::as_vector(&element.element_axis()).norm();
+  const Element::Vector axis = create_reference_element_axis<Element>();
+  const Element::value_type L = tensor::as_vector(&axis).norm();
 };
 
 TEST_F(TimoshenkoBeamElement3D_Test, computes_energy_with_axial_displacement) {
@@ -216,8 +216,9 @@ struct TimoshenkoBeamElement2D_rotated_Test : Test {
   using Element = timoshenko::BeamElement<2>;
   const Element element =
       RotatedAndStretchedConfiguration<Element>::create_element();
-  const Element::value_type L =
-      tensor::as_vector(&element.element_axis()).norm();
+  const Element::Vector axis =
+      create_rotated_and_stretched_element_axis<Element>();
+  const Element::value_type L = tensor::as_vector(&axis).norm();
 };
 
 TEST_F(TimoshenkoBeamElement2D_rotated_Test,
@@ -262,8 +263,9 @@ struct TimoshenkoBeamElement3D_rotated_Test : Test {
   using Element = timoshenko::BeamElement<3>;
   const Element element =
       RotatedAndStretchedConfiguration<Element>::create_element();
-  const Element::value_type L =
-      tensor::as_vector(&element.element_axis()).norm();
+  const Element::Vector axis =
+      create_rotated_and_stretched_element_axis<Element>();
+  const Element::value_type L = tensor::as_vector(&axis).norm();
 };
 
 TEST_F(TimoshenkoBeamElement3D_rotated_Test,

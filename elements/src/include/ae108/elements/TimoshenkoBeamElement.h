@@ -66,9 +66,7 @@ Eigen::Matrix<
     ValueType_, 2 * (Dimension_ + (Dimension_ * (Dimension_ - 1)) / 2),
     2 * (Dimension_ + (Dimension_ * (Dimension_ - 1)) / 2), Eigen::RowMajor>
 stiffness_matrix(const Properties<ValueType_, Dimension_> &beam_properties,
-                 const ValueType_ &beam_length) {
-  exit(1);
-}
+                 const ValueType_ &beam_length);
 
 // refer to Cook et. al (2002), "Concepts and applications of Finite Element
 // Analysis", 4th ed., p.27

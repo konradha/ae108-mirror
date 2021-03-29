@@ -61,6 +61,10 @@ template <class ValueType_> struct Properties<ValueType_, 2> {
   value_type weight;
 };
 
+/**
+ * @brief Computes the stiffness matrix of a reference beam with the given
+ * properties.
+ */
 template <class ValueType_, std::size_t Dimension_>
 Eigen::Matrix<
     ValueType_, 2 * (Dimension_ + (Dimension_ * (Dimension_ - 1)) / 2),

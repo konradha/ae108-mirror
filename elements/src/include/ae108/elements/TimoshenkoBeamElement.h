@@ -86,7 +86,7 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &beam_properties,
   const auto I_z = beam_properties.area_moment_z;
   const auto k_y = beam_properties.shear_correction_factor_y;
 
-  double Phi_y = 12 * E * I_z * k_y / A / G / L / L; // Phi_y
+  const double Phi_y = 12 * E * I_z * k_y / A / G / L / L; // Phi_y
 
   auto K = Eigen::Matrix<double, 12, 12, Eigen::RowMajor>::Zero().eval();
 
@@ -105,7 +105,7 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &beam_properties,
   const auto J_x = beam_properties.polar_moment_x;
   const auto k_z = beam_properties.shear_correction_factor_z;
 
-  double Phi_z = 12 * E * I_y * k_z / A / G / L / L; // Phi_z
+  const double Phi_z = 12 * E * I_y * k_z / A / G / L / L; // Phi_z
 
   K(2, 2) = K(8, 8) = 12 * E * I_y / (1 + Phi_z) / L / L / L;    //  Z1
   K(2, 8) = K(8, 2) = -12 * E * I_y / (1 + Phi_z) / L / L / L;   // -Z1
@@ -135,7 +135,7 @@ stiffness_matrix<double, 2>(const Properties<double, 2> &beam_properties,
   const auto I_z = beam_properties.area_moment_z;
   const auto k_y = beam_properties.shear_correction_factor_y;
 
-  double Phi_y = 12 * E * I_z * k_y / A / G / L / L; // Phi_y
+  const double Phi_y = 12 * E * I_z * k_y / A / G / L / L; // Phi_y
 
   auto K = Eigen::Matrix<double, 6, 6, Eigen::RowMajor>::Zero().eval();
 

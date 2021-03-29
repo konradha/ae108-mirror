@@ -86,8 +86,7 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &beam_properties,
 
   double Phi_y = 12 * E * I_z * k_y / A / G / L / L; // Phi_y
 
-  Eigen::Matrix<double, 12, 12, Eigen::RowMajor> K =
-      Eigen::Matrix<double, 12, 12, Eigen::RowMajor>::Zero();
+  auto K = Eigen::Matrix<double, 12, 12, Eigen::RowMajor>::Zero().eval();
 
   K(0, 0) = K(6, 6) = A * E / L;                                 //  X
   K(0, 6) = K(6, 0) = -A * E / L;                                // -X
@@ -136,8 +135,7 @@ stiffness_matrix<double, 2>(const Properties<double, 2> &beam_properties,
 
   double Phi_y = 12 * E * I_z * k_y / A / G / L / L; // Phi_y
 
-  Eigen::Matrix<double, 6, 6, Eigen::RowMajor> K =
-      Eigen::Matrix<double, 6, 6, Eigen::RowMajor>::Zero();
+  auto K = Eigen::Matrix<double, 6, 6, Eigen::RowMajor>::Zero().eval();
 
   K(0, 0) = K(3, 3) = A * E / L;                               //  X
   K(0, 3) = K(3, 0) = -A * E / L;                              // -X
@@ -171,8 +169,7 @@ rotation_matrix<double, 3>(const tensor::Tensor<double, 3> &beam_orientation) {
   const auto ax = tensor::as_vector(&beam_orientation) /
                   tensor::as_vector(&beam_orientation).norm();
 
-  Eigen::Matrix<double, 3, 3, Eigen::RowMajor> Lambda =
-      Eigen::Matrix<double, 3, 3, Eigen::RowMajor>::Zero();
+  auto Lambda = Eigen::Matrix<double, 3, 3, Eigen::RowMajor>::Zero().eval();
   Lambda.col(0) << ax(0), -ax(0) * ax(1), -ax(2);              // l1,l2,l3
   Lambda.col(1) << ax(1), (ax(0) * ax(0) + ax(2) * ax(2)), 0.; // m1,m2,m3
   Lambda.col(2) << ax(2), -ax(1) * ax(2), ax(0);               // n1,n2,n3
@@ -181,8 +178,7 @@ rotation_matrix<double, 3>(const tensor::Tensor<double, 3> &beam_orientation) {
   if (fabs(ax(0)) < 1e-4 && fabs(ax(2)) < 1e-4)
     Lambda << 0, ax(1), 0, -ax(1), 0, 0, 0, 0, 1;
 
-  Eigen::Matrix<double, 12, 12, Eigen::RowMajor> T =
-      Eigen::Matrix<double, 12, 12, Eigen::RowMajor>::Zero();
+  auto T = Eigen::Matrix<double, 12, 12, Eigen::RowMajor>::Zero().eval();
 
   T.block(0, 0, 3, 3) = Lambda;
   T.block(3, 3, 3, 3) = Lambda;
@@ -208,8 +204,7 @@ rotation_matrix<double, 2>(const tensor::Tensor<double, 2> &beam_orientation) {
   Lambda.col(1) << ax(1), ax(0), 0.;
   Lambda.col(2) << 0., 0., 1.;
 
-  Eigen::Matrix<double, 6, 6, Eigen::RowMajor> T =
-      Eigen::Matrix<double, 6, 6, Eigen::RowMajor>::Zero();
+  auto T = Eigen::Matrix<double, 6, 6, Eigen::RowMajor>::Zero().eval();
 
   T.block(0, 0, 3, 3) = Lambda;
   T.block(3, 3, 3, 3) = Lambda;
@@ -280,7 +275,7 @@ struct ComputeEnergyTrait<timoshenko::BeamElement<Dimension_>> {
         Eigen::Matrix<double, Element::degrees_of_freedom() * Element::size(),
                       1>;
 
-    DisplacementVector displacement_vector = DisplacementVector::Zero();
+    auto displacement_vector = DisplacementVector::Zero().eval();
     for (typename Element::size_type node = 0; node < Element::size(); node++)
       displacement_vector.segment(node * Element::degrees_of_freedom(),
                                   Element::degrees_of_freedom()) =
@@ -303,7 +298,7 @@ struct ComputeForcesTrait<timoshenko::BeamElement<Dimension_>> {
         Eigen::Matrix<double, Element::degrees_of_freedom() * Element::size(),
                       1>;
 
-    DisplacementVector displacement_vector = DisplacementVector::Zero();
+    auto displacement_vector = DisplacementVector::Zero().eval();
     for (typename Element::size_type node = 0; node < Element::size(); node++)
       displacement_vector.segment(node * Element::degrees_of_freedom(),
                                   Element::degrees_of_freedom()) =

@@ -99,7 +99,7 @@ constexpr Mesh::value_type thickness = 1.;
 constexpr Mesh::value_type width = 0.1;
 constexpr Mesh::value_type area = width * thickness;
 constexpr Mesh::value_type area_moment_z = thickness * std::pow(width, 3) / 12.;
-constexpr Mesh::value_type element_weight = 1.;
+constexpr Mesh::value_type weight = 1.;
 
 // We will assemble e.g. energy using a collection of elements. This is done by
 // the assembler. (The list DefaultFeaturePlugins contain the features (e.g.
@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
 
     Properties properties = {
         young_modulus, shear_modulus, shear_correction_factor_y, density, area,
-        area_moment_z, element_weight};
+        area_moment_z, weight};
 
     // Depending on whether we use MPI, our mesh may be distributed and not all
     // elements are present on this computational node.

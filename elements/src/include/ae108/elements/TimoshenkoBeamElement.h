@@ -42,7 +42,7 @@ template <class ValueType_> struct Properties<ValueType_, 3> {
   value_type area_moment_y;
 
   value_type polar_moment_x;
-  value_type element_weight;
+  value_type weight;
 };
 
 template <class ValueType_> struct Properties<ValueType_, 2> {
@@ -58,7 +58,7 @@ template <class ValueType_> struct Properties<ValueType_, 2> {
   value_type area;
   value_type area_moment_z;
 
-  value_type element_weight;
+  value_type weight;
 };
 
 template <class ValueType_, std::size_t Dimension_>
@@ -117,7 +117,7 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &beam_properties,
   K(3, 3) = K(9, 9) = G * J_x / L;                               //  S
   K(3, 9) = K(9, 3) = -G * J_x / L;                              //  S
 
-  return K * beam_properties.element_weight;
+  return K * beam_properties.weight;
 }
 
 // refer to Cook et. al (2002), "Concepts and applications of Finite Element

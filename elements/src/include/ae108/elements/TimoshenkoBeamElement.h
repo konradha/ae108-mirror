@@ -85,8 +85,12 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &properties,
   const auto G = properties.shear_modulus;
   const auto I_z = properties.area_moment_z;
   const auto k_y = properties.shear_correction_factor_y;
+  const auto I_y = properties.area_moment_y;
+  const auto J_x = properties.polar_moment_x;
+  const auto k_z = properties.shear_correction_factor_z;
 
   const double Phi_y = 12 * E * I_z * k_y / A / G / L / L;
+  const double Phi_z = 12 * E * I_y * k_z / A / G / L / L;
 
   auto K = Eigen::Matrix<double, 12, 12, Eigen::RowMajor>::Zero().eval();
 
@@ -95,42 +99,33 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &properties,
   const auto Y2 = 6 * E * I_z / (1 + Phi_y) / L / L;
   const auto Y3 = (4 + Phi_y) * E * I_z / (1 + Phi_y) / L;
   const auto Y4 = (2 - Phi_y) * E * I_z / (1 + Phi_y) / L;
-
-  K(0, 0) = K(6, 6) = X;
-  K(1, 1) = K(7, 7) = Y1;
-  K(5, 5) = K(11, 11) = Y3;
-
-   K(6, 0) = -X;
-   K(7, 1) = -Y1;
-   K(5, 1) = Y2;
-   K(11, 1) = Y2;
-   K(7, 5) = -Y2;
-   K(11, 7) = -Y2;
-   K(11, 5) = Y4;
-
-  const auto I_y = properties.area_moment_y;
-  const auto J_x = properties.polar_moment_x;
-  const auto k_z = properties.shear_correction_factor_z;
-
-  const double Phi_z = 12 * E * I_y * k_z / A / G / L / L;
-
   const auto Z1 = 12 * E * I_y / (1 + Phi_z) / L / L / L;
   const auto Z2 = 6 * E * I_y / (1 + Phi_z) / L / L;
   const auto Z3 = (4 + Phi_z) * E * I_y / (1 + Phi_z) / L;
   const auto Z4 = (2 - Phi_z) * E * I_y / (1 + Phi_z) / L;
   const auto S = G * J_x / L;
 
+  K(0, 0) = K(6, 6) = X;
+  K(1, 1) = K(7, 7) = Y1;
+  K(5, 5) = K(11, 11) = Y3;
   K(2, 2) = K(8, 8) = Z1;
   K(3, 3) = K(9, 9) = S;
   K(4, 4) = K(10, 10) = Z3;
 
-   K(8, 2) = -Z1;
-   K(4, 2) = -Z2;
-   K(10, 2) = -Z2;
-   K(8, 4) = Z2;
-   K(10, 8) = Z2;
-   K(10, 4) = Z4;
-   K(9, 3) = -S;
+  K(6, 0) = -X;
+  K(7, 1) = -Y1;
+  K(5, 1) = Y2;
+  K(11, 1) = Y2;
+  K(7, 5) = -Y2;
+  K(11, 7) = -Y2;
+  K(11, 5) = Y4;
+  K(8, 2) = -Z1;
+  K(4, 2) = -Z2;
+  K(10, 2) = -Z2;
+  K(8, 4) = Z2;
+  K(10, 8) = Z2;
+  K(10, 4) = Z4;
+  K(9, 3) = -S;
 
   return properties.weight * K.template selfadjointView<Eigen::Upper>();
 }

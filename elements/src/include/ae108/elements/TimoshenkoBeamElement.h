@@ -20,6 +20,7 @@
 #include "ae108/elements/ElementBase.h"
 #include "ae108/elements/tensor/as_matrix_of_rows.h"
 #include "ae108/elements/tensor/as_vector.h"
+#include <Eigen/Geometry>
 
 namespace ae108 {
 namespace elements {
@@ -105,20 +106,22 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &properties,
 
   const auto _ = 0.;
 
+  // clang-format off
   const tensor::Tensor<double, 12, 12> matrix = {{
-      {{X, 0., 0., 0., 0., 0., -X, 0., 0., 0., 0., 0.}},
-      {{_, Y1, 0., 0., 0., Y2, 0., -Y1, 0., 0., 0., Y2}},
-      {{_, _, Z1, 0., -Z2, 0., 0., 0., -Z1, 0., -Z2, 0.}},
-      {{_, _, _, S, 0., 0., 0., 0., 0., -S, 0., 0.}},
-      {{_, _, _, _, Z3, 0., 0., 0., Z2, 0., Z4, 0.}},
-      {{_, _, _, _, _, Y3, 0. - Y2, 0., 0., 0., Y4}},
-      {{_, _, _, _, _, _, X, 0., 0., 0., 0., 0.}},
-      {{_, _, _, _, _, _, _, Y1, 0., 0., 0., -Y2}},
-      {{_, _, _, _, _, _, _, _, Z1, 0., Z2, 0.}},
-      {{_, _, _, _, _, _, _, _, _, S, 0., 0.}},
-      {{_, _, _, _, _, _, _, _, _, _, Z3, 0.}},
-      {{_, _, _, _, _, _, _, _, _, _, _, Y3}},
+      {{  X,   _,   _,   _,   _,   _,  -X,   _,   _,   _,   _,   _}},
+      {{  _,  Y1,   _,   _,   _,  Y2,   _, -Y1,   _,   _,   _,  Y2}},
+      {{  _,   _,  Z1,   _, -Z2,   _,   _,   _, -Z1,   _, -Z2,   _}},
+      {{  _,   _,   _,   S,   _,   _,   _,   _,   _,  -S,   _,   _}},
+      {{  _,   _,   _,   _,  Z3,   _,   _,   _,  Z2,   _,  Z4,   _}},
+      {{  _,   _,   _,   _,   _,  Y3,   _, -Y2,   _,   _,   _,  Y4}},
+      {{  _,   _,   _,   _,   _,   _,   X,   _,   _,   _,   _,   _}},
+      {{  _,   _,   _,   _,   _,   _,   _,  Y1,   _,   _,   _,  -Y2}},
+      {{  _,   _,   _,   _,   _,   _,   _,   _,  Z1,   _,  Z2,   _}},
+      {{  _,   _,   _,   _,   _,   _,   _,   _,   _,   S,   _,   _}},
+      {{  _,   _,   _,   _,   _,   _,   _,   _,   _,   _,  Z3,   _}},
+      {{  _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _,  Y3}},
   }};
+  // clang-format on
 
   return properties.weight * tensor::as_matrix_of_rows(&matrix)
                                  .template selfadjointView<Eigen::Upper>();

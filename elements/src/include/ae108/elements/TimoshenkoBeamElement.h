@@ -167,27 +167,21 @@ rotation_matrix(const tensor::Tensor<ValueType_, Dimension_> &orientation);
 template <>
 inline Eigen::Matrix<double, 12, 12, Eigen::RowMajor>
 rotation_matrix<double, 3>(const tensor::Tensor<double, 3> &orientation) {
+  // rotation that maps the normalized orientation vector to (1, 0, 0)
+  const auto Lambda = Eigen::Quaternion<double>()
+                          .FromTwoVectors(tensor::as_vector(&orientation),
+                                          Eigen::Vector3d::UnitX())
+                          .normalized()
+                          .toRotationMatrix();
 
-  const auto ax =
-      tensor::as_vector(&orientation) / tensor::as_vector(&orientation).norm();
+  auto result = Eigen::Matrix<double, 12, 12, Eigen::RowMajor>::Zero().eval();
 
-  auto Lambda = Eigen::Matrix<double, 3, 3, Eigen::RowMajor>::Zero().eval();
-  Lambda.col(0) << ax(0), -ax(0) * ax(1), -ax(2);              // l1,l2,l3
-  Lambda.col(1) << ax(1), (ax(0) * ax(0) + ax(2) * ax(2)), 0.; // m1,m2,m3
-  Lambda.col(2) << ax(2), -ax(1) * ax(2), ax(0);               // n1,n2,n3
-  Lambda.block(1, 0, 2, 3) /= std::sqrt(ax(0) * ax(0) + ax(2) * ax(2));
+  result.block(0, 0, 3, 3) = Lambda;
+  result.block(3, 3, 3, 3) = Lambda;
+  result.block(6, 6, 3, 3) = Lambda;
+  result.block(9, 9, 3, 3) = Lambda;
 
-  if (fabs(ax(0)) < 1e-4 && fabs(ax(2)) < 1e-4)
-    Lambda << 0, ax(1), 0, -ax(1), 0, 0, 0, 0, 1;
-
-  auto T = Eigen::Matrix<double, 12, 12, Eigen::RowMajor>::Zero().eval();
-
-  T.block(0, 0, 3, 3) = Lambda;
-  T.block(3, 3, 3, 3) = Lambda;
-  T.block(6, 6, 3, 3) = Lambda;
-  T.block(9, 9, 3, 3) = Lambda;
-
-  return T;
+  return result;
 }
 
 // refer to Cook et. al (2002), "Concepts and applications of Finite Element
@@ -195,23 +189,23 @@ rotation_matrix<double, 3>(const tensor::Tensor<double, 3> &orientation) {
 template <>
 inline Eigen::Matrix<double, 6, 6, Eigen::RowMajor>
 rotation_matrix<double, 2>(const tensor::Tensor<double, 2> &orientation) {
-
-  const auto ax =
+  const auto normalized =
       tensor::as_vector(&orientation) / tensor::as_vector(&orientation).norm();
 
-  Eigen::Matrix<double, 3, 3, Eigen::RowMajor> Lambda =
-      Eigen::Matrix<double, 3, 3, Eigen::RowMajor>::Zero();
+  // rotation that maps the normalized orientation vector to (1, 0)
+  const tensor::Tensor<double, 2, 2> Lambda = {{
+      {{normalized[0], normalized[1]}},
+      {{-normalized[1], normalized[0]}},
+  }};
 
-  Lambda.col(0) << ax(0), -ax(1), 0.;
-  Lambda.col(1) << ax(1), ax(0), 0.;
-  Lambda.col(2) << 0., 0., 1.;
+  auto result = Eigen::Matrix<double, 6, 6, Eigen::RowMajor>::Zero().eval();
 
-  auto T = Eigen::Matrix<double, 6, 6, Eigen::RowMajor>::Zero().eval();
+  result.block(0, 0, 2, 2) = tensor::as_matrix_of_rows(&Lambda);
+  result(2, 2) = 1.;
+  result.block(3, 3, 2, 2) = tensor::as_matrix_of_rows(&Lambda);
+  result(5, 5) = 1.;
 
-  T.block(0, 0, 3, 3) = Lambda;
-  T.block(3, 3, 3, 3) = Lambda;
-
-  return T;
+  return result;
 }
 
 /**

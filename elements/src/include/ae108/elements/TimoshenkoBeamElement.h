@@ -42,6 +42,7 @@ template <class ValueType_> struct Properties<ValueType_, 3> {
   value_type area_moment_y;
 
   value_type polar_moment_x;
+
   value_type weight;
 };
 
@@ -66,9 +67,8 @@ template <class ValueType_> struct Properties<ValueType_, 2> {
  * properties.
  */
 template <class ValueType_, std::size_t Dimension_>
-Eigen::Matrix<
-    ValueType_, 2 * (Dimension_ + (Dimension_ * (Dimension_ - 1)) / 2),
-    2 * (Dimension_ + (Dimension_ * (Dimension_ - 1)) / 2), Eigen::RowMajor>
+Eigen::Matrix<ValueType_, Dimension_ *(Dimension_ + 1),
+              Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
 stiffness_matrix(const Properties<ValueType_, Dimension_> &properties,
                  const ValueType_ length);
 
@@ -172,9 +172,8 @@ stiffness_matrix<double, 2>(const Properties<double, 2> &properties,
 }
 
 template <class ValueType_, std::size_t Dimension_>
-Eigen::Matrix<
-    ValueType_, 2 * (Dimension_ + (Dimension_ * (Dimension_ - 1)) / 2),
-    2 * (Dimension_ + (Dimension_ * (Dimension_ - 1)) / 2), Eigen::RowMajor>
+Eigen::Matrix<ValueType_, Dimension_ *(Dimension_ + 1),
+              Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
 rotation_matrix(const tensor::Tensor<ValueType_, Dimension_> &beam_orientation);
 
 // refer to Cook et. al (2002), "Concepts and applications of Finite Element
@@ -237,7 +236,7 @@ rotation_matrix<double, 2>(const tensor::Tensor<double, 2> &beam_orientation) {
 template <std::size_t Dimension_>
 struct BeamElement final
     : ElementBase<BeamElement<Dimension_>, std::size_t, double, 2,
-                  Dimension_ + (Dimension_ * (Dimension_ - 1)) / 2> {
+                  (Dimension_ * (Dimension_ + 1)) / 2> {
 public:
   using value_type = typename BeamElement::value_type;
   using size_type = typename BeamElement::size_type;

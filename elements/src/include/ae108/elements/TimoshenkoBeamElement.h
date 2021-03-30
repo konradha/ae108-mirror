@@ -112,19 +112,18 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &properties,
       {{  _,  Y1,   _,   _,   _,  Y2,   _, -Y1,   _,   _,   _,  Y2}},
       {{  _,   _,  Z1,   _, -Z2,   _,   _,   _, -Z1,   _, -Z2,   _}},
       {{  _,   _,   _,   S,   _,   _,   _,   _,   _,  -S,   _,   _}},
-      {{  _,   _,   _,   _,  Z3,   _,   _,   _,  Z2,   _,  Z4,   _}},
-      {{  _,   _,   _,   _,   _,  Y3,   _, -Y2,   _,   _,   _,  Y4}},
-      {{  _,   _,   _,   _,   _,   _,   X,   _,   _,   _,   _,   _}},
-      {{  _,   _,   _,   _,   _,   _,   _,  Y1,   _,   _,   _,  -Y2}},
-      {{  _,   _,   _,   _,   _,   _,   _,   _,  Z1,   _,  Z2,   _}},
-      {{  _,   _,   _,   _,   _,   _,   _,   _,   _,   S,   _,   _}},
-      {{  _,   _,   _,   _,   _,   _,   _,   _,   _,   _,  Z3,   _}},
-      {{  _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _,  Y3}},
+      {{  _,   _, -Z2,   _,  Z3,   _,   _,   _,  Z2,   _,  Z4,   _}},
+      {{  _,  Y2,   _,   _,   _,  Y3,   _, -Y2,   _,   _,   _,  Y4}},
+      {{ -X,   _,   _,   _,   _,   _,   X,   _,   _,   _,   _,   _}},
+      {{  _, -Y1,   _,   _,   _, -Y2,   _,  Y1,   _,   _,   _, -Y2}},
+      {{  _,   _, -Z1,   _,  Z2,   _,   _,   _,  Z1,   _,  Z2,   _}},
+      {{  _,   _,   _,  -S,   _,   _,   _,   _,   _,   S,   _,   _}},
+      {{  _,   _, -Z2,   _,  Z4,   _,   _,   _,  Z2,   _,  Z3,   _}},
+      {{  _,  Y2,   _,   _,   _,  Y4,   _, -Y2,   _,   _,   _,  Y3}},
   }};
   // clang-format on
 
-  return properties.weight * tensor::as_matrix_of_rows(&matrix)
-                                 .template selfadjointView<Eigen::Upper>();
+  return properties.weight * tensor::as_matrix_of_rows(&matrix);
 }
 
 // refer to Cook et. al (2002), "Concepts and applications of Finite Element

@@ -42,8 +42,6 @@ template <class ValueType_> struct Properties<ValueType_, 3> {
   value_type area_moment_z;
   value_type area_moment_y;
   value_type polar_moment_x;
-
-  value_type weight;
 };
 
 template <class ValueType_> struct Properties<ValueType_, 2> {
@@ -57,8 +55,6 @@ template <class ValueType_> struct Properties<ValueType_, 2> {
   value_type area;
 
   value_type area_moment_z;
-
-  value_type weight;
 };
 
 /**
@@ -120,7 +116,7 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &properties,
   }};
   // clang-format on
 
-  return properties.weight * tensor::as_matrix_of_rows(&matrix);
+  return tensor::as_matrix_of_rows(&matrix);
 }
 
 // refer to Cook et. al (2002), "Concepts and applications of Finite Element
@@ -157,7 +153,7 @@ stiffness_matrix<double, 2>(const Properties<double, 2> &properties,
   }};
   // clang-format on
 
-  return properties.weight * tensor::as_matrix_of_rows(&matrix);
+  return tensor::as_matrix_of_rows(&matrix);
 }
 
 template <class ValueType_, std::size_t Dimension_>

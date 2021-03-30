@@ -37,12 +37,10 @@ template <class ValueType_> struct Properties<ValueType_, 3> {
   value_type shear_correction_factor_y;
   value_type shear_correction_factor_z;
 
-  value_type density;
-
   value_type area;
+
   value_type area_moment_z;
   value_type area_moment_y;
-
   value_type polar_moment_x;
 
   value_type weight;
@@ -56,9 +54,8 @@ template <class ValueType_> struct Properties<ValueType_, 2> {
 
   value_type shear_correction_factor_y;
 
-  value_type density;
-
   value_type area;
+
   value_type area_moment_z;
 
   value_type weight;

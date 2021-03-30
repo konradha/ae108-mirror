@@ -174,16 +174,16 @@ stiffness_matrix<double, 2>(const Properties<double, 2> &properties,
 template <class ValueType_, std::size_t Dimension_>
 Eigen::Matrix<ValueType_, Dimension_ *(Dimension_ + 1),
               Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
-rotation_matrix(const tensor::Tensor<ValueType_, Dimension_> &beam_orientation);
+rotation_matrix(const tensor::Tensor<ValueType_, Dimension_> &orientation);
 
 // refer to Cook et. al (2002), "Concepts and applications of Finite Element
 // Analysis", 4th ed., p.32
 template <>
 inline Eigen::Matrix<double, 12, 12, Eigen::RowMajor>
-rotation_matrix<double, 3>(const tensor::Tensor<double, 3> &beam_orientation) {
+rotation_matrix<double, 3>(const tensor::Tensor<double, 3> &orientation) {
 
-  const auto ax = tensor::as_vector(&beam_orientation) /
-                  tensor::as_vector(&beam_orientation).norm();
+  const auto ax =
+      tensor::as_vector(&orientation) / tensor::as_vector(&orientation).norm();
 
   auto Lambda = Eigen::Matrix<double, 3, 3, Eigen::RowMajor>::Zero().eval();
   Lambda.col(0) << ax(0), -ax(0) * ax(1), -ax(2);              // l1,l2,l3
@@ -208,10 +208,10 @@ rotation_matrix<double, 3>(const tensor::Tensor<double, 3> &beam_orientation) {
 // Analysis", 4th ed., p.31
 template <>
 inline Eigen::Matrix<double, 6, 6, Eigen::RowMajor>
-rotation_matrix<double, 2>(const tensor::Tensor<double, 2> &beam_orientation) {
+rotation_matrix<double, 2>(const tensor::Tensor<double, 2> &orientation) {
 
-  const auto ax = tensor::as_vector(&beam_orientation) /
-                  tensor::as_vector(&beam_orientation).norm();
+  const auto ax =
+      tensor::as_vector(&orientation) / tensor::as_vector(&orientation).norm();
 
   Eigen::Matrix<double, 3, 3, Eigen::RowMajor> Lambda =
       Eigen::Matrix<double, 3, 3, Eigen::RowMajor>::Zero();

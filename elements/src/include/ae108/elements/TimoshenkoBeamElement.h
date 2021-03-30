@@ -97,15 +97,16 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &properties,
   const auto Y4 = (2 - Phi_y) * E * I_z / (1 + Phi_y) / L;
 
   K(0, 0) = K(6, 6) = X;
-  K(0, 6) = K(6, 0) = -X;
   K(1, 1) = K(7, 7) = Y1;
-  K(1, 7) = K(7, 1) = -Y1;
-  K(1, 5) = K(5, 1) = Y2;
-  K(1, 11) = K(11, 1) = Y2;
-  K(5, 7) = K(7, 5) = -Y2;
-  K(7, 11) = K(11, 7) = -Y2;
   K(5, 5) = K(11, 11) = Y3;
-  K(5, 11) = K(11, 5) = Y4;
+
+   K(6, 0) = -X;
+   K(7, 1) = -Y1;
+   K(5, 1) = Y2;
+   K(11, 1) = Y2;
+   K(7, 5) = -Y2;
+   K(11, 7) = -Y2;
+   K(11, 5) = Y4;
 
   const auto I_y = properties.area_moment_y;
   const auto J_x = properties.polar_moment_x;
@@ -120,17 +121,18 @@ stiffness_matrix<double, 3>(const Properties<double, 3> &properties,
   const auto S = G * J_x / L;
 
   K(2, 2) = K(8, 8) = Z1;
-  K(2, 8) = K(8, 2) = -Z1;
-  K(2, 4) = K(4, 2) = -Z2;
-  K(2, 10) = K(10, 2) = -Z2;
-  K(4, 8) = K(8, 4) = Z2;
-  K(8, 10) = K(10, 8) = Z2;
-  K(4, 4) = K(10, 10) = Z3;
-  K(4, 10) = K(10, 4) = Z4;
   K(3, 3) = K(9, 9) = S;
-  K(3, 9) = K(9, 3) = -S;
+  K(4, 4) = K(10, 10) = Z3;
 
-  return K * properties.weight;
+   K(8, 2) = -Z1;
+   K(4, 2) = -Z2;
+   K(10, 2) = -Z2;
+   K(8, 4) = Z2;
+   K(10, 8) = Z2;
+   K(10, 4) = Z4;
+   K(9, 3) = -S;
+
+  return properties.weight * K.template selfadjointView<Eigen::Upper>();
 }
 
 // refer to Cook et. al (2002), "Concepts and applications of Finite Element
@@ -158,17 +160,18 @@ stiffness_matrix<double, 2>(const Properties<double, 2> &properties,
   const auto Y4 = (2 - Phi_y) * E * I_z / (1 + Phi_y) / L;
 
   K(0, 0) = K(3, 3) = X;
-  K(0, 3) = K(3, 0) = -X;
   K(1, 1) = K(4, 4) = Y1;
-  K(1, 4) = K(4, 1) = -Y1;
-  K(1, 2) = K(2, 1) = Y2;
-  K(1, 5) = K(5, 1) = Y2;
-  K(2, 4) = K(4, 2) = -Y2;
-  K(4, 5) = K(5, 4) = -Y2;
   K(2, 2) = K(5, 5) = Y3;
-  K(2, 5) = K(5, 2) = Y4;
 
-  return K * properties.weight;
+  K(3, 0) = -X;
+  K(4, 1) = -Y1;
+  K(2, 1) = Y2;
+  K(5, 1) = Y2;
+  K(4, 2) = -Y2;
+  K(5, 4) = -Y2;
+  K(5, 2) = Y4;
+
+  return properties.weight * K.template selfadjointView<Eigen::Upper>();
 }
 
 template <class ValueType_, std::size_t Dimension_>

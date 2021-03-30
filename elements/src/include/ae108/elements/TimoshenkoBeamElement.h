@@ -18,6 +18,7 @@
 #include "ae108/elements/ComputeForcesTrait.h"
 #include "ae108/elements/ComputeStiffnessMatrixTrait.h"
 #include "ae108/elements/ElementBase.h"
+#include "ae108/elements/tensor/as_matrix_of_rows.h"
 #include "ae108/elements/tensor/as_vector.h"
 
 namespace ae108 {
@@ -144,29 +145,24 @@ stiffness_matrix<double, 2>(const Properties<double, 2> &properties,
   const auto I_z = properties.area_moment_z;
   const auto k_y = properties.shear_correction_factor_y;
 
-  const double Phi_y = 12 * E * I_z * k_y / A / G / L / L;
-
-  auto K = Eigen::Matrix<double, 6, 6, Eigen::RowMajor>::Zero().eval();
+  const double phi_y = 12 * E * I_z * k_y / A / G / L / L;
 
   const auto X = A * E / L;
-  const auto Y1 = 12 * E * I_z / (1 + Phi_y) / L / L / L;
-  const auto Y2 = 6 * E * I_z / (1 + Phi_y) / L / L;
-  const auto Y3 = (4 + Phi_y) * E * I_z / (1 + Phi_y) / L;
-  const auto Y4 = (2 - Phi_y) * E * I_z / (1 + Phi_y) / L;
+  const auto Y1 = 12 * E * I_z / (1 + phi_y) / L / L / L;
+  const auto Y2 = 6 * E * I_z / (1 + phi_y) / L / L;
+  const auto Y3 = (4 + phi_y) * E * I_z / (1 + phi_y) / L;
+  const auto Y4 = (2 - phi_y) * E * I_z / (1 + phi_y) / L;
 
-  K(0, 0) = K(3, 3) = X;
-  K(1, 1) = K(4, 4) = Y1;
-  K(2, 2) = K(5, 5) = Y3;
+  const tensor::Tensor<double, 6, 6> matrix = {{
+      {{X, 0., 0., -X, 0., 0.}},
+      {{0., Y1, Y2, 0., -Y1, Y2}},
+      {{0., Y2, Y3, 0., -Y2, Y4}},
+      {{-X, 0., 0., X, 0., 0.}},
+      {{0, -Y1, -Y2, 0., Y1, -Y2}},
+      {{0., Y2, Y4, 0., -Y2, Y3}},
+  }};
 
-  K(3, 0) = -X;
-  K(4, 1) = -Y1;
-  K(2, 1) = Y2;
-  K(5, 1) = Y2;
-  K(4, 2) = -Y2;
-  K(5, 4) = -Y2;
-  K(5, 2) = Y4;
-
-  return properties.weight * K.template selfadjointView<Eigen::Upper>();
+  return properties.weight * tensor::as_matrix_of_rows(&matrix);
 }
 
 template <class ValueType_, std::size_t Dimension_>

@@ -168,7 +168,7 @@ stiffness_matrix<double, 2>(const Properties<double, 2> &properties,
   K(2, 2) = K(5, 5) = Y3;
   K(2, 5) = K(5, 2) = Y4;
 
-  return K;
+  return K * properties.weight;
 }
 
 template <class ValueType_, std::size_t Dimension_>

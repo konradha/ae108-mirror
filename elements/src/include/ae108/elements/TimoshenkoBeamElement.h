@@ -147,14 +147,18 @@ stiffness_matrix<double, 2>(const Properties<double, 2> &properties,
   const auto Y3 = (4 + phi_y) * E * I_z / (1 + phi_y) / L;
   const auto Y4 = (2 - phi_y) * E * I_z / (1 + phi_y) / L;
 
+  const auto _ = 0.;
+
+  // clang-format off
   const tensor::Tensor<double, 6, 6> matrix = {{
-      {{X, 0., 0., -X, 0., 0.}},
-      {{0., Y1, Y2, 0., -Y1, Y2}},
-      {{0., Y2, Y3, 0., -Y2, Y4}},
-      {{-X, 0., 0., X, 0., 0.}},
-      {{0, -Y1, -Y2, 0., Y1, -Y2}},
-      {{0., Y2, Y4, 0., -Y2, Y3}},
+      {{  X,   _,   _,  -X,   _,   _}},
+      {{  _,  Y1,  Y2,   _, -Y1,  Y2}},
+      {{  _,  Y2,  Y3,   _, -Y2,  Y4}},
+      {{ -X,   _,   _,   X,   _,   _}},
+      {{  _, -Y1, -Y2,   _,  Y1, -Y2}},
+      {{  _,  Y2,  Y4,   _, -Y2,  Y3}},
   }};
+  // clang-format on
 
   return properties.weight * tensor::as_matrix_of_rows(&matrix);
 }

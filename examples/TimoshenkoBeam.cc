@@ -78,13 +78,12 @@ constexpr auto vertex_positions = VertexPositions{{
 
 // Now we are ready to select the Timoshenko beam element
 
-using Element = elements::timoshenko::BeamElement<dimension>;
+using Element = elements::TimoshenkoBeamElement<dimension>;
 
 // The Timoshenko beam element comes with a number of geometrical and material
 // related properties. These are stored in the Properties struct
 
-using Properties =
-    elements::timoshenko::Properties<Mesh::value_type, dimension>;
+using Properties = elements::Properties<Mesh::value_type, dimension>;
 
 // Let us define some parameters the linear elastic beam of rectangular cross
 // section
@@ -93,13 +92,11 @@ constexpr Mesh::value_type young_modulus = 1.;
 constexpr Mesh::value_type poisson_ratio = 0.3;
 constexpr Mesh::value_type shear_modulus =
     young_modulus / (2 * (1 + poisson_ratio));
-constexpr Mesh::value_type density = 1.;
 constexpr Mesh::value_type shear_correction_factor_y = 1.2;
 constexpr Mesh::value_type thickness = 1.;
 constexpr Mesh::value_type width = 0.1;
 constexpr Mesh::value_type area = width * thickness;
 constexpr Mesh::value_type area_moment_z = thickness * std::pow(width, 3) / 12.;
-constexpr Mesh::value_type weight = 1.;
 
 // We will assemble e.g. energy using a collection of elements. This is done by
 // the assembler. (The list DefaultFeaturePlugins contain the features (e.g.
@@ -123,9 +120,8 @@ int main(int argc, char **argv) {
         dimension, connectivity, number_of_vertices, dof_per_vertex);
     auto assembler = Assembler();
 
-    Properties properties = {
-        young_modulus, shear_modulus, shear_correction_factor_y, density, area,
-        area_moment_z, weight};
+    Properties properties = {young_modulus, shear_modulus,
+                             shear_correction_factor_y, area, area_moment_z};
 
     // Depending on whether we use MPI, our mesh may be distributed and not all
     // elements are present on this computational node.
@@ -140,7 +136,8 @@ int main(int argc, char **argv) {
           elements::tensor::as_vector(
               &vertex_positions.at(connectivity.at(element.index()).at(0)));
 
-      assembler.emplaceElement(element, element_axis, properties);
+      assembler.emplaceElement(
+          element, timoshenko_beam_stiffness_matrix(element_axis, properties));
     }
 
     // We need to create a solver. We do not use the time, so we can set it to

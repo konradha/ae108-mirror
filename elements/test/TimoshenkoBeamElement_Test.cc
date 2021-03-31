@@ -27,43 +27,39 @@ namespace elements {
 namespace {
 
 template <class Element>
-typename Element::Vector create_reference_element_axis() noexcept {
-  auto element_axis = typename Element::Vector();
+tensor::Tensor<double, Element::dimension()>
+create_reference_element_axis() noexcept {
+  auto element_axis = tensor::Tensor<double, Element::dimension()>();
   std::fill(element_axis.begin(), element_axis.end(), 0.);
   element_axis[0] = 1.;
   return element_axis;
 }
 
 template <class Element>
-typename Element::Vector create_rotated_and_stretched_element_axis() noexcept {
-  auto element_axis = typename Element::Vector();
+tensor::Tensor<double, Element::dimension()>
+create_rotated_and_stretched_element_axis() noexcept {
+  auto element_axis = tensor::Tensor<double, Element::dimension()>();
   std::iota(element_axis.begin(), element_axis.end(), 3.);
   return element_axis;
 }
 
-template <class ValueType_, std::size_t Dimension_>
-inline typename timoshenko::Properties<ValueType_, Dimension_>
-create_element_properties() noexcept {
-  exit(1);
-}
+template <std::size_t Dimension_>
+Properties<double, Dimension_> create_element_properties() noexcept;
 
-template <>
-inline typename timoshenko::Properties<double, 3>
-create_element_properties<double, 3>() noexcept {
+template <> Properties<double, 3> create_element_properties<3>() noexcept {
   return {1., 1., 1., 1., 1., 1., 1., 1.};
 }
-template <>
-inline typename timoshenko::Properties<double, 2>
-create_element_properties<double, 2>() noexcept {
+
+template <> Properties<double, 2> create_element_properties<2>() noexcept {
   return {1., 1., 1., 1., 1.};
 }
 
 template <class Element_> struct ReferenceConfiguration {
   using Element = Element_;
   static Element create_element() noexcept {
-    return Element(create_reference_element_axis<Element_>(),
-                   create_element_properties<typename Element_::value_type,
-                                             Element_::dimension()>());
+    return Element(timoshenko_beam_stiffness_matrix(
+        create_reference_element_axis<Element_>(),
+        create_element_properties<Element_::dimension()>()));
   }
 
   static typename Element::Time create_time() noexcept {
@@ -74,9 +70,9 @@ template <class Element_> struct ReferenceConfiguration {
 template <class Element_> struct RotatedAndStretchedConfiguration {
   using Element = Element_;
   static Element create_element() noexcept {
-    return Element(create_rotated_and_stretched_element_axis<Element_>(),
-                   create_element_properties<typename Element_::value_type,
-                                             Element_::dimension()>());
+    return Element(timoshenko_beam_stiffness_matrix(
+        create_rotated_and_stretched_element_axis<Element_>(),
+        create_element_properties<Element_::dimension()>()));
   }
 
   static typename Element::Time create_time() noexcept {
@@ -85,15 +81,15 @@ template <class Element_> struct RotatedAndStretchedConfiguration {
 };
 
 using Configurations =
-    Types<ReferenceConfiguration<timoshenko::BeamElement<2>>,
-          ReferenceConfiguration<timoshenko::BeamElement<3>>,
-          RotatedAndStretchedConfiguration<timoshenko::BeamElement<2>>,
-          RotatedAndStretchedConfiguration<timoshenko::BeamElement<3>>>;
+    Types<ReferenceConfiguration<TimoshenkoBeamElement<2>>,
+          ReferenceConfiguration<TimoshenkoBeamElement<3>>,
+          RotatedAndStretchedConfiguration<TimoshenkoBeamElement<2>>,
+          RotatedAndStretchedConfiguration<TimoshenkoBeamElement<3>>>;
 INSTANTIATE_TYPED_TEST_CASE_P(TimoshenkoBeamElement_Test, Element_Test,
                               Configurations);
 
 struct TimoshenkoBeamElement2D_Test : Test {
-  using Element = timoshenko::BeamElement<2>;
+  using Element = TimoshenkoBeamElement<2>;
   const Element element = ReferenceConfiguration<Element>::create_element();
 };
 
@@ -133,10 +129,11 @@ TEST_F(TimoshenkoBeamElement2D_Test,
 }
 
 struct TimoshenkoBeamElement3D_Test : Test {
-  using Element = timoshenko::BeamElement<3>;
+  using Element = TimoshenkoBeamElement<3>;
   const Element element = ReferenceConfiguration<Element>::create_element();
-  const Element::Vector axis = create_reference_element_axis<Element>();
-  const Element::value_type L = tensor::as_vector(&axis).norm();
+  const tensor::Tensor<double, 3> axis =
+      create_reference_element_axis<Element>();
+  const double L = tensor::as_vector(&axis).norm();
 };
 
 TEST_F(TimoshenkoBeamElement3D_Test, computes_energy_with_axial_displacement) {
@@ -213,12 +210,12 @@ TEST_F(TimoshenkoBeamElement3D_Test,
 }
 
 struct TimoshenkoBeamElement2D_rotated_Test : Test {
-  using Element = timoshenko::BeamElement<2>;
+  using Element = TimoshenkoBeamElement<2>;
   const Element element =
       RotatedAndStretchedConfiguration<Element>::create_element();
-  const Element::Vector axis =
+  const tensor::Tensor<double, 2> axis =
       create_rotated_and_stretched_element_axis<Element>();
-  const Element::value_type L = tensor::as_vector(&axis).norm();
+  const double L = tensor::as_vector(&axis).norm();
 };
 
 TEST_F(TimoshenkoBeamElement2D_rotated_Test,
@@ -260,12 +257,12 @@ TEST_F(TimoshenkoBeamElement2D_rotated_Test,
 }
 
 struct TimoshenkoBeamElement3D_rotated_Test : Test {
-  using Element = timoshenko::BeamElement<3>;
+  using Element = TimoshenkoBeamElement<3>;
   const Element element =
       RotatedAndStretchedConfiguration<Element>::create_element();
-  const Element::Vector axis =
+  const tensor::Tensor<double, 3> axis =
       create_rotated_and_stretched_element_axis<Element>();
-  const Element::value_type L = tensor::as_vector(&axis).norm();
+  const double L = tensor::as_vector(&axis).norm();
 };
 
 TEST_F(TimoshenkoBeamElement3D_rotated_Test,

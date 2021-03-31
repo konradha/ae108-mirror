@@ -30,7 +30,6 @@ template <class Element>
 tensor::Tensor<double, Element::dimension()>
 create_reference_element_axis() noexcept {
   auto element_axis = tensor::Tensor<double, Element::dimension()>();
-  std::fill(element_axis.begin(), element_axis.end(), 0.);
   element_axis[0] = 1.;
   return element_axis;
 }

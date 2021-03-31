@@ -76,3 +76,10 @@ target_link_libraries(${PROJECT_NAME}-PeriodicBC
                       PRIVATE ae108::assembly
                       PRIVATE ae108::elements
 )
+
+add_executable(${PROJECT_NAME}-TimoshenkoBeam TimoshenkoBeam.cc)
+target_link_libraries(${PROJECT_NAME}-TimoshenkoBeam
+                      PRIVATE ae108::solve
+                      PRIVATE ae108::assembly
+                      PRIVATE ae108::elements
+)

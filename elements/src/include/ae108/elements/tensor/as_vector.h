@@ -44,6 +44,36 @@ as_vector(const std::array<ValueType_, Rows_> *data) {
   return Eigen::Map<const Eigen::Matrix<ValueType_, Rows_, 1>>(data->data());
 }
 
+/**
+ * @brief Interprets the input as a vector of columns stacked on top of each
+ * other and returns an Eigen vector.
+ */
+template <class ValueType_, std::size_t Rows_, std::size_t Cols_>
+Eigen::Map<Eigen::Matrix<ValueType_, Rows_ * Cols_, 1>>
+as_vector(std::array<std::array<ValueType_, Cols_>, Rows_> *data) {
+  static_assert(Cols_ * Rows_ == 0 || sizeof(decltype(*data)) ==
+                                          Cols_ * Rows_ * sizeof(ValueType_),
+                "Only contiguous data is supported.");
+  assert(data);
+  return Eigen::Map<Eigen::Matrix<ValueType_, Rows_ * Cols_, 1>>(
+      Rows_ > 0 ? data->front().data() : nullptr);
+}
+
+/**
+ * @brief Interprets the input as a vector of columns stacked on top of each
+ * other and returns a constant Eigen vector.
+ */
+template <class ValueType_, std::size_t Rows_, std::size_t Cols_>
+Eigen::Map<const Eigen::Matrix<ValueType_, Rows_ * Cols_, 1>>
+as_vector(const std::array<std::array<ValueType_, Cols_>, Rows_> *data) {
+  static_assert(Cols_ * Rows_ == 0 || sizeof(decltype(*data)) ==
+                                          Cols_ * Rows_ * sizeof(ValueType_),
+                "Only contiguous data is supported.");
+  assert(data);
+  return Eigen::Map<const Eigen::Matrix<ValueType_, Rows_ * Cols_, 1>>(
+      Rows_ > 0 ? data->front().data() : nullptr);
+}
+
 } // namespace tensor
 } // namespace elements
 } // namespace ae108

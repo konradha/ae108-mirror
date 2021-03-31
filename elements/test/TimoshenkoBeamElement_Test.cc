@@ -18,7 +18,6 @@
 #include <numeric>
 
 using testing::DoubleEq;
-using testing::ElementsAre;
 using testing::Test;
 using testing::Types;
 

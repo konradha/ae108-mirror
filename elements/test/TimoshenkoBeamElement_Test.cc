@@ -309,8 +309,6 @@ TEST_F(TimoshenkoBeamElement3D_rotated_Test,
        computes_energy_with_rotational_displacement2) {
   const auto time = Element::Time{0.};
 
-  double b3 = 1. / sqrt(41. / 16);
-
   const Element::NodalDisplacements displacements = {{
       {{0., 0., 0., 0., 0., 0.}},
       {{0., 0., 0., -0.8, 0.6, 0.}},

@@ -18,9 +18,7 @@
 #include "ae108/elements/ComputeForcesTrait.h"
 #include "ae108/elements/ComputeStiffnessMatrixTrait.h"
 #include "ae108/elements/ElementBase.h"
-#include "ae108/elements/tensor/as_matrix_of_rows.h"
 #include "ae108/elements/tensor/as_vector.h"
-#include <Eigen/Geometry>
 
 namespace ae108 {
 namespace elements {

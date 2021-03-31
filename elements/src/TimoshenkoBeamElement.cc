@@ -13,6 +13,8 @@
 // limitations under the License.
 
 #include "ae108/elements/TimoshenkoBeamElement.h"
+#include "ae108/elements/tensor/as_matrix_of_rows.h"
+#include <Eigen/Geometry>
 
 namespace ae108 {
 namespace elements {

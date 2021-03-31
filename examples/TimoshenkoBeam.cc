@@ -83,7 +83,8 @@ using Element = elements::TimoshenkoBeamElement<dimension>;
 // The Timoshenko beam element comes with a number of geometrical and material
 // related properties. These are stored in the Properties struct
 
-using Properties = elements::Properties<Mesh::value_type, dimension>;
+using Properties =
+    elements::TimoshenkoBeamProperties<Mesh::value_type, dimension>;
 
 // Let us define some parameters the linear elastic beam of rectangular cross
 // section

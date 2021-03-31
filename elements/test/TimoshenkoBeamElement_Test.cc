@@ -44,13 +44,16 @@ create_rotated_and_stretched_element_axis() noexcept {
 }
 
 template <std::size_t Dimension_>
-Properties<double, Dimension_> create_element_properties() noexcept;
+TimoshenkoBeamProperties<double, Dimension_>
+create_element_properties() noexcept;
 
-template <> Properties<double, 3> create_element_properties<3>() noexcept {
+template <>
+TimoshenkoBeamProperties<double, 3> create_element_properties<3>() noexcept {
   return {1., 1., 1., 1., 1., 1., 1., 1.};
 }
 
-template <> Properties<double, 2> create_element_properties<2>() noexcept {
+template <>
+TimoshenkoBeamProperties<double, 2> create_element_properties<2>() noexcept {
   return {1., 1., 1., 1., 1.};
 }
 

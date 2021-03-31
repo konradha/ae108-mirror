@@ -23,9 +23,10 @@
 namespace ae108 {
 namespace elements {
 
-template <class ValueType_, std::size_t Dimension_> struct Properties;
+template <class ValueType_, std::size_t Dimension_>
+struct TimoshenkoBeamProperties;
 
-template <class ValueType_> struct Properties<ValueType_, 3> {
+template <class ValueType_> struct TimoshenkoBeamProperties<ValueType_, 3> {
   using value_type = ValueType_;
 
   value_type young_modulus;
@@ -41,7 +42,7 @@ template <class ValueType_> struct Properties<ValueType_, 3> {
   value_type polar_moment_x;
 };
 
-template <class ValueType_> struct Properties<ValueType_, 2> {
+template <class ValueType_> struct TimoshenkoBeamProperties<ValueType_, 2> {
   using value_type = ValueType_;
 
   value_type young_modulus;
@@ -65,7 +66,7 @@ Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
               Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
 timoshenko_beam_stiffness_matrix(
     const tensor::Tensor<double, Dimension_> &axis,
-    const Properties<double, Dimension_> &properties) noexcept;
+    const TimoshenkoBeamProperties<double, Dimension_> &properties) noexcept;
 
 /**
  * @brief Implementation of the closed-form Timoshenko beam element as presented

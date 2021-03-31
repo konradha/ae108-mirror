@@ -28,14 +28,14 @@ namespace {
 template <std::size_t Dimension_>
 tensor::Tensor<double, Dimension_ *(Dimension_ + 1),
                Dimension_ *(Dimension_ + 1)>
-stiffness_matrix(const Properties<double, Dimension_> &properties,
+stiffness_matrix(const TimoshenkoBeamProperties<double, Dimension_> &properties,
                  const double length) noexcept;
 
 // refer to Cook et. al (2002), "Concepts and applications of Finite Element
 // Analysis", 4th ed., p.27
 template <>
 tensor::Tensor<double, 12, 12>
-stiffness_matrix<3>(const Properties<double, 3> &properties,
+stiffness_matrix<3>(const TimoshenkoBeamProperties<double, 3> &properties,
                     const double length) noexcept {
   const auto L = length;
   const auto A = properties.area;
@@ -103,7 +103,7 @@ stiffness_matrix<3>(const Properties<double, 3> &properties,
 // Analysis", 4th ed., p.26
 template <>
 tensor::Tensor<double, 6, 6>
-stiffness_matrix<2>(const Properties<double, 2> &properties,
+stiffness_matrix<2>(const TimoshenkoBeamProperties<double, 2> &properties,
                     const double length) noexcept {
   const auto L = length;
   const auto A = properties.area;
@@ -193,7 +193,7 @@ Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
               Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
 timoshenko_beam_stiffness_matrix(
     const tensor::Tensor<double, Dimension_> &axis,
-    const Properties<double, Dimension_> &properties) noexcept {
+    const TimoshenkoBeamProperties<double, Dimension_> &properties) noexcept {
   const auto reference =
       stiffness_matrix<Dimension_>(properties, tensor::as_vector(&axis).norm());
   // reference only contains values in the "upper" section of the matrix;
@@ -210,12 +210,12 @@ timoshenko_beam_stiffness_matrix(
 template Eigen::Matrix<double, 6, 6, Eigen::RowMajor>
 timoshenko_beam_stiffness_matrix(
     const tensor::Tensor<double, 2> &axis,
-    const Properties<double, 2> &properties) noexcept;
+    const TimoshenkoBeamProperties<double, 2> &properties) noexcept;
 
 template Eigen::Matrix<double, 12, 12, Eigen::RowMajor>
 timoshenko_beam_stiffness_matrix(
     const tensor::Tensor<double, 3> &axis,
-    const Properties<double, 3> &properties) noexcept;
+    const TimoshenkoBeamProperties<double, 3> &properties) noexcept;
 
 } // namespace elements
 } // namespace ae108

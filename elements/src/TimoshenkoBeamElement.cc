@@ -113,13 +113,13 @@ stiffness_matrix<2>(const Properties<double, 2> &properties,
   const auto I_z = properties.area_moment_z;
   const auto k_y = properties.shear_correction_factor_y;
 
-  const double phi_y = 12 * E * I_z * k_y / A / G / L / L;
+  const double phi_y = 12. * E * I_z * k_y / A / G / L / L;
 
   const auto X = A * E / L;
-  const auto Y1 = 12 * E * I_z / (1 + phi_y) / L / L / L;
-  const auto Y2 = 6 * E * I_z / (1 + phi_y) / L / L;
-  const auto Y3 = (4 + phi_y) * E * I_z / (1 + phi_y) / L;
-  const auto Y4 = (2 - phi_y) * E * I_z / (1 + phi_y) / L;
+  const auto Y1 = 12. * E * I_z / (1. + phi_y) / L / L / L;
+  const auto Y2 = 6. * E * I_z / (1. + phi_y) / L / L;
+  const auto Y3 = (4. + phi_y) * E * I_z / (1. + phi_y) / L;
+  const auto Y4 = (2. - phi_y) * E * I_z / (1. + phi_y) / L;
 
   const auto _ = 0.;
 

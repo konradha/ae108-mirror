@@ -135,14 +135,14 @@ stiffness_matrix<2>(const Properties<double, 2> &properties,
 }
 
 template <std::size_t Dimension_>
-Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
-              Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
+tensor::Tensor<double, Dimension_ *(Dimension_ + 1),
+               Dimension_ *(Dimension_ + 1)>
 rotation_matrix(const tensor::Tensor<double, Dimension_> &orientation) noexcept;
 
 // refer to Cook et. al (2002), "Concepts and applications of Finite Element
 // Analysis", 4th ed., p.32
 template <>
-Eigen::Matrix<double, 12, 12, Eigen::RowMajor>
+tensor::Tensor<double, 12, 12>
 rotation_matrix<3>(const tensor::Tensor<double, 3> &orientation) noexcept {
   // rotation that maps the normalized orientation vector to (1, 0, 0)
   const auto Lambda = Eigen::Quaternion<double>()
@@ -151,12 +151,13 @@ rotation_matrix<3>(const tensor::Tensor<double, 3> &orientation) noexcept {
                           .normalized()
                           .toRotationMatrix();
 
-  auto result = Eigen::Matrix<double, 12, 12, Eigen::RowMajor>::Zero().eval();
+  auto result = tensor::Tensor<double, 12, 12>();
+  auto result_matrix = tensor::as_matrix_of_rows(&result);
 
-  result.block(0, 0, 3, 3) = Lambda;
-  result.block(3, 3, 3, 3) = Lambda;
-  result.block(6, 6, 3, 3) = Lambda;
-  result.block(9, 9, 3, 3) = Lambda;
+  result_matrix.block(0, 0, 3, 3) = Lambda;
+  result_matrix.block(3, 3, 3, 3) = Lambda;
+  result_matrix.block(6, 6, 3, 3) = Lambda;
+  result_matrix.block(9, 9, 3, 3) = Lambda;
 
   return result;
 }
@@ -164,7 +165,7 @@ rotation_matrix<3>(const tensor::Tensor<double, 3> &orientation) noexcept {
 // refer to Cook et. al (2002), "Concepts and applications of Finite Element
 // Analysis", 4th ed., p.31
 template <>
-Eigen::Matrix<double, 6, 6, Eigen::RowMajor>
+tensor::Tensor<double, 6, 6>
 rotation_matrix<2>(const tensor::Tensor<double, 2> &orientation) noexcept {
   const auto normalized =
       tensor::as_vector(&orientation) / tensor::as_vector(&orientation).norm();
@@ -175,12 +176,13 @@ rotation_matrix<2>(const tensor::Tensor<double, 2> &orientation) noexcept {
       {{-normalized[1], normalized[0]}},
   }};
 
-  auto result = Eigen::Matrix<double, 6, 6, Eigen::RowMajor>::Zero().eval();
+  auto result = tensor::Tensor<double, 6, 6>();
+  auto result_matrix = tensor::as_matrix_of_rows(&result);
 
-  result.block(0, 0, 2, 2) = tensor::as_matrix_of_rows(&Lambda);
-  result(2, 2) = 1.;
-  result.block(3, 3, 2, 2) = tensor::as_matrix_of_rows(&Lambda);
-  result(5, 5) = 1.;
+  result_matrix.block(0, 0, 2, 2) = tensor::as_matrix_of_rows(&Lambda);
+  result_matrix(2, 2) = 1.;
+  result_matrix.block(3, 3, 2, 2) = tensor::as_matrix_of_rows(&Lambda);
+  result_matrix(5, 5) = 1.;
 
   return result;
 }
@@ -194,13 +196,15 @@ timoshenko_beam_stiffness_matrix(
     const Properties<double, Dimension_> &properties) noexcept {
   const auto reference =
       stiffness_matrix<Dimension_>(properties, tensor::as_vector(&axis).norm());
+  // reference only contains values in the "upper" section of the matrix;
+  // selfadjointView interprets reference as a symmetric matrix
+  const auto reference_matrix = tensor::as_matrix_of_rows(&reference)
+                                    .template selfadjointView<Eigen::Upper>();
 
   const auto rotation = rotation_matrix<Dimension_>(axis);
+  const auto rotation_matrix = tensor::as_matrix_of_rows(&rotation);
 
-  return rotation.transpose() *
-         tensor::as_matrix_of_rows(&reference)
-             .template selfadjointView<Eigen::Upper>() *
-         rotation;
+  return rotation_matrix.transpose() * reference_matrix * rotation_matrix;
 }
 
 template Eigen::Matrix<double, 6, 6, Eigen::RowMajor>

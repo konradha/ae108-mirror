@@ -25,15 +25,15 @@ namespace {
  * properties.
  */
 template <std::size_t Dimension_>
-Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
-              Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
+tensor::Tensor<double, Dimension_ *(Dimension_ + 1),
+               Dimension_ *(Dimension_ + 1)>
 stiffness_matrix(const Properties<double, Dimension_> &properties,
                  const double length) noexcept;
 
 // refer to Cook et. al (2002), "Concepts and applications of Finite Element
 // Analysis", 4th ed., p.27
 template <>
-Eigen::Matrix<double, 12, 12, Eigen::RowMajor>
+tensor::Tensor<double, 12, 12>
 stiffness_matrix<3>(const Properties<double, 3> &properties,
                     const double length) noexcept {
   const auto L = length;
@@ -81,7 +81,7 @@ stiffness_matrix<3>(const Properties<double, 3> &properties,
   const auto _ = 0.;
 
   // clang-format off
-  const tensor::Tensor<double, 12, 12> matrix = {{
+  return {{
       {{  X,   _,   _,   _,   _,   _,  -X,   _,   _,   _,   _,   _}},
       {{  _,  Y1,   _,   _,   _,  Y2,   _, -Y1,   _,   _,   _,  Y2}},
       {{  _,   _,  Z1,   _, -Z2,   _,   _,   _, -Z1,   _, -Z2,   _}},
@@ -96,14 +96,12 @@ stiffness_matrix<3>(const Properties<double, 3> &properties,
       {{  _,  Y2,   _,   _,   _,  Y4,   _, -Y2,   _,   _,   _,  Y3}},
   }};
   // clang-format on
-
-  return tensor::as_matrix_of_rows(&matrix);
 }
 
 // refer to Cook et. al (2002), "Concepts and applications of Finite Element
 // Analysis", 4th ed., p.26
 template <>
-Eigen::Matrix<double, 6, 6, Eigen::RowMajor>
+tensor::Tensor<double, 6, 6>
 stiffness_matrix<2>(const Properties<double, 2> &properties,
                     const double length) noexcept {
   const auto L = length;
@@ -124,7 +122,7 @@ stiffness_matrix<2>(const Properties<double, 2> &properties,
   const auto _ = 0.;
 
   // clang-format off
-  const tensor::Tensor<double, 6, 6> matrix = {{
+  return {{
       {{  X,   _,   _,  -X,   _,   _}},
       {{  _,  Y1,  Y2,   _, -Y1,  Y2}},
       {{  _,  Y2,  Y3,   _, -Y2,  Y4}},
@@ -133,8 +131,6 @@ stiffness_matrix<2>(const Properties<double, 2> &properties,
       {{  _,  Y2,  Y4,   _, -Y2,  Y3}},
   }};
   // clang-format on
-
-  return tensor::as_matrix_of_rows(&matrix);
 }
 
 template <std::size_t Dimension_>
@@ -200,7 +196,8 @@ timoshenko_beam_stiffness_matrix(
 
   const auto rotation = rotation_matrix<Dimension_>(axis);
 
-  return rotation.transpose() * reference * rotation;
+  return rotation.transpose() * tensor::as_matrix_of_rows(&reference) *
+         rotation;
 }
 
 template Eigen::Matrix<double, 6, 6, Eigen::RowMajor>

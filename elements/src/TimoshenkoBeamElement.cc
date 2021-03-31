@@ -22,7 +22,8 @@ namespace {
 
 /**
  * @brief Computes the stiffness matrix of a reference beam with the given
- * properties.
+ * properties. Since this matrix is symmetric, only the "upper" section of the
+ * matrix is filled with values.
  */
 template <std::size_t Dimension_>
 tensor::Tensor<double, Dimension_ *(Dimension_ + 1),
@@ -86,14 +87,14 @@ stiffness_matrix<3>(const Properties<double, 3> &properties,
       {{  _,  Y1,   _,   _,   _,  Y2,   _, -Y1,   _,   _,   _,  Y2}},
       {{  _,   _,  Z1,   _, -Z2,   _,   _,   _, -Z1,   _, -Z2,   _}},
       {{  _,   _,   _,   S,   _,   _,   _,   _,   _,  -S,   _,   _}},
-      {{  _,   _, -Z2,   _,  Z3,   _,   _,   _,  Z2,   _,  Z4,   _}},
-      {{  _,  Y2,   _,   _,   _,  Y3,   _, -Y2,   _,   _,   _,  Y4}},
-      {{ -X,   _,   _,   _,   _,   _,   X,   _,   _,   _,   _,   _}},
-      {{  _, -Y1,   _,   _,   _, -Y2,   _,  Y1,   _,   _,   _, -Y2}},
-      {{  _,   _, -Z1,   _,  Z2,   _,   _,   _,  Z1,   _,  Z2,   _}},
-      {{  _,   _,   _,  -S,   _,   _,   _,   _,   _,   S,   _,   _}},
-      {{  _,   _, -Z2,   _,  Z4,   _,   _,   _,  Z2,   _,  Z3,   _}},
-      {{  _,  Y2,   _,   _,   _,  Y4,   _, -Y2,   _,   _,   _,  Y3}},
+      {{  _,   _,   _,   _,  Z3,   _,   _,   _,  Z2,   _,  Z4,   _}},
+      {{  _,   _,   _,   _,   _,  Y3,   _, -Y2,   _,   _,   _,  Y4}},
+      {{  _,   _,   _,   _,   _,   _,   X,   _,   _,   _,   _,   _}},
+      {{  _,   _,   _,   _,   _,   _,   _,  Y1,   _,   _,   _, -Y2}},
+      {{  _,   _,   _,   _,   _,   _,   _,   _,  Z1,   _,  Z2,   _}},
+      {{  _,   _,   _,   _,   _,   _,   _,   _,   _,   S,   _,   _}},
+      {{  _,   _,   _,   _,   _,   _,   _,   _,   _,   _,  Z3,   _}},
+      {{  _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _,  Y3}},
   }};
   // clang-format on
 }
@@ -125,10 +126,10 @@ stiffness_matrix<2>(const Properties<double, 2> &properties,
   return {{
       {{  X,   _,   _,  -X,   _,   _}},
       {{  _,  Y1,  Y2,   _, -Y1,  Y2}},
-      {{  _,  Y2,  Y3,   _, -Y2,  Y4}},
-      {{ -X,   _,   _,   X,   _,   _}},
-      {{  _, -Y1, -Y2,   _,  Y1, -Y2}},
-      {{  _,  Y2,  Y4,   _, -Y2,  Y3}},
+      {{  _,   _,  Y3,   _, -Y2,  Y4}},
+      {{  _,   _,   _,   X,   _,   _}},
+      {{  _,   _,   _,   _,  Y1, -Y2}},
+      {{  _,   _,   _,   _,   _,  Y3}},
   }};
   // clang-format on
 }
@@ -196,7 +197,9 @@ timoshenko_beam_stiffness_matrix(
 
   const auto rotation = rotation_matrix<Dimension_>(axis);
 
-  return rotation.transpose() * tensor::as_matrix_of_rows(&reference) *
+  return rotation.transpose() *
+         tensor::as_matrix_of_rows(&reference)
+             .template selfadjointView<Eigen::Upper>() *
          rotation;
 }
 

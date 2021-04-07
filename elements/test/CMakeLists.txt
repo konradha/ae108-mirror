@@ -24,6 +24,7 @@ add_executable(${PROJECT_NAME}-ElementsTests
                materialmodels/Hookean_Test.cc
                materialmodels/Minimal_Test.cc
                mesh/Mesh_Test.cc
+               mesh/generate_cuboid_mesh_Test.cc
                mesh/generate_quadratic_tetrahedron_mesh_Test.cc
                mesh/generate_quadratic_triangle_mesh_Test.cc
                mesh/generate_tetrahedron_mesh_Test.cc

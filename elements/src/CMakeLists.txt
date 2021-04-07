@@ -58,6 +58,7 @@ add_library(${PROJECT_NAME}-elements
             materialmodels/compute_stress.cc
             materialmodels/compute_tangent_matrix.cc
             mesh/Mesh.cc
+            mesh/generate_cuboid_mesh.cc
             mesh/generate_quadratic_tetrahedron_mesh.cc
             mesh/generate_quadratic_triangle_mesh.cc
             mesh/generate_tetrahedron_mesh.cc

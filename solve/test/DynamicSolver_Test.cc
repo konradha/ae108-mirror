@@ -417,7 +417,6 @@ TYPED_TEST(DynamicSolver_Test,
 
 TYPED_TEST(DynamicSolver_Test, local_functional_interface_is_callable) {
   using solver_type = typename TestFixture::solver_type;
-  const auto value = .123;
   this->solver.computeSolution =
       [this](const typename solver_type::BoundaryConditionContainer &,
              const typename solver_type::distributed_vector_type, const double,
@@ -441,7 +440,6 @@ TYPED_TEST(DynamicSolver_Test, local_functional_interface_is_callable) {
 
 TYPED_TEST(DynamicSolver_Test, distributed_functional_interface_is_callable) {
   using solver_type = typename TestFixture::solver_type;
-  const auto value = .123;
   this->solver.computeSolution =
       [this](const typename solver_type::BoundaryConditionContainer &,
              const typename solver_type::distributed_vector_type, const double,

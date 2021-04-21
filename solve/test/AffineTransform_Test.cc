@@ -45,7 +45,6 @@ using Policies =
 TYPED_TEST_CASE(AffineTransform_Test, Policies);
 
 TYPED_TEST(AffineTransform_Test, applies_transform_and_returns_vector) {
-  using transform_type = typename TestFixture::transform_type;
   using vector_type = typename TestFixture::vector_type;
 
   const auto x =
@@ -60,7 +59,6 @@ TYPED_TEST(AffineTransform_Test, applies_transform_and_returns_vector) {
 
 TYPED_TEST(AffineTransform_Test,
            applies_transform_and_writes_to_output_parameter) {
-  using transform_type = typename TestFixture::transform_type;
   using vector_type = typename TestFixture::vector_type;
 
   const auto x =

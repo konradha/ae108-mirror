@@ -75,8 +75,7 @@ template <std::size_t DegreesOfFreedom_>
 struct ComputeStiffnessMatrixTrait<ForceElement<DegreesOfFreedom_>> {
   template <class Element>
   typename Element::StiffnessMatrix
-  operator()(const Element &element,
-             const typename Element::NodalDisplacements &u,
+  operator()(const Element &, const typename Element::NodalDisplacements &,
              const typename Element::Time &) const noexcept {
     return Element::StiffnessMatrix::Zero();
   };

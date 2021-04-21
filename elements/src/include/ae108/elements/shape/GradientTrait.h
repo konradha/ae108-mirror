@@ -23,7 +23,8 @@ template <class Shape> struct GradientTrait;
 #define AE108_ELEMENTS_SHAPE_DEFINE_GRADIENTS(name, ...)                       \
   template <> struct GradientTrait<name> {                                     \
     constexpr typename name::template Collection<typename name::Gradient>      \
-    operator()(const name &, const typename name::Point &xi) noexcept {        \
+    operator()(const name &,                                                   \
+               [[maybe_unused]] const typename name::Point &xi) noexcept {     \
       return __VA_ARGS__;                                                      \
     }                                                                          \
   }

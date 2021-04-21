@@ -769,7 +769,6 @@ Mesh<Policy>::fromCanonicalOrder(const distributed<vector_type> &vector) const {
 template <class Policy>
 typename Mesh<Policy>::size_type
 Mesh<Policy>::elementPointIndexToGlobalIndex(const size_type pointIndex) const {
-  auto globalIndex = size_type{0};
   auto migration = PetscSF();
   Policy::handleError(DMPlexGetMigrationSF(_mesh.get(), &migration));
   if (migration) {

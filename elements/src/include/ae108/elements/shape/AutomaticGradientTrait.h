@@ -25,8 +25,7 @@ namespace shape {
 template <class Shape_> struct AutomaticGradientTrait {
   template <class Shape>
   typename Shape::template Collection<typename Shape::Gradient>
-  operator()(const Shape &shape, const typename Shape::Point &xi) const
-      noexcept {
+  operator()(const Shape &, const typename Shape::Point &xi) const noexcept {
     auto result =
         typename Shape::template Collection<typename Shape::Gradient>();
     auto result_matrix = tensor::as_matrix_of_rows(&result);

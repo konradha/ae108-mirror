@@ -219,7 +219,6 @@ TYPED_TEST(Mesh_Test, canonical_vectors_are_the_same_for_cloned_mesh) {
 }
 
 TYPED_TEST(Mesh_Test, sorting_in_canonical_order_works_for_cloned_mesh) {
-  using vector_type = typename TestFixture::vector_type;
   using size_type = typename TestFixture::size_type;
 
   const auto dofPerVertex = size_type{7};
@@ -652,7 +651,6 @@ TYPED_TEST(Mesh_Test, global_line_range_accesses_correct_region) {
 }
 
 TYPED_TEST(Mesh_Test, sorting_in_canonical_order_works) {
-  using vector_type = typename TestFixture::vector_type;
   using size_type = typename TestFixture::size_type;
 
   const auto globalVector = createIndexVector(this->mesh);

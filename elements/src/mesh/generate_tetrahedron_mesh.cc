@@ -88,8 +88,7 @@ Positions generate_positions(const Point &size,
 /**
  * @brief Generates the connectivity of the mesh.
  */
-Connectivity generate_connectivity(const Point &size,
-                                   const Index &granularity) noexcept {
+Connectivity generate_connectivity(const Index &granularity) noexcept {
   auto connectivity = Connectivity();
   connectivity.reserve(number_of_cuboids(granularity) * tetrahedra_per_cuboid);
 
@@ -147,7 +146,7 @@ Mesh<Point> generate_tetrahedron_mesh(const Point &size,
     return Mesh<Point>({}, {});
   }
 
-  return Mesh<Point>(generate_connectivity(size, granularity),
+  return Mesh<Point>(generate_connectivity(granularity),
                      generate_positions(size, granularity));
 }
 

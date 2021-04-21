@@ -36,9 +36,9 @@ using BoundaryCondition = cpppetsc::MeshBoundaryCondition<Mesh>;
 // Each of these elements has two vertices.
 
 //  4 --D---3
-//    \     |  \      
+//    \     |  |
 //      F   E    C
-//        \ |      \
+//        \ |      |
 //  0---A---1---B---2
 
 // Let's specify the parameters of this mesh.

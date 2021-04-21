@@ -53,8 +53,6 @@ TYPED_TEST_P(Shape_Test, shape_functions_are_correct_at_points) {
 TYPED_TEST_P(Shape_Test, gradients_are_correct_at_points) {
   using Shape = typename TestFixture::Shape;
 
-  tensor::Tensor<typename Shape::value_type, Shape::size(), Shape::size()>
-      results;
   const auto &points = get_points<Shape>();
 
   for (const auto &point : points) {

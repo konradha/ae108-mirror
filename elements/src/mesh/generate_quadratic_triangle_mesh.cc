@@ -21,7 +21,6 @@ namespace mesh {
 Mesh<tensor::Tensor<double, 2>> generate_quadratic_triangle_mesh(
     const tensor::Tensor<double, 2> &size,
     const tensor::Tensor<std::size_t, 2> &granularity) noexcept {
-  using value_type = double;
   using size_type = std::size_t;
 
   using Point = tensor::Tensor<double, 2>;

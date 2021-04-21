@@ -102,7 +102,7 @@ build-library:
         - >
             su developer -c '
                 cd build
-                cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage" .. &&
+                cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage -Werror -Wall -Wextra" .. &&
                 cmake --build . &&
                 GTEST_OUTPUT="xml:gtest-results.xml" ctest --output-on-failure --exclude-regex ".*_mpi$" &&
                 ctest --output-on-failure --tests-regex ".*_mpi$" &&

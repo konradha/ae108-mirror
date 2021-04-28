@@ -46,7 +46,7 @@ add_executable(${PROJECT_NAME}-ElementsTests
 
 add_test(NAME ${PROJECT_NAME}-ElementsTests COMMAND $<TARGET_FILE:${PROJECT_NAME}-ElementsTests>)
 
-find_package(GTest 1.8.1 CONFIG REQUIRED)
+find_package(AE108_GTest MODULE REQUIRED)
 target_link_libraries(${PROJECT_NAME}-ElementsTests PUBLIC
                       ${PROJECT_NAME}-elements
                       GTest::gmock_main

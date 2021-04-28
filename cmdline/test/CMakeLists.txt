@@ -19,7 +19,7 @@ add_executable(${PROJECT_NAME}-CmdLineTests
                ./CommandLineOptionParser_Test.cc
 )
 
-find_package(GTest 1.8.1 CONFIG REQUIRED)
+find_package(AE108_GTest MODULE REQUIRED)
 target_link_libraries(${PROJECT_NAME}-CmdLineTests
                       PRIVATE ${PROJECT_NAME}::cmdline
                       PRIVATE GTest::gmock_main

@@ -88,13 +88,6 @@ check-script:
 build-library:
     stage: build
     image: $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_REF_SLUG
-    before_script:
-        - >
-            bash -c '
-                cd $(mktemp -d) &&
-                cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage" /usr/src/googletest &&
-                cmake --build . --target install
-            '
     script:
         - useradd developer
         - mkdir build
@@ -117,13 +110,6 @@ build-library:
 install-library:
     stage: build
     image: $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_REF_SLUG
-    before_script:
-        - >
-            bash -c '
-                cd $(mktemp -d) &&
-                cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug /usr/src/googletest &&
-                cmake --build . --target install
-            '
     script:
         - mkdir build
         - >

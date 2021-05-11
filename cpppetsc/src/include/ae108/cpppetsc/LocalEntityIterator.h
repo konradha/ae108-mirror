@@ -118,13 +118,13 @@ LocalEntityIterator<MeshType, ViewTemplate>::operator--(int) {
 
 template <class MeshType, template <class> class ViewTemplate>
 typename LocalEntityIterator<MeshType, ViewTemplate>::reference
-    LocalEntityIterator<MeshType, ViewTemplate>::operator*() const {
+LocalEntityIterator<MeshType, ViewTemplate>::operator*() const {
   return _view;
 }
 
 template <class MeshType, template <class> class ViewTemplate>
 typename LocalEntityIterator<MeshType, ViewTemplate>::pointer
-    LocalEntityIterator<MeshType, ViewTemplate>::operator->() const {
+LocalEntityIterator<MeshType, ViewTemplate>::operator->() const {
   return &_view;
 }
 } // namespace cpppetsc

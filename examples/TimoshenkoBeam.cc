@@ -46,8 +46,10 @@ using BoundaryCondition = cpppetsc::MeshBoundaryCondition<Mesh>;
 constexpr auto number_of_vertices_per_element = Mesh::size_type{2};
 constexpr auto number_of_elements = Mesh::size_type{6};
 constexpr auto number_of_vertices = Mesh::size_type{5};
-constexpr auto dimension = Mesh::size_type{2};
+constexpr auto coordinate_dimension = Mesh::CoordinateDimension{2};
+constexpr auto topological_dimension = Mesh::TopologicalDimension{1};
 constexpr auto dof_per_vertex = Mesh::size_type{3};
+constexpr auto dof_per_element = Mesh::size_type{0};
 
 // The connectivity specifies the vertex indices per Element.
 
@@ -67,7 +69,8 @@ constexpr auto connectivity = Connectivity{{
 // space.
 
 using VertexPositions =
-    std::array<std::array<Mesh::value_type, dimension>, number_of_vertices>;
+    std::array<std::array<Mesh::value_type, coordinate_dimension>,
+               number_of_vertices>;
 constexpr auto vertex_positions = VertexPositions{{
     {{0., 0.}},
     {{1., 0.}},
@@ -78,13 +81,13 @@ constexpr auto vertex_positions = VertexPositions{{
 
 // Now we are ready to select the Timoshenko beam element
 
-using Element = elements::TimoshenkoBeamElement<dimension>;
+using Element = elements::TimoshenkoBeamElement<coordinate_dimension>;
 
 // The Timoshenko beam element comes with a number of geometrical and material
 // related properties. These are stored in the Properties struct
 
 using Properties =
-    elements::TimoshenkoBeamProperties<Mesh::value_type, dimension>;
+    elements::TimoshenkoBeamProperties<Mesh::value_type, coordinate_dimension>;
 
 // Let us define some parameters the linear elastic beam of rectangular cross
 // section
@@ -118,7 +121,8 @@ int main(int argc, char **argv) {
   // before we call PetscFinalize.
   {
     const auto mesh = Mesh::fromConnectivity(
-        dimension, connectivity, number_of_vertices, dof_per_vertex);
+        topological_dimension, coordinate_dimension, connectivity,
+        number_of_vertices, dof_per_vertex, 0);
     auto assembler = Assembler();
 
     Properties properties = {young_modulus, shear_modulus,
@@ -130,7 +134,8 @@ int main(int argc, char **argv) {
     // Let's add those elements that are "local" to the assembler.
 
     for (const auto &element : mesh.localElements()) {
-      elements::tensor::Tensor<Mesh::value_type, dimension> element_axis;
+      elements::tensor::Tensor<Mesh::value_type, coordinate_dimension>
+          element_axis;
       elements::tensor::as_vector(&element_axis) =
           elements::tensor::as_vector(
               &vertex_positions.at(connectivity.at(element.index()).at(1))) -
@@ -199,7 +204,7 @@ int main(int argc, char **argv) {
     // First we collect the coordinates in a vector.
     using DataSource = std::function<void(Mesh::size_type, Mesh::value_type *)>;
     auto coordinates = cpppetsc::createVectorFromSource(
-        mesh, dimension,
+        mesh, coordinate_dimension,
         DataSource(
             [&](const Mesh::size_type index, Mesh::value_type *const out) {
               const auto &position = vertex_positions.at(index);

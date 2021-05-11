@@ -218,11 +218,6 @@ private:
                        const size_type numberOfVertices, const DM dm);
 
   /**
-   * @brief Sets the adjacency rules of the provided mesh.
-   */
-  static void setAdjacencyRules(const DM dm);
-
-  /**
    * @brief Distributes the provided mesh over the MPI nodes.
    */
   static void distributeMesh(Mesh *const);
@@ -603,32 +598,30 @@ void Mesh<Policy>::addSection(const size_type dofPerVertex,
   numberOfDofsPerDim.front() = dofPerVertex;
   numberOfDofsPerDim.back() = dofPerElement;
 
-  Policy::handleError(DMPlexCreateSection(_mesh.get(), dimension, 1,
-                                          numberOfComponents.data(),
-                                          numberOfDofsPerDim.data(), 0, nullptr,
-                                          nullptr, nullptr, nullptr, &section));
+  Policy::handleError(DMSetNumFields(_mesh.get(), numberOfComponents.size()));
+  Policy::handleError(DMPlexCreateSection(
+      _mesh.get(), nullptr /* label */, numberOfComponents.data(),
+      numberOfDofsPerDim.data(), 0 /* number of boundary conditions */,
+      nullptr /* boundary conditions */,
+      nullptr /* boundary condition components */,
+      nullptr /* boundary condition points */, nullptr /* permutation */,
+      &section));
 
-  Policy::handleError(DMSetDefaultSection(_mesh.get(), section));
+  Policy::handleError(DMSetSection(_mesh.get(), section));
 
   // create default global section
-  Policy::handleError(DMGetDefaultGlobalSection(_mesh.get(), &section));
+  Policy::handleError(DMGetGlobalSection(_mesh.get(), &section));
 }
 
 template <class Policy> void Mesh<Policy>::distributeMesh(Mesh *const mesh) {
   auto dm = DM();
   auto sf = PetscSF();
 
-  setAdjacencyRules(mesh->_mesh.get());
   Policy::handleError(DMPlexDistribute(mesh->_mesh.get(), 0, &sf, &dm));
   if (dm) {
     Policy::handleError(DMPlexSetMigrationSF(dm, sf));
     mesh->_mesh.reset(dm);
   }
-}
-
-template <class Policy> void Mesh<Policy>::setAdjacencyRules(const DM dm) {
-  Policy::handleError(DMPlexSetAdjacencyUseCone(dm, PETSC_FALSE));
-  Policy::handleError(DMPlexSetAdjacencyUseClosure(dm, PETSC_TRUE));
 }
 
 template <class Policy>
@@ -832,7 +825,7 @@ typename Mesh<Policy>::size_type
 Mesh<Policy>::numberOfDofs(const size_type entityPointIndex) const {
   auto output = size_type{0};
   auto section = PetscSection();
-  Policy::handleError(DMGetDefaultSection(_mesh.get(), &section));
+  Policy::handleError(DMGetSection(_mesh.get(), &section));
 
   Policy::handleError(PetscSectionGetDof(section, entityPointIndex, &output));
 

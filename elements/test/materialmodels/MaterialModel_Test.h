@@ -138,9 +138,8 @@ struct MaterialModel_Test : ::testing::Test {
   /**
    * @brief Computes the stress using numerical differentiation.
    */
-  typename MaterialModel::TangentMatrix
-  approximated_tangent_matrix(const DisplacementGradient &gradient) const
-      noexcept {
+  typename MaterialModel::TangentMatrix approximated_tangent_matrix(
+      const DisplacementGradient &gradient) const noexcept {
     return automatic_tangent_matrix(model, MaterialModel::unknown_id(),
                                     gradient, this->time);
   }
@@ -173,8 +172,8 @@ struct MaterialModel_Test : ::testing::Test {
   /**
    * Checks that the computed and the approximated tangent matrices are close.
    */
-  void check_tangent_matrix(const DisplacementGradient &gradient) const
-      noexcept {
+  void
+  check_tangent_matrix(const DisplacementGradient &gradient) const noexcept {
     const auto result = computed_tangent_matrix(gradient);
     const auto approximation = approximated_tangent_matrix(gradient);
 

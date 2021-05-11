@@ -78,7 +78,7 @@ template <class Policy> struct DynamicSolver_Test : Test {
 
   typename assembler_type::mesh_type mesh =
       assembler_type::mesh_type::template fromConnectivity<
-          std::array<std::array<int, 1>, 1>>(2, {{{{0}}}}, 1, 2);
+          std::array<std::array<int, 1>, 1>>(1, {{{{0}}}}, 1, 2);
 
   using vector_type = typename dynamic_solver_type::vector_type;
 

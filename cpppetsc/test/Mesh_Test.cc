@@ -152,7 +152,7 @@ TYPED_TEST(Mesh_Test, simple_from_connectivity_delegates_to_second_overload) {
   using size_type = typename TestFixture::size_type;
   using mesh_type = typename TestFixture::mesh_type;
 
-  const auto dimension = size_type{7};
+  const auto dimension = size_type{1};
   const auto mesh = mesh_type::fromConnectivity(
       dimension, this->connectivity, this->totalNumberOfVertices,
       this->dofPerVertex, this->dofPerElement);

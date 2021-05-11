@@ -64,7 +64,7 @@ target_include_directories(${PROJECT_NAME}-cpppetsc PUBLIC
                            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
-find_package(AE108_PETSc 3.10 MODULE REQUIRED)
+find_package(AE108_PETSc 3.12 MODULE REQUIRED)
 target_link_libraries(${PROJECT_NAME}-cpppetsc
                       PUBLIC ${PROJECT_NAME}::external::petsc
 )

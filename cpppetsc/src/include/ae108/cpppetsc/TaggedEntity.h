@@ -57,12 +57,12 @@ public:
   /**
    * @brief Returns a reference to the contained value.
    */
-  value_type &unwrap() & noexcept;
+  value_type &unwrap() &noexcept;
 
   /**
    * @brief Returns an r-value reference to the contained value.
    */
-  value_type &&unwrap() && noexcept;
+  value_type &&unwrap() &&noexcept;
 
   /**
    * @brief Automatically unwraps the contained value.
@@ -72,12 +72,12 @@ public:
   /**
    * @brief Automatically unwraps the contained value.
    */
-  operator value_type &() & noexcept;
+  operator value_type &() &noexcept;
 
   /**
    * @brief Automatically unwraps the contained value.
    */
-  operator value_type &&() && noexcept;
+  operator value_type &&() &&noexcept;
 
 private:
   value_type _value;
@@ -127,37 +127,32 @@ TaggedEntity<Entity, Tag>::unwrap() const &noexcept {
 }
 
 template <class Entity, class Tag>
-    typename TaggedEntity<Entity, Tag>::value_type &
-    TaggedEntity<Entity, Tag>::unwrap() &
-    noexcept {
+typename TaggedEntity<Entity, Tag>::value_type &
+TaggedEntity<Entity, Tag>::unwrap() &noexcept {
   return _value;
 }
 
 template <class Entity, class Tag>
-    typename TaggedEntity<Entity, Tag>::value_type &&
-    TaggedEntity<Entity, Tag>::unwrap() &&
-    noexcept {
+typename TaggedEntity<Entity, Tag>::value_type &&
+TaggedEntity<Entity, Tag>::unwrap() &&noexcept {
   return std::move(_value);
 }
 
 template <class Entity, class Tag>
-constexpr TaggedEntity<Entity, Tag>::
-operator const typename TaggedEntity<Entity, Tag>::value_type &()
-    const &noexcept {
+constexpr TaggedEntity<Entity, Tag>::operator const typename TaggedEntity<
+    Entity, Tag>::value_type &() const &noexcept {
   return _value;
 }
 
 template <class Entity, class Tag>
-    TaggedEntity<Entity, Tag>::
-    operator typename TaggedEntity<Entity, Tag>::value_type &() &
-    noexcept {
+TaggedEntity<Entity, Tag>::operator typename TaggedEntity<
+    Entity, Tag>::value_type &() &noexcept {
   return _value;
 }
 
 template <class Entity, class Tag>
-    TaggedEntity<Entity, Tag>::
-    operator typename TaggedEntity<Entity, Tag>::value_type &&() &&
-    noexcept {
+TaggedEntity<Entity, Tag>::operator typename TaggedEntity<
+    Entity, Tag>::value_type &&() &&noexcept {
   return std::move(_value);
 }
 

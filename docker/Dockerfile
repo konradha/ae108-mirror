@@ -14,11 +14,12 @@
 # limitations under the License.
 
 ARG BASE_IMAGE=ubuntu:focal
-ARG DEBIAN_FRONTEND=noninteractive
-
 FROM $BASE_IMAGE
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && \
+        DEBIAN_FRONTEND="noninteractive" \
+        TZ="Europe/Zurich" \
+        apt-get install -y \
         clang-format \
         cmake \
         g++ \

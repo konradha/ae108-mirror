@@ -18,6 +18,7 @@
 #include <petscis.h>
 #include <petscksp.h>
 #include <petscmat.h>
+#include <petscsection.h>
 #include <petscsf.h>
 #include <petscsnes.h>
 #include <petsctao.h>

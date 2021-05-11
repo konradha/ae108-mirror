@@ -117,8 +117,7 @@ IndexBasedAccessIterator<RangeType, IndexType, ValueType>::operator--(int) {
 
 template <class RangeType, class IndexType, class ValueType>
 typename IndexBasedAccessIterator<RangeType, IndexType, ValueType>::reference
-    IndexBasedAccessIterator<RangeType, IndexType, ValueType>::
-    operator*() const {
+IndexBasedAccessIterator<RangeType, IndexType, ValueType>::operator*() const {
   assert(_range);
   return (*_range)[_index];
 }
@@ -131,8 +130,7 @@ struct IndexBasedAccessIterator<RangeType, IndexType, ValueType>::PointerProxy {
 
 template <class RangeType, class IndexType, class ValueType>
 typename IndexBasedAccessIterator<RangeType, IndexType, ValueType>::pointer
-    IndexBasedAccessIterator<RangeType, IndexType, ValueType>::
-    operator->() const {
+IndexBasedAccessIterator<RangeType, IndexType, ValueType>::operator->() const {
   return PointerProxy{*(*this)};
 }
 } // namespace cpppetsc

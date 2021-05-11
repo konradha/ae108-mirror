@@ -538,8 +538,8 @@ Matrix<Policy>::AssemblyView::add() const {
 }
 
 template <class Policy>
-typename Matrix<Policy>::value_type Matrix<Policy>::
-operator()(const size_type row, const size_type column) const {
+typename Matrix<Policy>::value_type
+Matrix<Policy>::operator()(const size_type row, const size_type column) const {
   const size_type row_indices[] = {row};
   const size_type column_indices[] = {column};
   value_type values[1] = {0.};

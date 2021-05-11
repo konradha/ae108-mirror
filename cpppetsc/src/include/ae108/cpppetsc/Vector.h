@@ -425,8 +425,8 @@ template <class Policy> void Vector<Policy>::print() const {
 }
 
 template <class Policy>
-typename Vector<Policy>::value_type Vector<Policy>::
-operator()(const size_type index) const {
+typename Vector<Policy>::value_type
+Vector<Policy>::operator()(const size_type index) const {
   auto value = value_type{0.};
   size_type indices[] = {index};
   Policy::handleError(VecGetValues(_vec.get(), 1, indices, &value));
@@ -434,8 +434,8 @@ operator()(const size_type index) const {
 }
 
 template <class Policy>
-typename Vector<Policy>::value_type Vector<Policy>::
-operator[](const size_type index) const {
+typename Vector<Policy>::value_type
+Vector<Policy>::operator[](const size_type index) const {
   return (*this)(index);
 }
 

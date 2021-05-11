@@ -124,18 +124,16 @@ template <typename TestConfiguration> struct Element_Test : ::testing::Test {
   /**
    * @brief Computes the tangent matrix using the element.
    */
-  typename Element::StiffnessMatrix
-  computed_stiffness_matrix(const NodalDisplacements &displacements) const
-      noexcept {
+  typename Element::StiffnessMatrix computed_stiffness_matrix(
+      const NodalDisplacements &displacements) const noexcept {
     return compute_stiffness_matrix(element, displacements, this->time);
   }
 
   /**
    * @brief Computes the stress using numerical differentiation.
    */
-  typename Element::StiffnessMatrix
-  approximated_stiffness_matrix(const NodalDisplacements &displacements) const
-      noexcept {
+  typename Element::StiffnessMatrix approximated_stiffness_matrix(
+      const NodalDisplacements &displacements) const noexcept {
     return automatic_stiffness_matrix(element, displacements, this->time);
   }
 
@@ -167,8 +165,8 @@ template <typename TestConfiguration> struct Element_Test : ::testing::Test {
   /**
    * Checks that the computed and the approximated stiffness matrices are close.
    */
-  void check_stiffness_matrix(const NodalDisplacements &displacements) const
-      noexcept {
+  void check_stiffness_matrix(
+      const NodalDisplacements &displacements) const noexcept {
     const auto result = computed_stiffness_matrix(displacements);
     const auto approximation = approximated_stiffness_matrix(displacements);
 

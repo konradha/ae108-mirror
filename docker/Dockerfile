@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG BASE_IMAGE=debian:buster
+ARG BASE_IMAGE=ubuntu:focal
 ARG DEBIAN_FRONTEND=noninteractive
 
 FROM $BASE_IMAGE

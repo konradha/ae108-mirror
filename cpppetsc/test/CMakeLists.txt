@@ -31,12 +31,14 @@ add_executable(${PROJECT_NAME}-CppPetscTests
                ./TAOSolver_Test.cc
                ./TaggedEntity_Test.cc
                ./Vector_Test.cc
+               ./asSchurComplement_Test.cc
                ./clone_Test.cc
                ./copy_Test.cc
                ./createRhsTransform_Test.cc
                ./createTransformInput_Test.cc
                ./createTransformOutput_Test.cc
                ./createVectorFromSource_Test.cc
+               ./multiply_Test.cc
                ./setName_Test.cc
                ./vertexDataOffsets_Test.cc
 )

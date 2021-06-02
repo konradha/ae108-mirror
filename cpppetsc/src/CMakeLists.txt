@@ -45,6 +45,7 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./Vector.cc
             ./Vector_fwd.cc
             ./Viewer.cc
+            ./asSchurComplement.cc
             ./clone.cc
             ./copy.cc
             ./createRhsTransform.cc
@@ -52,6 +53,7 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./createTransformOutput.cc
             ./createVectorFromSource.cc
             ./getName.cc
+            ./multiply.cc
             ./readFromViewer.cc
             ./setName.cc
             ./vertexDataOffsets.cc

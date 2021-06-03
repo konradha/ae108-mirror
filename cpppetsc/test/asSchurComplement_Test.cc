@@ -48,6 +48,13 @@ template <class Policy> struct asSchurComplement_Test : Test {
       {7., 0.},
       {0., 8.},
   });
+
+  const matrix_type mat = matrix_type::fromList({
+      {1., 0., 3., 0.},
+      {0., 2., 0., 4.},
+      {5., 0., 7., 0.},
+      {0., 6., 0., 8.},
+  });
 };
 
 using Policies = Types<SequentialComputePolicy, ParallelComputePolicy>;
@@ -69,6 +76,30 @@ TYPED_TEST(asSchurComplement_Test, first_column_is_correct) {
 TYPED_TEST(asSchurComplement_Test, second_column_is_correct) {
   const auto matrix = asSchurComplement(&this->mat_00, &this->mat_01,
                                         &this->mat_10, &this->mat_11);
+
+  auto input = createTransformInput(matrix);
+  input.unwrap().replace()(1) = 1.;
+  const auto result = multiply(matrix, input);
+
+  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(0, 0.));
+  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(1, 8. - 4. * 6. / 2.));
+}
+
+TYPED_TEST(asSchurComplement_Test,
+           first_column_of_schur_matrix_can_be_generated_using_indices) {
+  const auto matrix = asSchurComplement(&this->mat, {0, 1});
+
+  auto input = createTransformInput(matrix);
+  input.unwrap().replace()(0) = 1.;
+  const auto result = multiply(matrix, input);
+
+  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(0, 7. - 3. * 5. / 1.));
+  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(1, 0.));
+}
+
+TYPED_TEST(asSchurComplement_Test,
+           second_column_of_schur_matrix_can_be_generated_using_indices) {
+  const auto matrix = asSchurComplement(&this->mat, {0, 1});
 
   auto input = createTransformInput(matrix);
   input.unwrap().replace()(1) = 1.;

@@ -109,7 +109,7 @@ Matrix<Policy> asSchurComplement(
   assert(matrix);
 
   auto is0 = IS();
-  Policy::handleError(ISCreateGeneral(PETSC_COMM_WORLD, indices.size(),
+  Policy::handleError(ISCreateGeneral(Policy::communicator(), indices.size(),
                                       indices.data(), PETSC_COPY_VALUES, &is0));
 
   auto is1 = IS();

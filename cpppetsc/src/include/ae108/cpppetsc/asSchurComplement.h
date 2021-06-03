@@ -52,6 +52,29 @@ asSchurComplement(const Matrix<ParallelComputePolicy> *matrix_00,
                   const Matrix<ParallelComputePolicy> *matrix_10,
                   const Matrix<ParallelComputePolicy> *matrix_11);
 
+/**
+ * @brief Returns a matrix that behaves like the Schur complement:
+ * M_11 - M_10 * M_00^-1 * M_01
+ *
+ * Note that the matrix is not actually computed, but the return matrix
+ * stores a reference to the given matrices to compute the result of
+ * operations on demand.
+ *
+ * @param matrix Valid nonzero pointer.
+ * @param indices Indices.
+ */
+template <class Policy>
+Matrix<Policy> asSchurComplement(const Matrix<Policy> *matrix,
+                                 const std::vector<std::size_t> indices);
+
+extern template Matrix<SequentialComputePolicy>
+asSchurComplement(const Matrix<SequentialComputePolicy> *matrix,
+                  const std::vector<std::size_t> indices);
+
+extern template Matrix<ParallelComputePolicy>
+asSchurComplement(const Matrix<ParallelComputePolicy> *matrix,
+                  const std::vector<std::size_t> indices);
+
 } // namespace cpppetsc
 } // namespace ae108
 
@@ -75,6 +98,26 @@ Matrix<Policy> asSchurComplement(const Matrix<Policy> *matrix_00,
   Policy::handleError(MatCreateSchurComplement(
       matrix_00->data(), matrix_00->data(), matrix_01->data(),
       matrix_10->data(), matrix_11->data(), &mat));
+  return Matrix<Policy>(makeUniqueEntity<Policy>(mat));
+}
+
+template <class Policy>
+Matrix<Policy> asSchurComplement(const Matrix<Policy> *matrix,
+                                 std::vector<PetscInt> indices) {
+  assert(matrix);
+
+  auto is0 = IS();
+  Policy::handleError(ISCreateGeneral(PETSC_COMM_WORLD, indices.size(),
+                                      indices.data(), PETSC_COPY_VALUES, &is0));
+
+  auto is1 = IS();
+  Policy::handleError(ISComplement(is0, 0, matrix->size().first, &is1));
+
+  auto mat = Mat{};
+  Policy::handleError(MatGetSchurComplement(
+      matrix->data(), is0, is0, is1, is1, MAT_INITIAL_MATRIX, &mat,
+      MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_IGNORE_MATRIX, NULL));
+
   return Matrix<Policy>(makeUniqueEntity<Policy>(mat));
 }
 

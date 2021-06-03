@@ -25,7 +25,7 @@ namespace cpppetsc {
  * @brief Returns a matrix that behaves like the Schur complement:
  * M_11 - M_10 * M_00^-1 * M_01
  *
- * Note that the matrix is not actually computed, but the return matrix
+ * Note that the matrix is not actually computed, but the returned matrix
  * stores a reference to the given matrices to compute the result of
  * operations on demand.
  *
@@ -56,7 +56,7 @@ asSchurComplement(const Matrix<ParallelComputePolicy> *matrix_00,
  * @brief Returns a matrix that behaves like the Schur complement:
  * M_11 - M_10 * M_00^-1 * M_01
  *
- * Note that the matrix is not actually computed, but the return matrix
+ * Note that the matrix is not actually computed, but the returned matrix
  * stores a reference to the given matrices to compute the result of
  * operations on demand.
  *
@@ -64,16 +64,19 @@ asSchurComplement(const Matrix<ParallelComputePolicy> *matrix_00,
  * @param indices Indices.
  */
 template <class Policy>
-Matrix<Policy> asSchurComplement(const Matrix<Policy> *matrix,
-                                 const std::vector<std::size_t> indices);
+Matrix<Policy> asSchurComplement(
+    const Matrix<Policy> *matrix,
+    const std::vector<typename Matrix<Policy>::size_type> indices);
 
-extern template Matrix<SequentialComputePolicy>
-asSchurComplement(const Matrix<SequentialComputePolicy> *matrix,
-                  const std::vector<std::size_t> indices);
+extern template Matrix<SequentialComputePolicy> asSchurComplement(
+    const Matrix<SequentialComputePolicy> *matrix,
+    const std::vector<typename Matrix<SequentialComputePolicy>::size_type>
+        indices);
 
-extern template Matrix<ParallelComputePolicy>
-asSchurComplement(const Matrix<ParallelComputePolicy> *matrix,
-                  const std::vector<std::size_t> indices);
+extern template Matrix<ParallelComputePolicy> asSchurComplement(
+    const Matrix<ParallelComputePolicy> *matrix,
+    const std::vector<typename Matrix<ParallelComputePolicy>::size_type>
+        indices);
 
 } // namespace cpppetsc
 } // namespace ae108
@@ -102,8 +105,9 @@ Matrix<Policy> asSchurComplement(const Matrix<Policy> *matrix_00,
 }
 
 template <class Policy>
-Matrix<Policy> asSchurComplement(const Matrix<Policy> *matrix,
-                                 std::vector<PetscInt> indices) {
+Matrix<Policy>
+asSchurComplement(const Matrix<Policy> *matrix,
+                  std::vector<typename Matrix<Policy>::size_type> indices) {
   assert(matrix);
 
   auto is0 = IS();

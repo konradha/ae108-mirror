@@ -108,17 +108,26 @@ Matrix<Policy> asSchurComplement(
     const std::vector<typename Matrix<Policy>::size_type> &indices) {
   assert(matrix);
 
-  auto is0 = IS();
-  Policy::handleError(ISCreateGeneral(Policy::communicator(), indices.size(),
-                                      indices.data(), PETSC_COPY_VALUES, &is0));
+  const auto indices_00 = [&]() {
+    auto is = IS{};
+    Policy::handleError(ISCreateGeneral(Policy::communicator(), indices.size(),
+                                        indices.data(), PETSC_COPY_VALUES,
+                                        &is));
+    return makeUniqueEntity<Policy>(is);
+  }();
 
-  auto is1 = IS();
-  Policy::handleError(ISComplement(is0, 0, matrix->size().first, &is1));
+  const auto indices_11 = [&]() {
+    auto is = IS{};
+    Policy::handleError(
+        ISComplement(indices_00.get(), 0, matrix->size().first, &is));
+    return makeUniqueEntity<Policy>(is);
+  }();
 
   auto mat = Mat{};
   Policy::handleError(MatGetSchurComplement(
-      matrix->data(), is0, is0, is1, is1, MAT_INITIAL_MATRIX, &mat,
-      MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_IGNORE_MATRIX, NULL));
+      matrix->data(), indices_00.get(), indices_00.get(), indices_11.get(),
+      indices_11.get(), MAT_INITIAL_MATRIX, &mat,
+      MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_IGNORE_MATRIX, nullptr));
 
   return Matrix<Policy>(makeUniqueEntity<Policy>(mat));
 }

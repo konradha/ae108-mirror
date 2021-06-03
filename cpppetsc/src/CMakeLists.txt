@@ -46,6 +46,7 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./Vector_fwd.cc
             ./Viewer.cc
             ./asSchurComplement.cc
+            ./asTransformedMatrix.cc
             ./clone.cc
             ./copy.cc
             ./createRhsTransform.cc

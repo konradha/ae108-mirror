@@ -61,22 +61,20 @@ asSchurComplement(const Matrix<ParallelComputePolicy> *matrix_00,
  * operations on demand.
  *
  * @param matrix Valid nonzero pointer.
- * @param indices Indices.
+ * @param indices The row/column indices that define the matrix M_00.
  */
 template <class Policy>
 Matrix<Policy> asSchurComplement(
     const Matrix<Policy> *matrix,
-    const std::vector<typename Matrix<Policy>::size_type> indices);
+    const std::vector<typename Matrix<Policy>::size_type> &indices);
 
 extern template Matrix<SequentialComputePolicy> asSchurComplement(
-    const Matrix<SequentialComputePolicy> *matrix,
-    const std::vector<typename Matrix<SequentialComputePolicy>::size_type>
-        indices);
+    const Matrix<SequentialComputePolicy> *,
+    const std::vector<typename Matrix<SequentialComputePolicy>::size_type> &);
 
 extern template Matrix<ParallelComputePolicy> asSchurComplement(
-    const Matrix<ParallelComputePolicy> *matrix,
-    const std::vector<typename Matrix<ParallelComputePolicy>::size_type>
-        indices);
+    const Matrix<ParallelComputePolicy> *,
+    const std::vector<typename Matrix<ParallelComputePolicy>::size_type> &);
 
 } // namespace cpppetsc
 } // namespace ae108
@@ -105,9 +103,9 @@ Matrix<Policy> asSchurComplement(const Matrix<Policy> *matrix_00,
 }
 
 template <class Policy>
-Matrix<Policy>
-asSchurComplement(const Matrix<Policy> *matrix,
-                  std::vector<typename Matrix<Policy>::size_type> indices) {
+Matrix<Policy> asSchurComplement(
+    const Matrix<Policy> *matrix,
+    const std::vector<typename Matrix<Policy>::size_type> &indices) {
   assert(matrix);
 
   auto is0 = IS();

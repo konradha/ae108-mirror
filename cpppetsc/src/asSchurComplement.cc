@@ -33,11 +33,11 @@ asSchurComplement(const Matrix<ParallelComputePolicy> *,
 
 template Matrix<SequentialComputePolicy> asSchurComplement(
     const Matrix<SequentialComputePolicy> *,
-    const std::vector<typename Matrix<SequentialComputePolicy>::size_type>);
+    const std::vector<typename Matrix<SequentialComputePolicy>::size_type> &);
 
 template Matrix<ParallelComputePolicy> asSchurComplement(
     const Matrix<ParallelComputePolicy> *,
-    const std::vector<typename Matrix<ParallelComputePolicy>::size_type>);
+    const std::vector<typename Matrix<ParallelComputePolicy>::size_type> &);
 
 } // namespace cpppetsc
 } // namespace ae108

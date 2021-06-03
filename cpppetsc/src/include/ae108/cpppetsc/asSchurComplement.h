@@ -62,6 +62,7 @@ asSchurComplement(const Matrix<ParallelComputePolicy> *matrix_00,
  *
  * @param matrix Valid nonzero pointer.
  * @param indices The row/column indices that define the matrix M_00.
+ * Only indices in the local row range of the matrix need to be provided.
  */
 template <class Policy>
 Matrix<Policy> asSchurComplement(
@@ -79,6 +80,7 @@ extern template Matrix<ParallelComputePolicy> asSchurComplement(
 } // namespace cpppetsc
 } // namespace ae108
 
+#include <algorithm>
 #include <cassert>
 #include <petscksp.h>
 
@@ -108,18 +110,33 @@ Matrix<Policy> asSchurComplement(
     const std::vector<typename Matrix<Policy>::size_type> &indices) {
   assert(matrix);
 
+  const auto localRowRange = matrix->localRowRange();
+
   const auto indices_00 = [&]() {
+    using size_type = typename Matrix<Policy>::size_type;
+
+    const auto isLocal = [&](const typename Matrix<Policy>::size_type index) {
+      return localRowRange.first <= index && index < localRowRange.second;
+    };
+    const auto localSize =
+        std::count_if(indices.begin(), indices.end(), isLocal);
+
     auto is = IS{};
-    Policy::handleError(ISCreateGeneral(Policy::communicator(), indices.size(),
-                                        indices.data(), PETSC_COPY_VALUES,
-                                        &is));
+    auto localIndices = static_cast<size_type *>(nullptr);
+    Policy::handleError(
+        PetscMalloc(sizeof(size_type) * localSize, &localIndices));
+    std::copy_if(indices.begin(), indices.end(), localIndices, isLocal) -
+        localIndices;
+    Policy::handleError(ISCreateGeneral(Policy::communicator(), localSize,
+                                        localIndices, PETSC_OWN_POINTER, &is));
+
     return makeUniqueEntity<Policy>(is);
   }();
 
   const auto indices_11 = [&]() {
     auto is = IS{};
-    Policy::handleError(
-        ISComplement(indices_00.get(), 0, matrix->size().first, &is));
+    Policy::handleError(ISComplement(indices_00.get(), localRowRange.first,
+                                     localRowRange.second, &is));
     return makeUniqueEntity<Policy>(is);
   }();
 

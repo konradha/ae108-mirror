@@ -125,8 +125,7 @@ Matrix<Policy> asSchurComplement(
     auto localIndices = static_cast<size_type *>(nullptr);
     Policy::handleError(
         PetscMalloc(sizeof(size_type) * localSize, &localIndices));
-    std::copy_if(indices.begin(), indices.end(), localIndices, isLocal) -
-        localIndices;
+    std::copy_if(indices.begin(), indices.end(), localIndices, isLocal);
     Policy::handleError(ISCreateGeneral(Policy::communicator(), localSize,
                                         localIndices, PETSC_OWN_POINTER, &is));
 

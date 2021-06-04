@@ -87,7 +87,7 @@ TYPED_TEST(asSchurComplement_Test, second_column_is_correct) {
 
 TYPED_TEST(asSchurComplement_Test,
            first_column_of_schur_matrix_can_be_generated_using_indices) {
-  const auto matrix = asSchurComplement(&this->mat, {0, 1});
+  const auto matrix = asSchurComplement(&this->mat, {2, 3});
 
   auto input = createTransformInput(matrix);
   input.unwrap().replace()(0) = 1.;
@@ -99,7 +99,7 @@ TYPED_TEST(asSchurComplement_Test,
 
 TYPED_TEST(asSchurComplement_Test,
            second_column_of_schur_matrix_can_be_generated_using_indices) {
-  const auto matrix = asSchurComplement(&this->mat, {0, 1});
+  const auto matrix = asSchurComplement(&this->mat, {2, 3});
 
   auto input = createTransformInput(matrix);
   input.unwrap().replace()(1) = 1.;

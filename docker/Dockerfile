@@ -30,7 +30,8 @@ RUN apt-get update && \
         ninja-build \
         petsc-dev \
         python3 python3-pip \
-        python3-h5py
+        python3-h5py \
+        gdb
 
 RUN pip3 install \
         mypy==0.790 \

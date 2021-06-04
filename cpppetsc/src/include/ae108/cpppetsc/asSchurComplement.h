@@ -25,7 +25,7 @@ namespace cpppetsc {
  * @brief Returns a matrix that behaves like the Schur complement:
  * M_11 - M_10 * M_00^-1 * M_01
  *
- * Note that the matrix is not actually computed, but the return matrix
+ * Note that the matrix is not actually computed, but the returned matrix
  * stores a reference to the given matrices to compute the result of
  * operations on demand.
  *
@@ -52,9 +52,35 @@ asSchurComplement(const Matrix<ParallelComputePolicy> *matrix_00,
                   const Matrix<ParallelComputePolicy> *matrix_10,
                   const Matrix<ParallelComputePolicy> *matrix_11);
 
+/**
+ * @brief Returns a matrix that behaves like the Schur complement:
+ * M_11 - M_10 * M_00^-1 * M_01
+ *
+ * Note that the matrix is not actually computed, but the returned matrix
+ * stores a reference to the given matrices to compute the result of
+ * operations on demand.
+ *
+ * @param matrix Valid nonzero pointer.
+ * @param indices The row/column indices that define the matrix M_00.
+ * Only indices in the local row range of the matrix need to be provided.
+ */
+template <class Policy>
+Matrix<Policy> asSchurComplement(
+    const Matrix<Policy> *matrix,
+    const std::vector<typename Matrix<Policy>::size_type> &indices);
+
+extern template Matrix<SequentialComputePolicy> asSchurComplement(
+    const Matrix<SequentialComputePolicy> *,
+    const std::vector<typename Matrix<SequentialComputePolicy>::size_type> &);
+
+extern template Matrix<ParallelComputePolicy> asSchurComplement(
+    const Matrix<ParallelComputePolicy> *,
+    const std::vector<typename Matrix<ParallelComputePolicy>::size_type> &);
+
 } // namespace cpppetsc
 } // namespace ae108
 
+#include <algorithm>
 #include <cassert>
 #include <petscksp.h>
 
@@ -75,6 +101,50 @@ Matrix<Policy> asSchurComplement(const Matrix<Policy> *matrix_00,
   Policy::handleError(MatCreateSchurComplement(
       matrix_00->data(), matrix_00->data(), matrix_01->data(),
       matrix_10->data(), matrix_11->data(), &mat));
+  return Matrix<Policy>(makeUniqueEntity<Policy>(mat));
+}
+
+template <class Policy>
+Matrix<Policy> asSchurComplement(
+    const Matrix<Policy> *matrix,
+    const std::vector<typename Matrix<Policy>::size_type> &indices) {
+  assert(matrix);
+
+  const auto localRowRange = matrix->localRowRange();
+
+  const auto indices_00 = [&]() {
+    using size_type = typename Matrix<Policy>::size_type;
+
+    const auto isLocal = [&](const typename Matrix<Policy>::size_type index) {
+      return localRowRange.first <= index && index < localRowRange.second;
+    };
+    const auto localSize =
+        std::count_if(indices.begin(), indices.end(), isLocal);
+
+    auto is = IS{};
+    auto localIndices = static_cast<size_type *>(nullptr);
+    Policy::handleError(
+        PetscMalloc(sizeof(size_type) * localSize, &localIndices));
+    std::copy_if(indices.begin(), indices.end(), localIndices, isLocal);
+    Policy::handleError(ISCreateGeneral(Policy::communicator(), localSize,
+                                        localIndices, PETSC_OWN_POINTER, &is));
+
+    return makeUniqueEntity<Policy>(is);
+  }();
+
+  const auto indices_11 = [&]() {
+    auto is = IS{};
+    Policy::handleError(ISComplement(indices_00.get(), localRowRange.first,
+                                     localRowRange.second, &is));
+    return makeUniqueEntity<Policy>(is);
+  }();
+
+  auto mat = Mat{};
+  Policy::handleError(MatGetSchurComplement(
+      matrix->data(), indices_00.get(), indices_00.get(), indices_11.get(),
+      indices_11.get(), MAT_INITIAL_MATRIX, &mat,
+      MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_IGNORE_MATRIX, nullptr));
+
   return Matrix<Policy>(makeUniqueEntity<Policy>(mat));
 }
 

@@ -61,7 +61,7 @@ asSchurComplement(const Matrix<ParallelComputePolicy> *matrix_00,
  * operations on demand.
  *
  * @param matrix Valid nonzero pointer.
- * @param indices The row/column indices that define the matrix M_00.
+ * @param indices The row/column indices that define the matrix M_11.
  * Only indices in the local row range of the matrix need to be provided.
  */
 template <class Policy>
@@ -112,7 +112,7 @@ Matrix<Policy> asSchurComplement(
 
   const auto localRowRange = matrix->localRowRange();
 
-  const auto indices_00 = [&]() {
+  const auto indices_11 = [&]() {
     using size_type = typename Matrix<Policy>::size_type;
 
     const auto isLocal = [&](const typename Matrix<Policy>::size_type index) {
@@ -132,9 +132,9 @@ Matrix<Policy> asSchurComplement(
     return makeUniqueEntity<Policy>(is);
   }();
 
-  const auto indices_11 = [&]() {
+  const auto indices_00 = [&]() {
     auto is = IS{};
-    Policy::handleError(ISComplement(indices_00.get(), localRowRange.first,
+    Policy::handleError(ISComplement(indices_11.get(), localRowRange.first,
                                      localRowRange.second, &is));
     return makeUniqueEntity<Policy>(is);
   }();

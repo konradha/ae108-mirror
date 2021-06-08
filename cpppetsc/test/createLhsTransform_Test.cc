@@ -25,6 +25,7 @@ using testing::Types;
 
 namespace ae108 {
 namespace cpppetsc {
+namespace {
 
 template <class Policy> struct createLhsTransform_Test : Test {
   using matrix_type = Matrix<Policy>;
@@ -62,5 +63,6 @@ TYPED_TEST(createLhsTransform_Test, can_be_multiplied) {
   EXPECT_THAT(result.norm(), DoubleEq(0.));
 }
 
+} // namespace
 } // namespace cpppetsc
 } // namespace ae108

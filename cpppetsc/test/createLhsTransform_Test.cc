@@ -14,7 +14,7 @@
 
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
-#include "ae108/cpppetsc/createRhsTransform.h"
+#include "ae108/cpppetsc/createLhsTransform.h"
 #include <gmock/gmock.h>
 
 using testing::DoubleEq;
@@ -27,39 +27,39 @@ namespace ae108 {
 namespace cpppetsc {
 namespace {
 
-template <class Policy> struct createRhsTransform_Test : Test {
+template <class Policy> struct createLhsTransform_Test : Test {
   using matrix_type = Matrix<Policy>;
   using size_type = typename matrix_type::size_type;
 };
 
 using Policies = Types<SequentialComputePolicy, ParallelComputePolicy>;
 
-TYPED_TEST_CASE(createRhsTransform_Test, Policies);
+TYPED_TEST_CASE(createLhsTransform_Test, Policies);
 
-TYPED_TEST(createRhsTransform_Test, has_correct_size) {
+TYPED_TEST(createLhsTransform_Test, has_correct_size) {
   using matrix_type = typename TestFixture::matrix_type;
   using size_type = typename TestFixture::size_type;
 
   const auto matrix = matrix_type(2, 3);
 
-  const auto columns = size_type{7};
-  const auto result = createRhsTransform(matrix, columns);
+  const auto rows = size_type{7};
+  const auto result = createLhsTransform(matrix, rows);
 
-  EXPECT_THAT(result.size(), Pair(Eq(matrix.size().second), Eq(columns)));
+  EXPECT_THAT(result.size(), Pair(Eq(rows), Eq(matrix.size().first)));
 }
 
-TYPED_TEST(createRhsTransform_Test, can_be_multiplied) {
+TYPED_TEST(createLhsTransform_Test, can_be_multiplied) {
   using matrix_type = typename TestFixture::matrix_type;
   using size_type = typename TestFixture::size_type;
 
   auto matrix = matrix_type(2, 3);
   matrix.setZero();
 
-  const auto columns = size_type{7};
-  auto transform = createRhsTransform(matrix, columns);
+  const auto rows = size_type{7};
+  auto transform = createLhsTransform(matrix, rows);
   transform.setZero();
 
-  const auto result = matrix_type::fromProduct(matrix, transform);
+  const auto result = matrix_type::fromProduct(transform, matrix);
   EXPECT_THAT(result.norm(), DoubleEq(0.));
 }
 

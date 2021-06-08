@@ -50,6 +50,7 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./clone.cc
             ./copy.cc
             ./createRhsTransform.cc
+            ./createLhsTransform.cc
             ./createTransformInput.cc
             ./createTransformOutput.cc
             ./createVectorFromSource.cc

@@ -23,19 +23,19 @@ namespace ae108 {
 namespace cpppetsc {
 
 /**
- * @brief Creates a matrix P that can be multiplied from the right hand side
- * with the provided Matrix A, i.e. A * P is well-formed.
+ * @brief Creates a matrix P that can be multiplied from the left hand side
+ * with the provided Matrix A, i.e. P * A is well-formed.
  */
 template <class Policy>
 Matrix<Policy>
-createRhsTransform(const Matrix<Policy> &matrix,
-                   const typename Matrix<Policy>::size_type columns);
+createLhsTransform(const Matrix<Policy> &matrix,
+                   const typename Matrix<Policy>::size_type rows);
 
 extern template Matrix<SequentialComputePolicy>
-createRhsTransform(const Matrix<SequentialComputePolicy> &matrix,
+createLhsTransform(const Matrix<SequentialComputePolicy> &matrix,
                    typename Matrix<SequentialComputePolicy>::size_type);
 extern template Matrix<ParallelComputePolicy>
-createRhsTransform(const Matrix<ParallelComputePolicy> &matrix,
+createLhsTransform(const Matrix<ParallelComputePolicy> &matrix,
                    typename Matrix<ParallelComputePolicy>::size_type);
 
 } // namespace cpppetsc
@@ -46,8 +46,8 @@ namespace cpppetsc {
 
 template <class Policy>
 Matrix<Policy>
-createRhsTransform(const Matrix<Policy> &matrix,
-                   const typename Matrix<Policy>::size_type columns) {
+createLhsTransform(const Matrix<Policy> &matrix,
+                   const typename Matrix<Policy>::size_type rows) {
   using size_type = typename Matrix<Policy>::size_type;
 
   auto result = []() {
@@ -56,17 +56,17 @@ createRhsTransform(const Matrix<Policy> &matrix,
     return Matrix<Policy>(makeUniqueEntity<Policy>(mat));
   }();
 
-  const auto localRows = [&]() {
+  const auto localCols = [&]() {
     auto rows = size_type{};
     auto cols = size_type{};
     Policy::handleError(MatGetLocalSize(matrix.data(), &rows, &cols));
-    return cols;
+    return rows;
   }();
 
-  const auto rows = matrix.size().second;
+  const auto columns = matrix.size().first;
 
   Policy::handleError(
-      MatSetSizes(result.data(), localRows, PETSC_DECIDE, rows, columns));
+      MatSetSizes(result.data(), PETSC_DECIDE, localCols, rows, columns));
   Policy::handleError(MatSetFromOptions(result.data()));
   Policy::handleError(MatSetUp(result.data()));
   result.finalize();

@@ -14,9 +14,7 @@
 
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
-#include "ae108/cpppetsc/copy.h"
 #include "ae108/cpppetsc/createLhsTransform.h"
-#include "ae108/cppptest/Matchers.h"
 #include <gmock/gmock.h>
 
 using testing::DoubleEq;

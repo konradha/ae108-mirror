@@ -29,6 +29,24 @@ namespace cpppetsc {
 template <class Policy>
 Matrix<Policy>
 createLhsTransform(const Matrix<Policy> &matrix,
+                   const typename Matrix<Policy>::size_type rows);
+
+extern template Matrix<SequentialComputePolicy>
+createLhsTransform(const Matrix<SequentialComputePolicy> &matrix,
+                   typename Matrix<SequentialComputePolicy>::size_type);
+extern template Matrix<ParallelComputePolicy>
+createLhsTransform(const Matrix<ParallelComputePolicy> &matrix,
+                   typename Matrix<ParallelComputePolicy>::size_type);
+
+} // namespace cpppetsc
+} // namespace ae108
+
+namespace ae108 {
+namespace cpppetsc {
+
+template <class Policy>
+Matrix<Policy>
+createLhsTransform(const Matrix<Policy> &matrix,
                    const typename Matrix<Policy>::size_type rows) {
   using size_type = typename Matrix<Policy>::size_type;
 
@@ -54,13 +72,6 @@ createLhsTransform(const Matrix<Policy> &matrix,
   result.finalize();
   return result;
 }
-
-extern template Matrix<SequentialComputePolicy>
-createLhsTransform(const Matrix<SequentialComputePolicy> &matrix,
-                   typename Matrix<SequentialComputePolicy>::size_type);
-extern template Matrix<ParallelComputePolicy>
-createLhsTransform(const Matrix<ParallelComputePolicy> &matrix,
-                   typename Matrix<ParallelComputePolicy>::size_type);
 
 } // namespace cpppetsc
 } // namespace ae108

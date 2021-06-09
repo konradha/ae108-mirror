@@ -45,6 +45,7 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./Vector.cc
             ./Vector_fwd.cc
             ./Viewer.cc
+            ./asInverseMatrix.cc
             ./asSchurComplement.cc
             ./asTransformedMatrix.cc
             ./clone.cc

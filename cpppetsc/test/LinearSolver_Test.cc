@@ -51,6 +51,17 @@ TYPED_TEST(LinearSolver_Test, solving_works) {
   EXPECT_THAT(result(1), DoubleEq(2.));
 }
 
+TYPED_TEST(LinearSolver_Test, solving_works_with_provided_result_vector) {
+  const auto result =
+      TestFixture::vector_type::fromDistributed(this->solver.solve(
+          this->vector,
+          tag<DistributedTag>(
+              TestFixture::vector_type::fromLayoutOf(this->vector))));
+
+  EXPECT_THAT(result(0), DoubleEq(4.));
+  EXPECT_THAT(result(1), DoubleEq(2.));
+}
+
 TYPED_TEST(LinearSolver_Test, move_construction_works) {
   const auto copy(std::move(this->solver));
 

@@ -31,6 +31,7 @@ add_executable(${PROJECT_NAME}-CppPetscTests
                ./TAOSolver_Test.cc
                ./TaggedEntity_Test.cc
                ./Vector_Test.cc
+               ./asInverseMatrix_Test.cc
                ./asSchurComplement_Test.cc
                ./asTransformedMatrix_Test.cc
                ./clone_Test.cc

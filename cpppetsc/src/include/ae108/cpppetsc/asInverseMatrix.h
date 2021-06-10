@@ -70,11 +70,6 @@ template <class Policy> PetscErrorCode multiply(Mat mat, Vec in, Vec out) {
     return context;
   }();
 
-  auto wrappedIn =
-      distributed<Vector<Policy>>(UniqueEntity<Vec>(in, [](Vec) {}));
-  auto wrappedOut =
-      distributed<Vector<Policy>>(UniqueEntity<Vec>(out, [](Vec) {}));
-
   data->solver.solve(
       distributed<Vector<Policy>>(UniqueEntity<Vec>(in, [](Vec) {})),
       distributed<Vector<Policy>>(UniqueEntity<Vec>(out, [](Vec) {})));

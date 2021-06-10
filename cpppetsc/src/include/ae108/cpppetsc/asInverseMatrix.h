@@ -42,10 +42,11 @@ asInverseMatrix(const Matrix<ParallelComputePolicy> *);
 } // namespace cpppetsc
 } // namespace ae108
 
-#include "ae108/cpppetsc/LinearSolver.h"
-#include <algorithm>
 #include <cassert>
+#include <memory>
+#include <utility>
 #include <petscksp.h>
+#include "ae108/cpppetsc/LinearSolver.h"
 
 namespace ae108 {
 namespace cpppetsc {

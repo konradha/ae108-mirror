@@ -43,7 +43,6 @@ asInverseMatrix(const Matrix<ParallelComputePolicy> *);
 } // namespace ae108
 
 #include "ae108/cpppetsc/LinearSolver.h"
-#include "ae108/cpppetsc/copy.h"
 #include <algorithm>
 #include <cassert>
 #include <petscksp.h>
@@ -75,8 +74,10 @@ template <class Policy> PetscErrorCode multiply(Mat mat, Vec in, Vec out) {
   auto wrappedOut =
       distributed<Vector<Policy>>(UniqueEntity<Vec>(out, [](Vec) {}));
 
-  const auto result = data->solver.solve(wrappedIn);
-  copy(result, &wrappedOut);
+  data->solver.solve(
+      distributed<Vector<Policy>>(UniqueEntity<Vec>(in, [](Vec) {})),
+      distributed<Vector<Policy>>(UniqueEntity<Vec>(out, [](Vec) {}))
+  );
 
   return PetscErrorCode{};
 }

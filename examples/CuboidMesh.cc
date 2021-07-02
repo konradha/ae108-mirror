@@ -17,6 +17,10 @@
 #include "ae108/cpppetsc/Mesh.h"
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/Vector.h"
+#include "ae108/cpppetsc/Viewer.h"
+#include "ae108/cpppetsc/createVectorFromSource.h"
+#include "ae108/cpppetsc/setName.h"
+#include "ae108/cpppetsc/writeToViewer.h"
 #include "ae108/elements/CoreElement.h"
 #include "ae108/elements/embedding/IsoparametricEmbedding.h"
 #include "ae108/elements/integrator/IsoparametricIntegrator.h"
@@ -33,6 +37,7 @@ using Policy = cpppetsc::ParallelComputePolicy;
 using Mesh = cpppetsc::Mesh<Policy>;
 using Vector = cpppetsc::Vector<Policy>;
 using BoundaryCondition = cpppetsc::MeshBoundaryCondition<Mesh>;
+using Viewer = cpppetsc::Viewer<Policy>;
 
 namespace embedding = ae108::elements::embedding;
 namespace integrator = ae108::elements::integrator;
@@ -92,14 +97,19 @@ using Solver = solve::NonlinearSolver<Assembler>;
 
 int main(int argc, char **argv) {
 
-  // First we parse the command line flags "granularity" and "output".
+  // First we parse the command line flags "granularity", "stdout-output", and
+  // "file-output".
   auto granularity = std::size_t{2};
-  auto output = true;
+  auto stdout_output = true;
+  auto file_output = false;
   cmdline::CommandLineOptionParser{std::cerr}
       .withOption("granularity",
                   "the number of cuboids per coordinates axis (default: 2)",
                   &granularity)
-      .withOption("output", "enable output to stdout (default: true)", &output)
+      .withOption("stdout-output", "enable output to stdout (default: true)",
+                  &stdout_output)
+      .withOption("file-output", "enable output to HDF5 file (default: false)",
+                  &file_output)
       .parse(argc, argv);
 
   // PETSc must be initialized before using it.
@@ -172,16 +182,35 @@ int main(int argc, char **argv) {
 
     // We are ready to minimize the energy.
 
-    const auto result = solver.computeSolution(
+    auto result = solver.computeSolution(
         boundary_conditions, Vector::fromGlobalMesh(mesh), time, &assembler);
+    cpppetsc::setName("result", &result);
 
-    // As a final step, we print to result to stdout (in canonical order) if it
-    // was not disabled by the user.
+    // As a final step, we print to result to stdout and/or write it to a file.
 
-    const auto global_result =
-        Mesh::vector_type::fromDistributedInCanonicalOrder(result, mesh);
-    if (output && Policy::isPrimaryRank()) {
-      global_result.unwrap().print();
+    if (stdout_output) {
+      const auto global_result =
+          Mesh::vector_type::fromDistributedInCanonicalOrder(result, mesh);
+      if (Policy::isPrimaryRank()) {
+        global_result.unwrap().print();
+      }
+    }
+
+    if (file_output) {
+      using DataSource =
+          std::function<void(Mesh::size_type, Mesh::value_type *)>;
+      const auto coordinates = cpppetsc::createVectorFromSource(
+          mesh, dimension,
+          DataSource(
+              [&](const Mesh::size_type index, Mesh::value_type *const out) {
+                const auto &position = geometry.position_of_vertex(index);
+                std::copy(position.begin(), position.end(), out);
+              }));
+
+      auto viewer =
+          Viewer::fromHdf5FilePath("cuboid_mesh.ae108", Viewer::Mode::write);
+      cpppetsc::writeToViewer(mesh, coordinates, &viewer);
+      cpppetsc::writeToViewer(result, &viewer);
     }
   }
   Policy::handleError(PetscFinalize());

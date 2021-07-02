@@ -96,6 +96,7 @@ Viewer<Policy> Viewer<Policy>::fromHdf5FilePath(const char *path,
                                               ? PetscFileMode::FILE_MODE_WRITE
                                               : PetscFileMode::FILE_MODE_READ,
                                           &viewer));
+  Policy::handleError(PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_PETSC));
   return Viewer(makeUniqueEntity<Policy>(viewer));
 }
 

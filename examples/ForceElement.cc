@@ -15,6 +15,7 @@
 #include "ae108/elements/ForceElement.h"
 #include "ae108/assembly/Assembler.h"
 #include "ae108/assembly/AssemblerGroup.h"
+#include "ae108/cpppetsc/Context.h"
 #include "ae108/cpppetsc/Mesh.h"
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/Vector.h"
@@ -34,6 +35,7 @@
 using namespace ae108;
 
 using Policy = cpppetsc::ParallelComputePolicy;
+using Context = cpppetsc::Context<Policy>;
 using Mesh = cpppetsc::Mesh<Policy>;
 using Vector = cpppetsc::Vector<Policy>;
 using BoundaryCondition = cpppetsc::MeshBoundaryCondition<Mesh>;
@@ -135,99 +137,91 @@ using GroupAssembler = assembly::AssemblerGroup<Assembler, ForceAssembler>;
 using Solver = solve::NonlinearSolver<GroupAssembler>;
 
 int main(int argc, char **argv) {
-  // PETSc must be initialized before using it.
-  Policy::handleError(PetscInitialize(&argc, &argv, NULL, NULL));
+  // MPI/PETSc/cpppetsc must be initialized before using it.
 
-  // We use a scope around our computation to make sure everything is cleaned up
-  // before we call PetscFinalize.
-  {
-    const auto mesh = Mesh::fromConnectivity(
-        dimension, connectivity, number_of_vertices, dof_per_vertex);
+  const auto context = Context(&argc, &argv);
 
-    auto assembler = GroupAssembler();
-    auto &element_assembler = assembler.get<0>();
-    auto &force_assembler = assembler.get<1>();
+  // Let's create the mesh, an assembler, and a material model.
 
-    const auto model = MaterialModel(1.0, 0.0);
+  const auto mesh = Mesh::fromConnectivity(dimension, connectivity,
+                                           number_of_vertices, dof_per_vertex);
+  auto assembler = GroupAssembler();
+  auto &element_assembler = assembler.get<0>();
+  auto &force_assembler = assembler.get<1>();
+  const auto model = MaterialModel(1.0, 0.0);
 
-    // Depending on whether we use MPI, our mesh may be distributed and not all
-    // elements are present on this computational node.
+  // Depending on whether we use MPI, our mesh may be distributed and not all
+  // elements are present on this computational node.
 
-    // Let's add those elements that are "local" to the assembler. We
-    // distinguish between quads and force elements using the element index.
+  // Let's add those elements that are "local" to the assembler. We
+  // distinguish between quads and force elements using the element index.
 
-    // Note that we need to provide a force vector (-1, -1) to pull in direction
-    // (1, 1).
+  // Note that we need to provide a force vector (-1, -1) to pull in direction
+  // (1, 1).
 
-    for (const auto &element : mesh.localElements()) {
-      switch (element.index()) {
-      case 0: {
-        element_assembler.emplaceElement(
-            element, model,
-            Integrator(
-                Embedding(Embedding::Collection<Embedding::PhysicalPoint>{{
-                    vertex_positions.at(connectivity.at(element.index()).at(0)),
-                    vertex_positions.at(connectivity.at(element.index()).at(1)),
-                    vertex_positions.at(connectivity.at(element.index()).at(2)),
-                    vertex_positions.at(connectivity.at(element.index()).at(3)),
-                }})));
-        break;
-      }
-      case 1: {
-        force_assembler.emplaceElement(element,
-                                       ForceElement::Force{{-1., -1.}});
-        break;
-      }
-      }
+  for (const auto &element : mesh.localElements()) {
+    switch (element.index()) {
+    case 0: {
+      element_assembler.emplaceElement(
+          element, model,
+          Integrator(Embedding(Embedding::Collection<Embedding::PhysicalPoint>{{
+              vertex_positions.at(connectivity.at(element.index()).at(0)),
+              vertex_positions.at(connectivity.at(element.index()).at(1)),
+              vertex_positions.at(connectivity.at(element.index()).at(2)),
+              vertex_positions.at(connectivity.at(element.index()).at(3)),
+          }})));
+      break;
     }
-
-    // We need to create a solver. We do not use the time, so we can set it to
-    // zero.
-
-    const auto solver = Solver(&mesh);
-    const auto time = Element::Time{0.};
-
-    // Before we can produce meaningful results, we need to specify boundary
-    // conditions. Let's fix the nodes at x=0 and y=0.
-
-    std::vector<BoundaryCondition> boundary_conditions;
-    for (const auto &vertex : mesh.localVertices()) {
-      switch (vertex.index()) {
-      case 0:
-      case 1:
-      case 3: {
-        // The displacement in x direction is zero.
-        boundary_conditions.push_back({vertex, 0, 0.});
-        // The displacement in y direction is zero.
-        boundary_conditions.push_back({vertex, 1, 0.});
-        break;
-      }
-      }
+    case 1: {
+      force_assembler.emplaceElement(element, ForceElement::Force{{-1., -1.}});
+      break;
     }
-
-    // We are ready to minimize the energy.
-
-    auto result = solver.computeSolution(
-        boundary_conditions, Vector::fromGlobalMesh(mesh), time, &assembler);
-    cpppetsc::setName("result", &result);
-
-    using DataSource = std::function<void(Mesh::size_type, Mesh::value_type *)>;
-    const auto coordinates = cpppetsc::createVectorFromSource(
-        mesh, dimension,
-        DataSource(
-            [&](const Mesh::size_type index, Mesh::value_type *const out) {
-              const auto &position = vertex_positions.at(index);
-              std::copy(position.begin(), position.end(), out);
-            }));
-
-    // Finally we write the results to a file.
-
-    using Viewer = cpppetsc::Viewer<Policy>;
-    auto viewer =
-        Viewer::fromHdf5FilePath("force_element.ae108", Viewer::Mode::write);
-    cpppetsc::writeToViewer(mesh, coordinates, &viewer);
-    cpppetsc::writeToViewer(result, &viewer);
+    }
   }
 
-  Policy::handleError(PetscFinalize());
+  // We need to create a solver. We do not use the time, so we can set it to
+  // zero.
+
+  const auto solver = Solver(&mesh);
+  const auto time = Element::Time{0.};
+
+  // Before we can produce meaningful results, we need to specify boundary
+  // conditions. Let's fix the nodes at x=0 and y=0.
+
+  std::vector<BoundaryCondition> boundary_conditions;
+  for (const auto &vertex : mesh.localVertices()) {
+    switch (vertex.index()) {
+    case 0:
+    case 1:
+    case 3: {
+      // The displacement in x direction is zero.
+      boundary_conditions.push_back({vertex, 0, 0.});
+      // The displacement in y direction is zero.
+      boundary_conditions.push_back({vertex, 1, 0.});
+      break;
+    }
+    }
+  }
+
+  // We are ready to minimize the energy.
+
+  auto result = solver.computeSolution(
+      boundary_conditions, Vector::fromGlobalMesh(mesh), time, &assembler);
+  cpppetsc::setName("result", &result);
+
+  using DataSource = std::function<void(Mesh::size_type, Mesh::value_type *)>;
+  const auto coordinates = cpppetsc::createVectorFromSource(
+      mesh, dimension,
+      DataSource([&](const Mesh::size_type index, Mesh::value_type *const out) {
+        const auto &position = vertex_positions.at(index);
+        std::copy(position.begin(), position.end(), out);
+      }));
+
+  // Finally we write the results to a file.
+
+  using Viewer = cpppetsc::Viewer<Policy>;
+  auto viewer =
+      Viewer::fromHdf5FilePath("force_element.ae108", Viewer::Mode::write);
+  cpppetsc::writeToViewer(mesh, coordinates, &viewer);
+  cpppetsc::writeToViewer(result, &viewer);
 }

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "ae108/assembly/Assembler.h"
+#include "ae108/cpppetsc/Context.h"
 #include "ae108/cpppetsc/GeneralizedMeshBoundaryCondition.h"
 #include "ae108/cpppetsc/Mesh.h"
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
@@ -31,6 +32,7 @@
 using namespace ae108;
 
 using Policy = cpppetsc::ParallelComputePolicy;
+using Context = cpppetsc::Context<Policy>;
 using Mesh = cpppetsc::Mesh<Policy>;
 using Vector = cpppetsc::Vector<Policy>;
 using BoundaryCondition = cpppetsc::GeneralizedMeshBoundaryCondition<Mesh>;
@@ -121,101 +123,98 @@ using Assembler =
 using Solver = solve::TransformingSolver<Assembler>;
 
 int main(int argc, char **argv) {
-  // PETSc must be initialized before using it.
-  Policy::handleError(PetscInitialize(&argc, &argv, NULL, NULL));
+  // MPI/PETSc/cpppetsc must be initialized before using it.
 
-  // We use a scope around our computation to make sure everything is cleaned up
-  // before we call PetscFinalize.
-  {
-    const auto mesh = Mesh::fromConnectivity(
-        dimension, connectivity, number_of_vertices, dof_per_vertex);
-    auto assembler = Assembler();
+  const auto context = Context(&argc, &argv);
 
-    const auto model = MaterialModel(1.0, .2);
+  // Let's create the mesh, an assembler, and a material model.
 
-    // Depending on whether we use MPI, our mesh may be distributed and not all
-    // elements are present on this computational node.
+  const auto mesh = Mesh::fromConnectivity(dimension, connectivity,
+                                           number_of_vertices, dof_per_vertex);
+  auto assembler = Assembler();
+  const auto model = MaterialModel(1.0, .2);
 
-    // Let's add those elements that are "local" to the assembler.
+  // Depending on whether we use MPI, our mesh may be distributed and not all
+  // elements are present on this computational node.
 
-    for (const auto &element : mesh.localElements()) {
-      assembler.emplaceElement(
-          element, model,
-          Integrator(Embedding(Embedding::Collection<Embedding::PhysicalPoint>{{
-              vertex_positions.at(connectivity.at(element.index()).at(0)),
-              vertex_positions.at(connectivity.at(element.index()).at(1)),
-              vertex_positions.at(connectivity.at(element.index()).at(2)),
-          }})));
+  // Let's add those elements that are "local" to the assembler.
+
+  for (const auto &element : mesh.localElements()) {
+    assembler.emplaceElement(
+        element, model,
+        Integrator(Embedding(Embedding::Collection<Embedding::PhysicalPoint>{{
+            vertex_positions.at(connectivity.at(element.index()).at(0)),
+            vertex_positions.at(connectivity.at(element.index()).at(1)),
+            vertex_positions.at(connectivity.at(element.index()).at(2)),
+        }})));
+  }
+
+  // We need to create a solver. We do not use the time, so we can set it to
+  // zero.
+
+  const auto solver = Solver(&mesh);
+  const auto time = Element::Time{0.};
+
+  // Before we can produce meaningful results, we need to specify boundary
+  // conditions. Let's fix the nodes at x=0 and pull on the nodes at x=2.
+
+  // Note that we are using the degrees of freedom of vertex 3 to specify the
+  // boundary conditions at vertex 2.
+
+  std::vector<BoundaryCondition> boundary_conditions;
+  for (const auto &vertex : mesh.localVertices()) {
+    switch (vertex.index()) {
+    case 0: {
+      // The displacement in x direction is zero.
+      boundary_conditions.push_back({{vertex.index(), 0}, {}, 0.});
+      // The displacement in y direction is zero.
+      boundary_conditions.push_back({{vertex.index(), 1}, {}, 0.});
+      break;
     }
-
-    // We need to create a solver. We do not use the time, so we can set it to
-    // zero.
-
-    const auto solver = Solver(&mesh);
-    const auto time = Element::Time{0.};
-
-    // Before we can produce meaningful results, we need to specify boundary
-    // conditions. Let's fix the nodes at x=0 and pull on the nodes at x=2.
-
-    // Note that we are using the degrees of freedom of vertex 3 to specify the
-    // boundary conditions at vertex 2.
-
-    std::vector<BoundaryCondition> boundary_conditions;
-    for (const auto &vertex : mesh.localVertices()) {
-      switch (vertex.index()) {
-      case 0: {
-        // The displacement in x direction is zero.
-        boundary_conditions.push_back({{vertex.index(), 0}, {}, 0.});
-        // The displacement in y direction is zero.
-        boundary_conditions.push_back({{vertex.index(), 1}, {}, 0.});
-        break;
-      }
-      case 1: {
-        // The displacement in x direction is .5.
-        boundary_conditions.push_back({{vertex.index(), 0}, {}, .5});
-        // The displacement in y direction is zero.
-        boundary_conditions.push_back({{vertex.index(), 1}, {}, 0.});
-        break;
-      }
-      case 2: {
-        const auto source_vertex = Mesh::size_type{3};
-        // The displacement in x direction is .5 plus the displacement in
-        // x direction of the vertex with index 3.
-        boundary_conditions.push_back({{vertex.index(), 0},
-                                       {
-                                           {1., {source_vertex, 0}},
-                                       },
-                                       .5});
-        // The displacement in y direction is the displacement in y direction of
-        // the vertex with index 3.
-        boundary_conditions.push_back({{vertex.index(), 1},
-                                       {
-                                           {1., {source_vertex, 1}},
-                                       },
-                                       0.});
-        break;
-      }
-      }
+    case 1: {
+      // The displacement in x direction is .5.
+      boundary_conditions.push_back({{vertex.index(), 0}, {}, .5});
+      // The displacement in y direction is zero.
+      boundary_conditions.push_back({{vertex.index(), 1}, {}, 0.});
+      break;
     }
+    case 2: {
+      const auto source_vertex = Mesh::size_type{3};
+      // The displacement in x direction is .5 plus the displacement in
+      // x direction of the vertex with index 3.
+      boundary_conditions.push_back({{vertex.index(), 0},
+                                     {
+                                         {1., {source_vertex, 0}},
+                                     },
+                                     .5});
+      // The displacement in y direction is the displacement in y direction of
+      // the vertex with index 3.
+      boundary_conditions.push_back({{vertex.index(), 1},
+                                     {
+                                         {1., {source_vertex, 1}},
+                                     },
+                                     0.});
+      break;
+    }
+    }
+  }
 
-    // We are ready to minimize the energy.
+  // We are ready to minimize the energy.
 
-    const auto transform =
-        solve::boundaryConditionsToTransform(boundary_conditions, mesh);
+  const auto transform =
+      solve::boundaryConditionsToTransform(boundary_conditions, mesh);
 
-    const auto result =
-        apply(transform, solver.computeSolution(
-                             transform, createTransformInput(transform.matrix),
+  const auto result = apply(
+      transform,
+      solver.computeSolution(transform, createTransformInput(transform.matrix),
                              time, &assembler));
 
-    // As a final step, we print the result after reordering to "canonical"
-    // order (i.e. [ vertex-0-dof-0, vertex-0-dof-1, vertex-1-dof-0,
-    // vertex-1-dof-1, ...]).
+  // As a final step, we print the result after reordering to "canonical"
+  // order (i.e. [ vertex-0-dof-0, vertex-0-dof-1, vertex-1-dof-0,
+  // vertex-1-dof-1, ...]).
 
-    const auto global_result =
-        Vector::fromDistributedInCanonicalOrder(result, mesh);
-    if (Policy::isPrimaryRank())
-      global_result.unwrap().print();
-  }
-  Policy::handleError(PetscFinalize());
+  const auto global_result =
+      Vector::fromDistributedInCanonicalOrder(result, mesh);
+  if (Policy::isPrimaryRank())
+    global_result.unwrap().print();
 }

@@ -22,5 +22,5 @@ namespace cpppetsc {
 template class Context<SequentialComputePolicy>;
 template class Context<ParallelComputePolicy>;
 
-}
-}
+} // namespace cpppetsc
+} // namespace ae108

@@ -15,10 +15,7 @@
 
 #pragma once
 
-#include "ae108/cpppetsc/IteratorRange.h"
-#include "ae108/cpppetsc/LocalElementIterator.h"
 #include "ae108/cpppetsc/LocalElementView.h"
-#include "ae108/cpppetsc/LocalVertexIterator.h"
 #include "ae108/cpppetsc/LocalVertexView.h"
 #include "ae108/cpppetsc/Matrix_fwd.h"
 #include "ae108/cpppetsc/Mesh_fwd.h"
@@ -37,6 +34,8 @@
 #include <petscmath.h>
 #include <petscsf.h>
 #include <petscsys.h>
+#include <range/v3/view/iota.hpp>
+#include <range/v3/view/transform.hpp>
 #include <utility>
 #include <vector>
 
@@ -44,8 +43,8 @@ namespace ae108 {
 namespace cpppetsc {
 
 template <class Policy> class Mesh {
-  friend LocalElementView<LocalElementIterator<Mesh>>;
-  friend LocalVertexView<LocalVertexIterator<Mesh>>;
+  friend LocalElementView<Mesh>;
+  friend LocalVertexView<Mesh>;
 
 public:
   using size_type = PetscInt;
@@ -92,9 +91,6 @@ public:
                                const size_type dofPerVertex,
                                const size_type dofPerElement);
 
-  using const_element_iterator = LocalElementIterator<Mesh>;
-  using const_iterator = const_element_iterator;
-
   /**
    * @brief Clone the mesh with a different default section.
    */
@@ -104,13 +100,12 @@ public:
   /**
    * @brief Makes it possible to iterate over (views of) the local elements.
    */
-  IteratorRange<const_iterator> localElements() const;
+  auto localElements() const;
 
-  using const_vertex_iterator = LocalVertexIterator<Mesh>;
   /**
    * @brief Makes it possible to iterate over (views of) the local vertices.
    */
-  IteratorRange<const_vertex_iterator> localVertices() const;
+  auto localVertices() const;
 
   /**
    * @brief Returns the total number of elements in the mesh.
@@ -364,24 +359,26 @@ extern template class Mesh<ParallelComputePolicy>;
 namespace ae108 {
 namespace cpppetsc {
 
-template <class Policy>
-IteratorRange<typename Mesh<Policy>::const_iterator>
-Mesh<Policy>::localElements() const {
+template <class Policy> auto Mesh<Policy>::localElements() const {
   auto start = size_type{0};
   auto stop = size_type{0};
   Policy::handleError(DMPlexGetHeightStratum(_mesh.get(), 0, &start, &stop));
-  return IteratorRange<const_iterator>{const_iterator{this, start},
-                                       const_iterator{this, stop}};
+
+  namespace rv = ranges::cpp20::views;
+  return rv::iota(start, stop) | rv::transform([&](const size_type id) {
+           return LocalElementView<Mesh>(this, id);
+         });
 }
 
-template <class Policy>
-IteratorRange<typename Mesh<Policy>::const_vertex_iterator>
-Mesh<Policy>::localVertices() const {
+template <class Policy> auto Mesh<Policy>::localVertices() const {
   auto start = size_type{0};
   auto stop = size_type{0};
   Policy::handleError(DMPlexGetDepthStratum(_mesh.get(), 0, &start, &stop));
-  return IteratorRange<const_vertex_iterator>{
-      const_vertex_iterator{this, start}, const_vertex_iterator{this, stop}};
+
+  namespace rv = ranges::cpp20::views;
+  return rv::iota(start, stop) | rv::transform([&](const size_type id) {
+           return LocalVertexView<Mesh>(this, id);
+         });
 }
 
 template <class Policy>

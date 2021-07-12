@@ -21,8 +21,6 @@ add_executable(${PROJECT_NAME}-CppPetscTests
                ./IteratorRange_Test.cc
                ./LinearSolverDivergedException_Test.cc
                ./LinearSolver_Test.cc
-               ./LocalElementIterator_Test.cc
-               ./LocalVertexIterator_Test.cc
                ./Matrix_Test.cc
                ./Mesh_Test.cc
                ./NonlinearSolverDivergedException_Test.cc

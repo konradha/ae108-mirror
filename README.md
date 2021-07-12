@@ -57,6 +57,7 @@ The project uses [CMake](https://cmake.org) as its build system generator. The f
 - [HDF5](https://www.hdfgroup.org/solutions/hdf5/): version 1.10
 - [MPI](https://cmake.org/cmake/help/latest/module/FindMPI.html): version 3.1
 - [PETSc](https://www.mcs.anl.gov/petsc/): version 3.12
+- [Range-v3](https://github.com/ericniebler/range-v3): version 0.10
 
 Of course, these libraries are covered by their own license terms. Since PETSc does not provide a CMake configuration file, PETSc is found using the provided find module in ```cmake/modules/```, which in turn is based on ```pkg-config```.
 

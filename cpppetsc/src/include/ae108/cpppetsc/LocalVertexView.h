@@ -22,11 +22,9 @@
 namespace ae108 {
 namespace cpppetsc {
 
-template <class IteratorType> class LocalVertexView {
-  friend IteratorType;
-
+template <class MeshType_> class LocalVertexView {
 public:
-  using mesh_type = typename IteratorType::mesh_type;
+  using mesh_type = MeshType_;
 
   using size_type = typename mesh_type::size_type;
   using value_type = typename mesh_type::value_type;

@@ -183,8 +183,8 @@ TYPED_TEST(Mesh_Test, cloned_mesh_has_correct_connectivity) {
   for (const auto &element : this->mesh.localElements()) {
     ASSERT_THAT(iterator, Not(Eq(clonedRange.end())));
 
-    EXPECT_THAT(iterator->index(), Eq(element.index()));
-    EXPECT_THAT(iterator->vertexIndices(), Eq(element.vertexIndices()));
+    EXPECT_THAT((*iterator).index(), Eq(element.index()));
+    EXPECT_THAT((*iterator).vertexIndices(), Eq(element.vertexIndices()));
 
     ++iterator;
   }
@@ -247,7 +247,8 @@ TYPED_TEST(Mesh_Test, correct_number_of_local_elements_are_iterated) {
   using size_type = typename TestFixture::size_type;
 
   const auto range = this->mesh.localElements();
-  auto elements = size_type{std::distance(range.begin(), range.end())};
+  auto elements =
+      static_cast<size_type>(std::distance(range.begin(), range.end()));
 
   ASSERT_THAT(MPI_Allreduce(MPI_IN_PLACE, &elements, 1, MPI_INT, MPI_SUM,
                             TestFixture::policy_type::communicator()),
@@ -259,7 +260,8 @@ TYPED_TEST(Mesh_Test, plausible_number_of_local_vertices_are_iterated) {
   using size_type = typename TestFixture::size_type;
 
   const auto range = this->mesh.localVertices();
-  auto vertices = size_type{std::distance(range.begin(), range.end())};
+  auto vertices =
+      static_cast<size_type>(std::distance(range.begin(), range.end()));
 
   ASSERT_THAT(MPI_Allreduce(MPI_IN_PLACE, &vertices, 1, MPI_INT, MPI_SUM,
                             TestFixture::policy_type::communicator()),
@@ -496,7 +498,7 @@ TYPED_TEST(Mesh_Test, begin_element_iterator_starts_at_index_0) {
   auto result = std::numeric_limits<size_type>::max();
 
   if (iterator != this->mesh.localElements().end()) {
-    result = iterator->index();
+    result = (*iterator).index();
   }
   ASSERT_THAT(MPI_Allreduce(MPI_IN_PLACE, &result, 1, MPI_INT, MPI_MIN,
                             TestFixture::policy_type::communicator()),
@@ -512,7 +514,7 @@ TYPED_TEST(Mesh_Test, end_element_iterator_is_past_final_index) {
   auto result = std::numeric_limits<size_type>::min();
 
   if (iterator != this->mesh.localElements().begin()) {
-    result = (--iterator)->index();
+    result = (*(--iterator)).index();
   }
   ASSERT_THAT(MPI_Allreduce(MPI_IN_PLACE, &result, 1, MPI_INT, MPI_MAX,
                             TestFixture::policy_type::communicator()),
@@ -528,7 +530,7 @@ TYPED_TEST(Mesh_Test, begin_vertex_iterator_starts_at_index_0) {
   auto result = std::numeric_limits<size_type>::max();
 
   if (iterator != this->mesh.localVertices().end()) {
-    result = iterator->index();
+    result = (*iterator).index();
   }
   ASSERT_THAT(MPI_Allreduce(MPI_IN_PLACE, &result, 1, MPI_INT, MPI_MIN,
                             TestFixture::policy_type::communicator()),
@@ -544,7 +546,7 @@ TYPED_TEST(Mesh_Test, end_vertex_iterator_is_past_final_index) {
   auto result = std::numeric_limits<size_type>::min();
 
   if (iterator != this->mesh.localVertices().begin()) {
-    result = (--iterator)->index();
+    result = (*(--iterator)).index();
   }
   ASSERT_THAT(MPI_Allreduce(MPI_IN_PLACE, &result, 1, MPI_INT, MPI_MAX,
                             TestFixture::policy_type::communicator()),

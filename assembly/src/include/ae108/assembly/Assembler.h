@@ -19,7 +19,7 @@
 #include "ae108/assembly/DefaultFeaturePlugins.h"
 #include "ae108/assembly/FeaturePlugin.h"
 #include "ae108/cpppetsc/IteratorRange.h"
-#include "ae108/cpppetsc/LocalElementIterator.h"
+#include "ae108/cpppetsc/LocalElementView.h"
 #include "ae108/cpppetsc/Mesh_fwd.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
 #include <deque>
@@ -68,8 +68,7 @@ public:
    */
   template <class... Args> explicit Assembler(Args &&... args);
 
-  using ElementView =
-      typename cpppetsc::LocalElementIterator<mesh_type>::value_type;
+  using ElementView = typename cpppetsc::LocalElementView<mesh_type>;
 
   /**
    * @brief Emplace (i.e. construct directly into the internal container without

@@ -36,6 +36,7 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./ParallelComputePolicy_fwd.cc
             ./SequentialComputePolicy.cc
             ./SequentialComputePolicy_fwd.cc
+            ./SharedEntity.cc
             ./TAOSolver.cc
             ./TAOSolverDivergedException.cc
             ./TaggedEntity.cc

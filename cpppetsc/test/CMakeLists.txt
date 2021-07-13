@@ -25,6 +25,7 @@ add_executable(${PROJECT_NAME}-CppPetscTests
                ./Mesh_Test.cc
                ./NonlinearSolverDivergedException_Test.cc
                ./NonlinearSolver_Test.cc
+               ./SharedEntity_Test.cc
                ./TAOSolverDivergedException_Test.cc
                ./TAOSolver_Test.cc
                ./TaggedEntity_Test.cc

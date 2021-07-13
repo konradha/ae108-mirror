@@ -217,8 +217,6 @@ private:
   static void distributeMesh(Mesh *const);
 
   /**
-
-  /**
    * @brief Returns the layout of a global vector associated with this mesh.
    */
   PetscLayout globalVectorLayout() const;

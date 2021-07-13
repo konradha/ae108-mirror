@@ -133,7 +133,7 @@ struct ComputeStiffnessMatrixTrait<TimoshenkoBeamElement<Dimension_>> {
              const typename Element::NodalDisplacements &,
              const typename Element::Time &) const noexcept {
     return element.stiffness_matrix();
-  };
+  }
 };
 
 } // namespace elements

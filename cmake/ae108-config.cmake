@@ -15,12 +15,14 @@
 
 include(CMakeFindDependencyMacro)
 
-find_dependency(Boost 1.67 COMPONENTS program_options)
+find_dependency(Boost 1.67 COMPONENTS program_options REQUIRED)
 
 find_dependency(Eigen3 3.3 CONFIG REQUIRED)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/modules")
 find_dependency(AE108_PETSc MODULE 3.12)
+
+find_dependency(range-v3 0.10.0 CONFIG REQUIRED)
 
 foreach(AE108_LIBRARY elements cpppetsc assembly solve cmdline)
     include("${CMAKE_CURRENT_LIST_DIR}/ae108-${AE108_LIBRARY}-export.cmake")

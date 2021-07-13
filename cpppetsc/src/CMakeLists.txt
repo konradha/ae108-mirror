@@ -19,9 +19,7 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./Context.cc
             ./Exception.cc
             ./GeneralizedMeshBoundaryConditition.cc
-            ./IndexBasedAccessIterator.cc
             ./InvalidParametersException.cc
-            ./IteratorRange.cc
             ./LinearSolver.cc
             ./LinearSolverDivergedException.cc
             ./LocalVertexView.cc

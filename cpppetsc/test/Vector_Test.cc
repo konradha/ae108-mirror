@@ -55,35 +55,29 @@ TYPED_TEST(Vector_Test, local_range_works) {
   EXPECT_THAT(range.second, Le(4));
 }
 
-TYPED_TEST(Vector_Test, local_begin_and_end_have_correct_distance) {
+TYPED_TEST(Vector_Test, local_values_have_correct_distance) {
   const auto vec = TestFixture::vector_type::fromList({1., 2., 3.});
 
   const auto range = vec.localRowRange();
-  EXPECT_THAT(std::distance(vec.localBegin(), vec.localEnd()),
+  const auto values = vec.localValues();
+  EXPECT_THAT(std::distance(values.begin(), values.end()),
               Eq(range.second - range.first));
 }
 
-TYPED_TEST(Vector_Test, local_begin_and_end_provide_access) {
+TYPED_TEST(Vector_Test, local_values_provide_access) {
   const auto vec = TestFixture::vector_type::fromList({1., 2., 3.});
 
   auto range = vec.localRowRange();
-  auto begin = vec.localBegin();
+  const auto values = vec.localValues();
+  auto begin = values.begin();
 
   while (range.first != range.second) {
-    ASSERT_THAT(begin, Not(Eq(vec.localEnd())));
+    ASSERT_THAT(begin, Not(Eq(values.end())));
     EXPECT_THAT(*begin, Eq(vec(range.first)));
     range.first++;
     begin++;
   }
-  EXPECT_THAT(begin, Eq(vec.localEnd()));
-}
-
-TYPED_TEST(Vector_Test, range_returns_begin_and_end) {
-  const auto vec = TestFixture::vector_type::fromList({1., 2., 3.});
-
-  const auto range = vec.localRange();
-  EXPECT_THAT(range.begin(), Eq(vec.localBegin()));
-  EXPECT_THAT(range.end(), Eq(vec.localEnd()));
+  EXPECT_THAT(begin, Eq(values.end()));
 }
 
 TYPED_TEST(Vector_Test, accessing_using_square_brackets_works) {

@@ -18,11 +18,11 @@
 #include "ae108/assembly/AssemblerTypeTraits.h"
 #include "ae108/assembly/DefaultFeaturePlugins.h"
 #include "ae108/assembly/FeaturePlugin.h"
-#include "ae108/cpppetsc/IteratorRange.h"
 #include "ae108/cpppetsc/LocalElementView.h"
 #include "ae108/cpppetsc/Mesh_fwd.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
 #include <deque>
+#include <range/v3/view/subrange.hpp>
 #include <utility>
 
 namespace ae108 {
@@ -88,13 +88,13 @@ public:
    * @brief Returns a range of iterators pointing to a struct with two methods:
    * instance() and meshView().
    */
-  cpppetsc::IteratorRange<iterator> meshElements();
+  auto meshElements();
 
   /**
    * @brief Returns a range of iterators pointing to a struct with two methods:
    * instance() and meshView().
    */
-  cpppetsc::IteratorRange<const_iterator> meshElements() const;
+  auto meshElements() const;
 
 private:
   ElementContainer _elements;
@@ -194,16 +194,13 @@ void Assembler<Element, Plugins, Policy>::emplaceElement(
 }
 
 template <class Element, class Plugins, class Policy>
-cpppetsc::IteratorRange<typename Assembler<Element, Plugins, Policy>::iterator>
-Assembler<Element, Plugins, Policy>::meshElements() {
-  return {_elements.begin(), _elements.end()};
+auto Assembler<Element, Plugins, Policy>::meshElements() {
+  return ranges::make_subrange(_elements.begin(), _elements.end());
 }
 
 template <class Element, class Plugins, class Policy>
-cpppetsc::IteratorRange<
-    typename Assembler<Element, Plugins, Policy>::const_iterator>
-Assembler<Element, Plugins, Policy>::meshElements() const {
-  return {_elements.begin(), _elements.end()};
+auto Assembler<Element, Plugins, Policy>::meshElements() const {
+  return ranges::make_subrange(_elements.begin(), _elements.end());
 }
 
 template <class Element, class Plugins, class Policy>

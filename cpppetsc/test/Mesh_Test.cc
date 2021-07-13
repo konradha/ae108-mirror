@@ -90,8 +90,9 @@ createIndexVector(const Mesh<Policy> &mesh) {
 template <class Policy>
 std::vector<typename Vector<Policy>::value_type>
 localValues(const Vector<Policy> &input) {
-  return std::vector<typename Vector<Policy>::value_type>(input.localBegin(),
-                                                          input.localEnd());
+  const auto values = input.localValues();
+  return std::vector<typename Vector<Policy>::value_type>(values.begin(),
+                                                          values.end());
 }
 
 template <typename T> struct Mesh_Test : Test {

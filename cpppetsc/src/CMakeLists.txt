@@ -29,6 +29,7 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./Matrix_fwd.cc
             ./Mesh.cc
             ./MeshBoundaryCondition.cc
+            ./MeshDataProvider.cc
             ./Mesh_fwd.cc
             ./NonlinearSolver.cc
             ./NonlinearSolverDivergedException.cc

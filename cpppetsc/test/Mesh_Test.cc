@@ -493,11 +493,12 @@ TYPED_TEST(Mesh_Test, copying_to_global_vector_works) {
 
 TYPED_TEST(Mesh_Test, begin_element_iterator_starts_at_index_0) {
   using size_type = typename TestFixture::size_type;
-  auto iterator = this->mesh.localElements().begin();
+  const auto range = this->mesh.localElements();
+  auto iterator = range.begin();
 
   auto result = std::numeric_limits<size_type>::max();
 
-  if (iterator != this->mesh.localElements().end()) {
+  if (iterator != range.end()) {
     result = (*iterator).index();
   }
   ASSERT_THAT(MPI_Allreduce(MPI_IN_PLACE, &result, 1, MPI_INT, MPI_MIN,
@@ -509,11 +510,12 @@ TYPED_TEST(Mesh_Test, begin_element_iterator_starts_at_index_0) {
 
 TYPED_TEST(Mesh_Test, end_element_iterator_is_past_final_index) {
   using size_type = typename TestFixture::size_type;
-  auto iterator = this->mesh.localElements().end();
+  const auto range = this->mesh.localElements();
+  auto iterator = range.end();
 
   auto result = std::numeric_limits<size_type>::min();
 
-  if (iterator != this->mesh.localElements().begin()) {
+  if (iterator != range.begin()) {
     result = (*(--iterator)).index();
   }
   ASSERT_THAT(MPI_Allreduce(MPI_IN_PLACE, &result, 1, MPI_INT, MPI_MAX,
@@ -525,11 +527,12 @@ TYPED_TEST(Mesh_Test, end_element_iterator_is_past_final_index) {
 
 TYPED_TEST(Mesh_Test, begin_vertex_iterator_starts_at_index_0) {
   using size_type = typename TestFixture::size_type;
-  auto iterator = this->mesh.localVertices().begin();
+  const auto range = this->mesh.localVertices();
+  auto iterator = range.begin();
 
   auto result = std::numeric_limits<size_type>::max();
 
-  if (iterator != this->mesh.localVertices().end()) {
+  if (iterator != range.end()) {
     result = (*iterator).index();
   }
   ASSERT_THAT(MPI_Allreduce(MPI_IN_PLACE, &result, 1, MPI_INT, MPI_MIN,
@@ -541,11 +544,12 @@ TYPED_TEST(Mesh_Test, begin_vertex_iterator_starts_at_index_0) {
 
 TYPED_TEST(Mesh_Test, end_vertex_iterator_is_past_final_index) {
   using size_type = typename TestFixture::size_type;
-  auto iterator = this->mesh.localVertices().end();
+  const auto range = this->mesh.localVertices();
+  auto iterator = range.end();
 
   auto result = std::numeric_limits<size_type>::min();
 
-  if (iterator != this->mesh.localVertices().begin()) {
+  if (iterator != range.begin()) {
     result = (*(--iterator)).index();
   }
   ASSERT_THAT(MPI_Allreduce(MPI_IN_PLACE, &result, 1, MPI_INT, MPI_MAX,
@@ -915,6 +919,21 @@ TYPED_TEST(Mesh_Test, adding_vertex_0_to_matrix_works) {
         reference++;
       }
     }
+  }
+}
+
+TYPED_TEST(Mesh_Test, element_views_are_valid_after_moving_mesh) {
+  using mesh_type = typename TestFixture::mesh_type;
+
+  auto mesh = mesh_type::fromConnectivity(
+      this->topologicalDimension, this->coordinateDimension, this->connectivity,
+      this->totalNumberOfVertices, this->dofPerVertex, this->dofPerElement);
+  const auto range = mesh.localElements();
+  const auto movedMesh = std::move(mesh);
+
+  auto begin = range.begin();
+  for (auto &&element : movedMesh.localElements()) {
+    EXPECT_THAT((*begin++).index(), Eq(element.index()));
   }
 }
 

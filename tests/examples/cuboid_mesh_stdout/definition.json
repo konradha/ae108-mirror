@@ -1,0 +1,15 @@
+{
+	"executable": [
+		"examples",
+		"ae108-examples-CuboidMesh"
+	],
+	"args": [
+		"--stdout-output",
+		"true"
+	],
+	"compare_stdout": "numeric",
+	"mpi_processes": [
+		1,
+		3
+	]
+}

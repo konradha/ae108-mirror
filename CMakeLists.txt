@@ -29,6 +29,8 @@ foreach(AE108_LIBRARY elements cpppetsc assembly solve cmdline)
 endforeach()
 add_subdirectory(examples)
 
+add_test(NAME ${PROJECT_NAME}-ExamplesTests COMMAND "${CMAKE_CURRENT_LIST_DIR}/tests/run.py")
+
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 write_basic_package_version_file(${PROJECT_NAME}-config-version.cmake

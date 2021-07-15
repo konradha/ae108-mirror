@@ -60,31 +60,69 @@ class TestCaseDefinition:
 def as_test_case_definitions(
     path: pathlib.Path, definition: typing.Dict[str, typing.Any]
 ) -> typing.Generator[TestCaseDefinition, None, None]:
-    """
+    r"""
     Generates test case definitions from `definition` for a test at `path`.
 
     >>> empty_path = pathlib.Path()
     >>> cwd_path = pathlib.Path.cwd()
 
-    >>> next(as_test_case_definitions(empty_path, {"executable": ["a", "b"]})).executable.relative_to(cwd_path)
+    >>> next(
+    ...     as_test_case_definitions(
+    ...         empty_path,
+    ...         {"executable": ["a", "b"]}
+    ...     )
+    ... ).executable.relative_to(cwd_path)
     PosixPath('a/b')
 
-    >>> next(as_test_case_definitions(empty_path, {"executable": []})).args
+    >>> next(
+    ...     as_test_case_definitions(
+    ...         empty_path,
+    ...         {"executable": []}
+    ...     )
+    ... ).args
     []
-    >>> next(as_test_case_definitions(empty_path, {"executable": [], "args": ["b"]})).args
+    >>> next(
+    ...     as_test_case_definitions(
+    ...         empty_path,
+    ...         {"executable": [], "args": ["b"]}
+    ...     )
+    ... ).args
     ['b']
 
-    >>> next(as_test_case_definitions(pathlib.Path("a"), {"executable": []})).references
+    >>> next(
+    ...     as_test_case_definitions(
+    ...         pathlib.Path("a"),
+    ...         {"executable": []}
+    ...     )
+    ... ).references
     PosixPath('a/references')
 
-    >>> next(as_test_case_definitions(empty_path, {"executable": []})).compare_stdout
+    >>> next(
+    ...     as_test_case_definitions(
+    ...         empty_path,
+    ...         {"executable": []}
+    ...     )
+    ... ).compare_stdout
     <ComparisonType.NONE: 0>
-    >>> next(as_test_case_definitions(empty_path, {"executable": [], "compare_stdout": "text"})).compare_stdout
+    >>> next(
+    ...     as_test_case_definitions(
+    ...         empty_path,
+    ...         {"executable": [], "compare_stdout": "text"}
+    ...     )
+    ... ).compare_stdout
     <ComparisonType.TEXT: 1>
 
-    >>> next(as_test_case_definitions(empty_path, {"executable": []})).mpi_processes
+    >>> next(
+    ...     as_test_case_definitions(
+    ...         empty_path,
+    ...         {"executable": []}
+    ...     )
+    ... ).mpi_processes
     1
-    >>> generator = as_test_case_definitions(empty_path, {"executable": [], "mpi_processes": [1, 2]})
+    >>> generator = as_test_case_definitions(
+    ...                 empty_path,
+    ...                 {"executable": [], "mpi_processes": [1, 2]}
+    ...             )
     >>> list(definitions.mpi_processes for definitions in generator)
     [1, 2]
     """
@@ -117,10 +155,15 @@ def run_executable_with_mpirun(
     from `working_directory` with `mpi_processes` processes.
 
     >>> empty_path = pathlib.Path()
-    >>> run_executable_with_mpirun(empty_path, mpi_processes = 2, args=["-v"], working_directory=empty_path)
+    >>> run_executable_with_mpirun(
+    ...     empty_path,
+    ...     mpi_processes = 2,
+    ...     args=["-v"],
+    ...     working_directory=empty_path
+    ... ) # doctest: +ELLIPSIS
     Traceback (most recent call last):
     ...
-    subprocess.CalledProcessError: Command '['mpirun', '-n', '2', '.', '-v']' returned non-zero exit status 134.
+    subprocess.CalledProcessError: Command '['mpirun', '-n', '2', '.', '-v']' ...
     """
     return subprocess.run(
         args=["mpirun", "-n", str(mpi_processes), str(executable)] + args,
@@ -243,6 +286,9 @@ def load_tests(
 
     for path in paths:
         group_name, test_name = path.parent.parts[-2:]
+        to_method_name = (
+            lambda processes, name=test_name: f"test_{name}_with_{processes}_mpi_processes"
+        )
 
         with open(path, "r") as file:
             test_case_definitions = as_test_case_definitions(
@@ -253,7 +299,9 @@ def load_tests(
                 group_name,
                 (unittest.TestCase,),
                 {
-                    f"test_{test_name}_with_{definition.mpi_processes}_mpi_processes": lambda case, definition=definition: run_testcase(
+                    to_method_name(
+                        definition.mpi_processes
+                    ): lambda case, definition=definition: run_testcase(
                         definition, case
                     )
                     for definition in test_case_definitions

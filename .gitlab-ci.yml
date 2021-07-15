@@ -73,6 +73,8 @@ check-license-header:
             ! grep \
                 --recursive \
                 --exclude-dir='.git' \
+                --exclude='*.json' \
+                --exclude='*.txt' \
                 --files-without-match "Apache License" \
                 .
 

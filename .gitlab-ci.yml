@@ -84,7 +84,7 @@ check-script:
     script:
         - find . -name "*.py" -print0 | xargs -0 python3 -m black --check
         - find . -name "*.py" -print0 | xargs -0 python3 -m pylint
-        - find . -name "*.py" -print0 | xargs -0 python3 -m mypy --python-version 3.5 --ignore-missing
+        - find . -name "*.py" -print0 | xargs -0 python3 -m mypy --python-version 3.7 --ignore-missing
         - find . -name "*.py" -print0 | xargs -0 python3 -m doctest
 
 build-library:

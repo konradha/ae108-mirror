@@ -138,12 +138,12 @@ void print_force_at_x(const typename Geometry::Point::value_type x,
     return force;
   }();
 
-  // We are done with the computation and print the results to stderr.
+  // We are done with the computation and print the results to stdout.
 
   if (Policy::isPrimaryRank()) {
     static_assert(dof_per_vertex == 3, "We assume 3 degrees of freedom.");
-    fprintf(stderr, "The force at x=%+f is [%+f, %+f, %+f].\n", x, force[0],
-            force[1], force[2]);
+    printf("The force at x=%+f is [%+f, %+f, %+f].\n", x, force[0], force[1],
+           force[2]);
   }
 }
 

@@ -1,0 +1,10 @@
+DM Object: 1 MPI processes
+  type: plex
+DM_0x55d0c9a9c6d0_0 in 2 dimensions:
+  0-cells: 10
+  2-cells: 8
+Labels:
+  depth: 2 strata with value/size (0 (10), 1 (8))
+Field Field_0:
+  adjacency FEM
+The second vertex is at (0.000000, 2.000000).

@@ -50,6 +50,7 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./asSchurComplement.cc
             ./asTransformedMatrix.cc
             ./clone.cc
+            ./computeSchurComplement.cc
             ./copy.cc
             ./createRhsTransform.cc
             ./createLhsTransform.cc

@@ -41,6 +41,7 @@ add_executable(${PROJECT_NAME}-CppPetscTests
                ./createTransformInput_Test.cc
                ./createTransformOutput_Test.cc
                ./createVectorFromSource_Test.cc
+               ./computeSchurComplement_Test.cc
                ./multiply_Test.cc
                ./setName_Test.cc
                ./vertexDataOffsets_Test.cc

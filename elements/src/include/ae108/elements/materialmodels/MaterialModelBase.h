@@ -47,7 +47,7 @@ struct MaterialModelBase {
    * @brief Displacement gradient $v_{ij}$ in row-major format v[i][j].
    */
   using DisplacementGradient =
-      tensor::Tensor<value_type, dimension(), degrees_of_freedom()>;
+      tensor::Tensor<value_type, degrees_of_freedom(), dimension()>;
 
   /**
    * @brief Stress $P_{ij} = \delta_{v_{ij}} E(v)$ in row-major format P[i][j].
@@ -60,8 +60,8 @@ struct MaterialModelBase {
    * row-major format C[i][j][k][l].
    */
   using TangentMatrix =
-      tensor::Tensor<value_type, dimension(), degrees_of_freedom(), dimension(),
-                     degrees_of_freedom()>;
+      tensor::Tensor<value_type, degrees_of_freedom(), dimension(),
+                     degrees_of_freedom(), dimension()>;
 
 protected:
   ~MaterialModelBase() = default;

@@ -15,7 +15,9 @@
 version: "3.3"
 services:
   dev:
-    image: registry.ethz.ch/mechanics-and-materials/ae108/dev:master
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
     volumes:
     - .:/mnt/io
     tty: true

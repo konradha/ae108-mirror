@@ -19,6 +19,7 @@
 #include "ae108/assembly/FeaturePlugin.h"
 #include "ae108/assembly/FeaturePlugins.h"
 #include "ae108/assembly/test/Element.h"
+#include "ae108/cpppetsc/MeshDataProvider.h"
 #include <array>
 #include <gmock/gmock.h>
 
@@ -117,8 +118,10 @@ TEST_F(AssemblerGroup_Test, accessing_elements_in_plugin_works) {
 
   const auto values = std::array<double, 2>({.7, .9});
 
-  group.get<0>().emplaceElement(AssemblerWithoutPlugin::ElementView{&mesh, 0});
-  group.get<1>().emplaceElement(AssemblerWithoutPlugin::ElementView{&mesh, 0});
+  group.get<0>().emplaceElement(AssemblerWithoutPlugin::ElementView{
+      createDataProviderFromMesh(&mesh), 0});
+  group.get<1>().emplaceElement(AssemblerWithoutPlugin::ElementView{
+      createDataProviderFromMesh(&mesh), 0});
 
   EXPECT_CALL(group.get<0>().meshElements().begin()->instance(),
               computeEnergy(_, _))

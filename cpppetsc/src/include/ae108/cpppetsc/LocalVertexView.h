@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include "ae108/cpppetsc/MeshDataProvider.h"
 #include "ae108/cpppetsc/TaggedVector.h"
 #include <utility>
 #include <vector>
@@ -22,25 +23,22 @@
 namespace ae108 {
 namespace cpppetsc {
 
-template <class IteratorType> class LocalVertexView {
-  friend IteratorType;
-
+template <class MeshType_> class LocalVertexView {
 public:
-  using mesh_type = typename IteratorType::mesh_type;
+  using mesh_type = MeshType_;
 
   using size_type = typename mesh_type::size_type;
   using value_type = typename mesh_type::value_type;
   using vector_type = typename mesh_type::vector_type;
   using matrix_type = typename mesh_type::matrix_type;
 
-  explicit LocalVertexView();
+  using DataProvider = MeshDataProvider<mesh_type>;
 
   /**
-   * @param mesh A valid pointer to a mesh_type instance.
+   * @param data Provides mesh information to the view.
    * @param vertexPointIndex A valid vertex point index.
    */
-  explicit LocalVertexView(const mesh_type *const mesh,
-                           const size_type vertexPointIndex);
+  explicit LocalVertexView(DataProvider data, const size_type vertexPointIndex);
 
   /**
    * @brief Converts the vertex view to a vertex view for a cloned mesh.
@@ -100,14 +98,9 @@ public:
   void addVertexMatrix(const std::vector<value_type> &data,
                        matrix_type *const matrix) const;
 
-  friend bool operator==(const LocalVertexView &lhs,
-                         const LocalVertexView &rhs) {
-    return lhs._mesh == rhs._mesh && lhs._entityIndex == rhs._entityIndex;
-  }
-
 private:
-  const mesh_type *_mesh = nullptr;
-  size_type _entityIndex = 0;
+  DataProvider _data;
+  size_type _entityIndex;
 };
 } // namespace cpppetsc
 } // namespace ae108
@@ -116,72 +109,72 @@ private:
  *  implementations
  *******************************************************************/
 
+#include <cassert>
+
 namespace ae108 {
 namespace cpppetsc {
 
 template <class IteratorType>
-LocalVertexView<IteratorType>::LocalVertexView() = default;
-
-template <class IteratorType>
-LocalVertexView<IteratorType>::LocalVertexView(const mesh_type *const mesh,
+LocalVertexView<IteratorType>::LocalVertexView(DataProvider data,
                                                const size_type vertexPointIndex)
-    : _mesh(mesh), _entityIndex(vertexPointIndex) {}
+    : _data(std::move(data)), _entityIndex(vertexPointIndex) {}
 
 template <class IteratorType>
 LocalVertexView<IteratorType> LocalVertexView<IteratorType>::forClonedMesh(
     const mesh_type *const mesh) const {
-  return LocalVertexView{mesh, _entityIndex};
+  assert(mesh);
+  return LocalVertexView{createDataProviderFromMesh(mesh), _entityIndex};
 }
 
 template <class IteratorType>
 typename LocalVertexView<IteratorType>::size_type
 LocalVertexView<IteratorType>::index() const {
-  return _mesh->vertexPointIndexToGlobalIndex(_entityIndex);
+  return _data.vertexPointIndexToGlobalIndex(_entityIndex);
 }
 
 template <class IteratorType>
 typename LocalVertexView<IteratorType>::size_type
 LocalVertexView<IteratorType>::numberOfDofs() const {
-  return _mesh->numberOfDofs(_entityIndex);
+  return _data.numberOfDofs(_entityIndex);
 }
 template <class IteratorType>
 std::pair<typename LocalVertexView<IteratorType>::size_type,
           typename LocalVertexView<IteratorType>::size_type>
 LocalVertexView<IteratorType>::localDofLineRange() const {
-  return _mesh->localDofLineRange(_entityIndex);
+  return _data.localDofLineRange(_entityIndex);
 }
 
 template <class IteratorType>
 std::pair<typename LocalVertexView<IteratorType>::size_type,
           typename LocalVertexView<IteratorType>::size_type>
 LocalVertexView<IteratorType>::globalDofLineRange() const {
-  return _mesh->globalDofLineRange(_entityIndex);
+  return _data.globalDofLineRange(_entityIndex);
 }
 
 template <class IteratorType>
 void LocalVertexView<IteratorType>::copyVertexData(
     const local<vector_type> &vector, std::vector<value_type> *data) const {
-  return _mesh->copyEntityData(_entityIndex, vector, data);
+  return _data.copyEntityData(_entityIndex, vector, data);
 }
 
 template <class IteratorType>
 void LocalVertexView<IteratorType>::addVertexData(
     const std::vector<value_type> &data,
     local<vector_type> *const vector) const {
-  return _mesh->addEntityData(_entityIndex, data, vector);
+  return _data.addEntityData(_entityIndex, data, vector);
 }
 
 template <class IteratorType>
 void LocalVertexView<IteratorType>::setVertexData(
     const std::vector<value_type> &data,
     local<vector_type> *const vector) const {
-  return _mesh->setEntityData(_entityIndex, data, vector);
+  return _data.setEntityData(_entityIndex, data, vector);
 }
 
 template <class IteratorType>
 void LocalVertexView<IteratorType>::addVertexMatrix(
     const std::vector<value_type> &data, matrix_type *const matrix) const {
-  return _mesh->addEntityMatrix(_entityIndex, data, matrix);
+  return _data.addEntityMatrix(_entityIndex, data, matrix);
 }
 } // namespace cpppetsc
 } // namespace ae108

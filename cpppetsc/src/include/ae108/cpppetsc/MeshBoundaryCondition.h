@@ -15,13 +15,13 @@
 
 #pragma once
 
-#include "ae108/cpppetsc/LocalVertexIterator.h"
+#include "ae108/cpppetsc/LocalVertexView.h"
 
 namespace ae108 {
 namespace cpppetsc {
 
 template <class MeshType> struct MeshBoundaryCondition {
-  typename LocalVertexIterator<MeshType>::value_type node;
+  LocalVertexView<MeshType> node;
   typename MeshType::size_type dof;
   typename MeshType::value_type value;
 };

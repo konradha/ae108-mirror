@@ -15,10 +15,7 @@
 
 #pragma once
 
-#include "ae108/cpppetsc/IteratorRange.h"
-#include "ae108/cpppetsc/LocalElementIterator.h"
 #include "ae108/cpppetsc/LocalElementView.h"
-#include "ae108/cpppetsc/LocalVertexIterator.h"
 #include "ae108/cpppetsc/LocalVertexView.h"
 #include "ae108/cpppetsc/Matrix_fwd.h"
 #include "ae108/cpppetsc/Mesh_fwd.h"
@@ -37,6 +34,8 @@
 #include <petscmath.h>
 #include <petscsf.h>
 #include <petscsys.h>
+#include <range/v3/view/iota.hpp>
+#include <range/v3/view/transform.hpp>
 #include <utility>
 #include <vector>
 
@@ -44,10 +43,9 @@ namespace ae108 {
 namespace cpppetsc {
 
 template <class Policy> class Mesh {
-  friend LocalElementView<LocalElementIterator<Mesh>>;
-  friend LocalVertexView<LocalVertexIterator<Mesh>>;
-
 public:
+  using policy_type = Policy;
+
   using size_type = PetscInt;
   using value_type = PetscScalar;
   using vector_type = Vector<Policy>;
@@ -92,9 +90,6 @@ public:
                                const size_type dofPerVertex,
                                const size_type dofPerElement);
 
-  using const_element_iterator = LocalElementIterator<Mesh>;
-  using const_iterator = const_element_iterator;
-
   /**
    * @brief Clone the mesh with a different default section.
    */
@@ -104,13 +99,12 @@ public:
   /**
    * @brief Makes it possible to iterate over (views of) the local elements.
    */
-  IteratorRange<const_iterator> localElements() const;
+  auto localElements() const;
 
-  using const_vertex_iterator = LocalVertexIterator<Mesh>;
   /**
    * @brief Makes it possible to iterate over (views of) the local vertices.
    */
-  IteratorRange<const_vertex_iterator> localVertices() const;
+  auto localVertices() const;
 
   /**
    * @brief Returns the total number of elements in the mesh.
@@ -223,94 +217,6 @@ private:
   static void distributeMesh(Mesh *const);
 
   /**
-   * @brief Convert an internal element index to a 'canonical' element index.
-   */
-  size_type elementPointIndexToGlobalIndex(const size_type pointIndex) const;
-
-  /**
-   * @brief Convert an internal vertex index to a 'canonical' vertex index.
-   */
-  size_type vertexPointIndexToGlobalIndex(const size_type pointIndex) const;
-
-  /**
-   * @brief Returns the number of vertices of the element.
-   */
-  size_type numberOfVertices(const size_type elementPointIndex) const;
-
-  /**
-   * @brief Returns the vertex indices for the element.
-   */
-  std::vector<size_type> vertices(const size_type elementPointIndex) const;
-
-  /**
-   * @brief Returns the global line range that corresponds to the degrees of
-   * freedom of the vertex or element.
-   */
-  std::pair<size_type, size_type>
-  localDofLineRange(const size_type entityPointIndex) const;
-
-  /**
-   * @brief Returns the global line range that corresponds to the degrees of
-   * freedom of the vertex or element.
-   *
-   * @remark Returns negative line numbers (-begin - 1, -end - 1) if the point
-   * data is not owned locally (e.g. for ghost points). In particular, first >=
-   * end in this case.
-   */
-  std::pair<size_type, size_type>
-  globalDofLineRange(const size_type entityPointIndex) const;
-
-  size_type numberOfDofs(const size_type entityPointIndex) const;
-
-  /**
-   * @brief Copies data corresponding to the specified entity from the vector
-   * to the data buffer.
-   *
-   * @param entityPointIndex Specifies the entity.
-   * @param localVector A mesh-local vector.
-   * @param data A valid pointer to a buffer object.
-   */
-  void copyEntityData(const size_type entityPointIndex,
-                      const local<vector_type> &localVector,
-                      std::vector<value_type> *const data) const;
-
-  /**
-   * @brief Add data corresponding to the specified entity from the data buffer
-   * to the vector.
-   *
-   * @param entityPointIndex Specifies the entity.
-   * @param data The data buffer.
-   * @param localVector A valid pointer to a mesh-local vector.
-   */
-  void addEntityData(const size_type entityPointIndex,
-                     const std::vector<value_type> &data,
-                     local<vector_type> *const localVector) const;
-
-  /**
-   * @brief Set data corresponding to the specified entity from the data buffer
-   * in the vector.
-   *
-   * @param entityPointIndex Specifies the entity.
-   * @param data The data buffer.
-   * @param localVector A valid pointer to a mesh-local vector.
-   */
-  void setEntityData(const size_type entityPointIndex,
-                     const std::vector<value_type> &data,
-                     local<vector_type> *const localVector) const;
-
-  /**
-   * @brief Add data corresponding to the specified entity from the data buffer
-   * to the matrix.
-   *
-   * @param entityPointIndex Specifies the entity.
-   * @param data The data buffer.
-   * @param matrix A valid pointer to a matrix.
-   */
-  void addEntityMatrix(const size_type entityPointIndex,
-                       const std::vector<value_type> &data,
-                       matrix_type *const matrix) const;
-
-  /**
    * @brief Returns the layout of a global vector associated with this mesh.
    */
   PetscLayout globalVectorLayout() const;
@@ -359,29 +265,34 @@ extern template class Mesh<ParallelComputePolicy>;
  *******************************************************************/
 
 #include "ae108/cpppetsc/Matrix.h"
+#include "ae108/cpppetsc/MeshDataProvider.h"
 #include "ae108/cpppetsc/Vector.h"
 
 namespace ae108 {
 namespace cpppetsc {
 
-template <class Policy>
-IteratorRange<typename Mesh<Policy>::const_iterator>
-Mesh<Policy>::localElements() const {
+template <class Policy> auto Mesh<Policy>::localElements() const {
   auto start = size_type{0};
   auto stop = size_type{0};
   Policy::handleError(DMPlexGetHeightStratum(_mesh.get(), 0, &start, &stop));
-  return IteratorRange<const_iterator>{const_iterator{this, start},
-                                       const_iterator{this, stop}};
+
+  namespace rv = ranges::cpp20::views;
+  const auto provider = createDataProviderFromMesh(this);
+  return rv::iota(start, stop) | rv::transform([provider](const size_type id) {
+           return LocalElementView<Mesh>(provider, id);
+         });
 }
 
-template <class Policy>
-IteratorRange<typename Mesh<Policy>::const_vertex_iterator>
-Mesh<Policy>::localVertices() const {
+template <class Policy> auto Mesh<Policy>::localVertices() const {
   auto start = size_type{0};
   auto stop = size_type{0};
   Policy::handleError(DMPlexGetDepthStratum(_mesh.get(), 0, &start, &stop));
-  return IteratorRange<const_vertex_iterator>{
-      const_vertex_iterator{this, start}, const_vertex_iterator{this, stop}};
+
+  namespace rv = ranges::cpp20::views;
+  const auto provider = createDataProviderFromMesh(this);
+  return rv::iota(start, stop) | rv::transform([provider](const size_type id) {
+           return LocalVertexView<Mesh>(provider, id);
+         });
 }
 
 template <class Policy>
@@ -757,127 +668,6 @@ Mesh<Policy>::fromCanonicalOrder(const distributed<vector_type> &vector) const {
   Policy::handleError(DMPlexNaturalToGlobalEnd(
       _mesh.get(), vector.unwrap().data(), result.unwrap().data()));
   return result;
-}
-
-template <class Policy>
-typename Mesh<Policy>::size_type
-Mesh<Policy>::elementPointIndexToGlobalIndex(const size_type pointIndex) const {
-  auto migration = PetscSF();
-  Policy::handleError(DMPlexGetMigrationSF(_mesh.get(), &migration));
-  if (migration) {
-    const PetscSFNode *nodes = nullptr;
-    Policy::handleError(
-        PetscSFGetGraph(migration, nullptr, nullptr, nullptr, &nodes));
-    return nodes[pointIndex].index;
-  }
-
-  return pointIndex;
-}
-
-template <class Policy>
-typename Mesh<Policy>::size_type
-Mesh<Policy>::vertexPointIndexToGlobalIndex(const size_type pointIndex) const {
-  return elementPointIndexToGlobalIndex(pointIndex) - _totalNumberOfElements;
-}
-
-template <class Policy>
-typename Mesh<Policy>::size_type
-Mesh<Policy>::numberOfVertices(const size_type elementPointIndex) const {
-  size_type size = 0;
-  Policy::handleError(DMPlexGetConeSize(_mesh.get(), elementPointIndex, &size));
-  return size;
-}
-
-template <class Policy>
-std::vector<typename Mesh<Policy>::size_type>
-Mesh<Policy>::vertices(const size_type elementPointIndex) const {
-  const auto size = numberOfVertices(elementPointIndex);
-  const size_type *cone = nullptr;
-  Policy::handleError(DMPlexGetCone(_mesh.get(), elementPointIndex, &cone));
-  std::vector<size_type> output(size);
-  std::transform(cone, cone + size, output.begin(),
-                 [this](const size_type entityPointIndex) {
-                   return vertexPointIndexToGlobalIndex(entityPointIndex);
-                 });
-  return output;
-}
-
-template <class Policy>
-std::pair<typename Mesh<Policy>::size_type, typename Mesh<Policy>::size_type>
-Mesh<Policy>::localDofLineRange(const size_type entityPointIndex) const {
-  auto output = std::pair<size_type, size_type>();
-  Policy::handleError(DMPlexGetPointLocal(_mesh.get(), entityPointIndex,
-                                          &output.first, &output.second));
-  return output;
-}
-
-template <class Policy>
-std::pair<typename Mesh<Policy>::size_type, typename Mesh<Policy>::size_type>
-Mesh<Policy>::globalDofLineRange(const size_type entityPointIndex) const {
-  auto output = std::pair<size_type, size_type>();
-  Policy::handleError(DMPlexGetPointGlobal(_mesh.get(), entityPointIndex,
-                                           &output.first, &output.second));
-  return output;
-}
-
-template <class Policy>
-typename Mesh<Policy>::size_type
-Mesh<Policy>::numberOfDofs(const size_type entityPointIndex) const {
-  auto output = size_type{0};
-  auto section = PetscSection();
-  Policy::handleError(DMGetSection(_mesh.get(), &section));
-
-  Policy::handleError(PetscSectionGetDof(section, entityPointIndex, &output));
-
-  return output;
-}
-
-template <class Policy>
-void Mesh<Policy>::copyEntityData(const size_type entityPointIndex,
-                                  const local<vector_type> &localVector,
-                                  std::vector<value_type> *const data) const {
-  assertCorrectBaseMesh(localVector.unwrap());
-  auto size = size_type{0};
-  Policy::handleError(DMPlexVecGetClosure(_mesh.get(), nullptr,
-                                          localVector.unwrap().data(),
-                                          entityPointIndex, &size, nullptr));
-  data->resize(size);
-  if (size == 0)
-    return;
-
-  auto dataPtr = data->data();
-  Policy::handleError(DMPlexVecGetClosure(_mesh.get(), nullptr,
-                                          localVector.unwrap().data(),
-                                          entityPointIndex, &size, &dataPtr));
-}
-
-template <class Policy>
-void Mesh<Policy>::addEntityData(const size_type entityPointIndex,
-                                 const std::vector<value_type> &data,
-                                 local<vector_type> *const localVector) const {
-  assertCorrectBaseMesh(localVector->unwrap());
-  Policy::handleError(
-      DMPlexVecSetClosure(_mesh.get(), nullptr, localVector->unwrap().data(),
-                          entityPointIndex, data.data(), ADD_VALUES));
-}
-
-template <class Policy>
-void Mesh<Policy>::setEntityData(const size_type entityPointIndex,
-                                 const std::vector<value_type> &data,
-                                 local<vector_type> *const localVector) const {
-  assertCorrectBaseMesh(localVector->unwrap());
-  Policy::handleError(
-      DMPlexVecSetClosure(_mesh.get(), nullptr, localVector->unwrap().data(),
-                          entityPointIndex, data.data(), INSERT_VALUES));
-}
-
-template <class Policy>
-void Mesh<Policy>::addEntityMatrix(const size_type entityPointIndex,
-                                   const std::vector<value_type> &data,
-                                   matrix_type *const matrix) const {
-  Policy::handleError(DMPlexMatSetClosure(_mesh.get(), nullptr, nullptr,
-                                          matrix->data(), entityPointIndex,
-                                          data.data(), ADD_VALUES));
 }
 
 template <class Policy>

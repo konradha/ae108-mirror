@@ -16,7 +16,7 @@
 
 #define AE108_ELEMENTS_QUADRATURE_DEFINE_CC(type, dimension, order)            \
   constexpr typename Quadrature<type, dimension, order>::Data                  \
-      Quadrature<type, dimension, order>::data;
+      Quadrature<type, dimension, order>::data
 
 namespace ae108 {
 namespace elements {

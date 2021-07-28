@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "ae108/cpppetsc/LocalVertexIterator.h"
+#include <vector>
 
 namespace ae108 {
 namespace cpppetsc {

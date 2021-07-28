@@ -19,18 +19,15 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./Context.cc
             ./Exception.cc
             ./GeneralizedMeshBoundaryConditition.cc
-            ./IndexBasedAccessIterator.cc
             ./InvalidParametersException.cc
-            ./IteratorRange.cc
             ./LinearSolver.cc
             ./LinearSolverDivergedException.cc
-            ./LocalElementIterator.cc
-            ./LocalVertexIterator.cc
             ./LocalVertexView.cc
             ./Matrix.cc
             ./Matrix_fwd.cc
             ./Mesh.cc
             ./MeshBoundaryCondition.cc
+            ./MeshDataProvider.cc
             ./Mesh_fwd.cc
             ./NonlinearSolver.cc
             ./NonlinearSolverDivergedException.cc
@@ -38,6 +35,7 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./ParallelComputePolicy_fwd.cc
             ./SequentialComputePolicy.cc
             ./SequentialComputePolicy_fwd.cc
+            ./SharedEntity.cc
             ./TAOSolver.cc
             ./TAOSolverDivergedException.cc
             ./TaggedEntity.cc
@@ -72,8 +70,10 @@ target_include_directories(${PROJECT_NAME}-cpppetsc PUBLIC
 )
 
 find_package(AE108_PETSc 3.12 MODULE REQUIRED)
+find_package(range-v3 0.10.0 CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME}-cpppetsc
                       PUBLIC ${PROJECT_NAME}::external::petsc
+                      PUBLIC range-v3::range-v3
 )
 
 target_compile_features(${PROJECT_NAME}-cpppetsc PUBLIC cxx_std_11)

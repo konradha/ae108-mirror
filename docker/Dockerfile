@@ -27,6 +27,7 @@ RUN apt-get update && \
         googletest \
         libboost-program-options-dev \
         libeigen3-dev \
+        librange-v3-dev \
         ninja-build \
         petsc-dev \
         python3 python3-pip \

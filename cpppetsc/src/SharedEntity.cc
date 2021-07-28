@@ -1,5 +1,4 @@
-// © 2020 ETH Zurich, Mechanics and Materials Lab
-// © 2020 California Institute of Technology
+// © 2021 ETH Zurich, Mechanics and Materials Lab
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,20 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
-
-namespace ae108 {
-namespace cpppetsc {
-
-/**
- * @brief An iterable range.
- */
-template <class Iterator> struct IteratorRange {
-  Iterator begin() const { return begin_iter; }
-  Iterator end() const { return end_iter; }
-
-  Iterator begin_iter;
-  Iterator end_iter;
-};
-} // namespace cpppetsc
-} // namespace ae108
+#include "ae108/cpppetsc/SharedEntity.h"

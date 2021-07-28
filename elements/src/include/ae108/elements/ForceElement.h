@@ -78,7 +78,7 @@ struct ComputeStiffnessMatrixTrait<ForceElement<DegreesOfFreedom_>> {
   operator()(const Element &, const typename Element::NodalDisplacements &,
              const typename Element::Time &) const noexcept {
     return Element::StiffnessMatrix::Zero();
-  };
+  }
 };
 
 } // namespace elements

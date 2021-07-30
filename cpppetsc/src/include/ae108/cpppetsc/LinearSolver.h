@@ -40,21 +40,30 @@ public:
    * @brief Initialize the solver with a matrix A.
    *
    * @remark The solver keeps a reference to that matrix.
-   *
    * @param mat A pointer to the matrix A.
    */
   explicit LinearSolver(const matrix_type *mat);
 
   /**
-   * @brief Solve the linear system Ax = b.
+   * @brief Calls solve with a suitable result vector. Passes on
+   * the rest of the arguments.
    *
    * @param rhs The vector b.
-   *
    * @return The solution of the linear system.
-   *
    * @throw LinearSolverDivergedException if the solve diverged
    */
   distributed<vector_type> solve(const distributed<vector_type> &rhs) const;
+
+  /**
+   * @brief Solve the linear system Ax = b.
+   *
+   * @param rhs The vector b.
+   * @param result Used to store the result (instead of creating a new vector).
+   * @return The solution of the linear system.
+   * @throw LinearSolverDivergedException if the solve diverged
+   */
+  distributed<vector_type> solve(const distributed<vector_type> &rhs,
+                                 distributed<vector_type> result) const;
 
 private:
   static KSP createKSP();
@@ -96,7 +105,14 @@ LinearSolver<Policy>::LinearSolver(const matrix_type *mat)
 template <class Policy>
 distributed<typename LinearSolver<Policy>::vector_type>
 LinearSolver<Policy>::solve(const distributed<vector_type> &rhs) const {
-  auto result = tag<DistributedTag>(vector_type::fromLayoutOf(rhs.unwrap()));
+  return solve(rhs,
+               tag<DistributedTag>(vector_type::fromLayoutOf(rhs.unwrap())));
+}
+
+template <class Policy>
+distributed<typename LinearSolver<Policy>::vector_type>
+LinearSolver<Policy>::solve(const distributed<vector_type> &rhs,
+                            distributed<vector_type> result) const {
   Policy::handleError(
       KSPSolve(_ksp.get(), rhs.unwrap().data(), result.unwrap().data()));
 

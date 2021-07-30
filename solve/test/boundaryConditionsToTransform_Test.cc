@@ -239,13 +239,11 @@ TYPED_TEST(boundaryConditionsToTransform_Test,
 TYPED_TEST(boundaryConditionsToTransform_Test,
            throws_if_source_vertex_is_invalid) {
   using size_type = typename TestFixture::size_type;
-  using value_type = typename TestFixture::value_type;
 
   constexpr auto targetVertex = size_type{0};
   constexpr auto targetDof = size_type{1};
   constexpr auto sourceVertex = size_type{7};
   constexpr auto sourceDof = size_type{2};
-  constexpr auto value = value_type{.7};
 
   const auto call = [&]() {
     return boundaryConditionsToTransform(

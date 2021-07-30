@@ -78,7 +78,7 @@ template <class Policy> struct DynamicSolver_Test : Test {
 
   typename assembler_type::mesh_type mesh =
       assembler_type::mesh_type::template fromConnectivity<
-          std::array<std::array<int, 1>, 1>>(2, {{{{0}}}}, 1, 2);
+          std::array<std::array<int, 1>, 1>>(1, {{{{0}}}}, 1, 2);
 
   using vector_type = typename dynamic_solver_type::vector_type;
 
@@ -417,7 +417,6 @@ TYPED_TEST(DynamicSolver_Test,
 
 TYPED_TEST(DynamicSolver_Test, local_functional_interface_is_callable) {
   using solver_type = typename TestFixture::solver_type;
-  const auto value = .123;
   this->solver.computeSolution =
       [this](const typename solver_type::BoundaryConditionContainer &,
              const typename solver_type::distributed_vector_type, const double,
@@ -441,7 +440,6 @@ TYPED_TEST(DynamicSolver_Test, local_functional_interface_is_callable) {
 
 TYPED_TEST(DynamicSolver_Test, distributed_functional_interface_is_callable) {
   using solver_type = typename TestFixture::solver_type;
-  const auto value = .123;
   this->solver.computeSolution =
       [this](const typename solver_type::BoundaryConditionContainer &,
              const typename solver_type::distributed_vector_type, const double,

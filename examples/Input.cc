@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "ae108/cpppetsc/Context.h"
 #include "ae108/cpppetsc/Mesh.h"
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/Vector.h"
@@ -26,6 +27,7 @@
 using namespace ae108;
 
 using Policy = cpppetsc::ParallelComputePolicy;
+using Context = cpppetsc::Context<Policy>;
 using Mesh = cpppetsc::Mesh<Policy>;
 using Vector = cpppetsc::Vector<Policy>;
 using Viewer = cpppetsc::Viewer<Policy>;
@@ -59,49 +61,42 @@ constexpr auto connectivity = Connectivity{{
 }};
 
 int main(int argc, char **argv) {
-  // PETSc must be initialized before using it.
-  Policy::handleError(PetscInitialize(&argc, &argv, NULL, NULL));
+  // MPI/PETSc/cpppetsc must be initialized before using it.
 
-  // We use a scope around our computation to make sure everything is cleaned up
-  // before we call PetscFinalize.
+  const auto context = Context(&argc, &argv);
+
+  // First we create a mesh.
+  const auto mesh = Mesh::fromConnectivity(
+      topological_dimension, coordinate_dimension, connectivity,
+      number_of_vertices, dof_per_vertex, dof_per_element);
+
+  // Let's create a global vector and fill it with the vertex indices.
+  using DataSource = std::function<void(Mesh::size_type, Mesh::value_type *)>;
+  auto data = cpppetsc::createVectorFromSource(
+      mesh, dof_per_vertex,
+      DataSource([&](const Mesh::size_type index, Mesh::value_type *const out) {
+        std::fill_n(out, dof_per_vertex, static_cast<Mesh::value_type>(index));
+      }));
+  cpppetsc::setName("vertex_index_data", &data);
+
+  // To be able to compare it with the read vector we print it to the console.
+  data.unwrap().print();
+
+  // We write this vector to "input.ae108".
   {
-    // First we create a mesh.
-    const auto mesh = Mesh::fromConnectivity(
-        topological_dimension, coordinate_dimension, connectivity,
-        number_of_vertices, dof_per_vertex, dof_per_element);
-
-    // Let's create a global vector and fill it with the vertex indices.
-    using DataSource = std::function<void(Mesh::size_type, Mesh::value_type *)>;
-    auto data = cpppetsc::createVectorFromSource(
-        mesh, dof_per_vertex,
-        DataSource(
-            [&](const Mesh::size_type index, Mesh::value_type *const out) {
-              std::fill_n(out, dof_per_vertex,
-                          static_cast<Mesh::value_type>(index));
-            }));
-    cpppetsc::setName("vertex_index_data", &data);
-
-    // To be able to compare it with the read vector we print it to the console.
-    data.unwrap().print();
-
-    // We write this vector to "input.ae108".
-    {
-      auto viewer =
-          Viewer::fromHdf5FilePath("input.ae108", Viewer::Mode::write);
-      cpppetsc::writeToViewer(data, &viewer);
-    }
-
-    // Finally we read this vector from the file to a new vector called `input`.
-    auto input = Vector::fromGlobalMesh(mesh);
-    {
-      const auto viewer =
-          Viewer::fromHdf5FilePath("input.ae108", Viewer::Mode::read);
-      cpppetsc::setName("vertex_index_data", &input);
-      cpppetsc::readFromViewer(viewer, &input);
-    }
-
-    // We expect the same vector as printed above when printing the result.
-    input.unwrap().print();
+    auto viewer = Viewer::fromHdf5FilePath("input.ae108", Viewer::Mode::write);
+    cpppetsc::writeToViewer(data, &viewer);
   }
-  Policy::handleError(PetscFinalize());
+
+  // Finally we read this vector from the file to a new vector called `input`.
+  auto input = Vector::fromGlobalMesh(mesh);
+  {
+    const auto viewer =
+        Viewer::fromHdf5FilePath("input.ae108", Viewer::Mode::read);
+    cpppetsc::setName("vertex_index_data", &input);
+    cpppetsc::readFromViewer(viewer, &input);
+  }
+
+  // We expect the same vector as printed above when printing the result.
+  input.unwrap().print();
 }

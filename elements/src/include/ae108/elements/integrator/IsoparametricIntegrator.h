@@ -55,15 +55,15 @@ public:
       tensor::Tensor<typename IsoparametricIntegrator::value_type,
                      Shape_::size(), Embedding::physical_dimension()>;
 
-  const typename Quadrature::template Collection<PreTransform> &pre() const
-      noexcept {
+  const typename Quadrature::template Collection<PreTransform> &
+  pre() const noexcept {
     return dxN_;
   };
 
   using PostTransform = typename IsoparametricIntegrator::value_type;
 
-  const typename Quadrature::template Collection<PostTransform> &post() const
-      noexcept {
+  const typename Quadrature::template Collection<PostTransform> &
+  post() const noexcept {
     return J_;
   };
 

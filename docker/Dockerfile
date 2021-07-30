@@ -13,12 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG BASE_IMAGE=debian:buster
-ARG DEBIAN_FRONTEND=noninteractive
-
+ARG BASE_IMAGE=ubuntu:focal
 FROM $BASE_IMAGE
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && \
+        DEBIAN_FRONTEND="noninteractive" \
+        TZ="Europe/Zurich" \
+        apt-get install -y \
         clang-format \
         cmake \
         g++ \
@@ -26,10 +27,12 @@ RUN apt-get update && apt-get install -y \
         googletest \
         libboost-program-options-dev \
         libeigen3-dev \
+        librange-v3-dev \
         ninja-build \
         petsc-dev \
         python3 python3-pip \
-        python3-h5py
+        python3-h5py \
+        gdb
 
 RUN pip3 install \
         mypy==0.790 \

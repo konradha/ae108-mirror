@@ -14,9 +14,7 @@
 
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
-#include "ae108/cpppetsc/copy.h"
 #include "ae108/cpppetsc/createRhsTransform.h"
-#include "ae108/cppptest/Matchers.h"
 #include <gmock/gmock.h>
 
 using testing::DoubleEq;
@@ -27,6 +25,7 @@ using testing::Types;
 
 namespace ae108 {
 namespace cpppetsc {
+namespace {
 
 template <class Policy> struct createRhsTransform_Test : Test {
   using matrix_type = Matrix<Policy>;
@@ -64,5 +63,6 @@ TYPED_TEST(createRhsTransform_Test, can_be_multiplied) {
   EXPECT_THAT(result.norm(), DoubleEq(0.));
 }
 
+} // namespace
 } // namespace cpppetsc
 } // namespace ae108

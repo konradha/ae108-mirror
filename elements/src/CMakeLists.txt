@@ -24,6 +24,7 @@ add_library(${PROJECT_NAME}-elements
             ElementBase.cc
             ForceElement.cc
             Minimal.cc
+            TimoshenkoBeamElement.cc
             automatic_forces.cc
             automatic_stiffness_matrix.cc
             compute_energy.cc
@@ -57,6 +58,7 @@ add_library(${PROJECT_NAME}-elements
             materialmodels/compute_stress.cc
             materialmodels/compute_tangent_matrix.cc
             mesh/Mesh.cc
+            mesh/generate_cuboid_mesh.cc
             mesh/generate_quadratic_tetrahedron_mesh.cc
             mesh/generate_quadratic_triangle_mesh.cc
             mesh/generate_tetrahedron_mesh.cc
@@ -71,11 +73,11 @@ add_library(${PROJECT_NAME}-elements
             shape/PointTrait.cc
             shape/Quad4.cc
             shape/Seg2.cc
+            shape/ShapeBase.cc
             shape/Tet10.cc
             shape/Tet4.cc
             shape/Tri3.cc
             shape/Tri6.cc
-            shape/ShapeBase.cc
             shape/ValueTrait.cc
             shape/automatic_gradients.cc
             shape/compute_gradients.cc

@@ -16,27 +16,30 @@
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
 add_executable(${PROJECT_NAME}-CppPetscTests
-               ./IndexBasedAccessIterator_Test.cc
                ./InvalidParametersException_Test.cc
-               ./IteratorRange_Test.cc
                ./LinearSolverDivergedException_Test.cc
                ./LinearSolver_Test.cc
-               ./LocalElementIterator_Test.cc
-               ./LocalVertexIterator_Test.cc
                ./Matrix_Test.cc
                ./Mesh_Test.cc
                ./NonlinearSolverDivergedException_Test.cc
                ./NonlinearSolver_Test.cc
+               ./SharedEntity_Test.cc
                ./TAOSolverDivergedException_Test.cc
                ./TAOSolver_Test.cc
                ./TaggedEntity_Test.cc
                ./Vector_Test.cc
+               ./asInverseMatrix_Test.cc
+               ./asSchurComplement_Test.cc
+               ./asTransformedMatrix_Test.cc
                ./clone_Test.cc
                ./copy_Test.cc
                ./createRhsTransform_Test.cc
+               ./createLhsTransform_Test.cc
                ./createTransformInput_Test.cc
                ./createTransformOutput_Test.cc
                ./createVectorFromSource_Test.cc
+               ./computeSchurComplement_Test.cc
+               ./multiply_Test.cc
                ./setName_Test.cc
                ./vertexDataOffsets_Test.cc
 )

@@ -71,28 +71,33 @@ class UnsupportedElementType(Exception):
 
 def number_of_corners_to_type(
     number_of_vertices: int, topological_dimension: int
-) -> str:
+) -> typing.List[int]:
     """
     Returns a guess of the element type for the provided number of vertices.
 
-    >>> number_of_corners_to_type(3, 2)
-    'Triangle'
-    >>> number_of_corners_to_type(4, 2)
-    'Quadrilateral'
-    >>> number_of_corners_to_type(6, 2)
-    'Tri_6'
+    >>> number_of_corners_to_type(1, 2)
+    [1, 1]
     >>> number_of_corners_to_type(2, 2)
-    Traceback (most recent call last):
-    generate_xdmf.UnsupportedElementType
+    [2, 2]
+    >>> number_of_corners_to_type(3, 2)
+    [4]
+    >>> number_of_corners_to_type(4, 2)
+    [5]
+    >>> number_of_corners_to_type(6, 2)
+    [36]
     >>> number_of_corners_to_type(5, 2)
     Traceback (most recent call last):
     generate_xdmf.UnsupportedElementType
+    >>> number_of_corners_to_type(1, 3)
+    [1, 1]
+    >>> number_of_corners_to_type(2, 3)
+    [2, 2]
     >>> number_of_corners_to_type(4, 3)
-    'Tetrahedron'
+    [6]
     >>> number_of_corners_to_type(8, 3)
-    'Hexahedron'
+    [9]
     >>> number_of_corners_to_type(10, 3)
-    'Tet_10'
+    [38]
     >>> number_of_corners_to_type(3, 3)
     Traceback (most recent call last):
     generate_xdmf.UnsupportedElementType
@@ -106,14 +111,18 @@ def number_of_corners_to_type(
     try:
         type_map = {
             2: {
-                3: "Triangle",
-                4: "Quadrilateral",
-                6: "Tri_6",
+                1: [1, 1],
+                2: [2, 2],
+                3: [4],
+                4: [5],
+                6: [36],
             },
             3: {
-                4: "Tetrahedron",
-                8: "Hexahedron",
-                10: "Tet_10",
+                1: [1, 1],
+                2: [2, 2],
+                4: [6],
+                8: [9],
+                10: [38],
             },
         }
         return type_map[topological_dimension][number_of_vertices]
@@ -228,7 +237,7 @@ def read_topological_dimension(hdf_file: h5py.File) -> int:
     """
     Returns the topological dimension specified in the mesh.
     """
-    return hdf_file["/viz/topology/cells"].attrs.get("cell_dim")
+    return hdf_file["/topology/cells"].attrs.get("cell_dim")
 
 
 def read_coordinate_dimension(hdf_file: h5py.File) -> int:
@@ -244,27 +253,69 @@ class MeshInformationMissing(Exception):
     """
 
 
+def read_element_vertices(hdf_file: h5py.File) -> typing.Iterator[typing.List[int]]:
+    """
+    Returns the vertex indices of the elements.
+    """
+    if not "/topology" in hdf_file:
+        raise MeshInformationMissing()
+
+    cells_data = hdf_file["/topology/cells"]
+    cones_data = hdf_file["/topology/cones"][()]
+    number_of_elements = numpy.sum(cones_data > 0)
+
+    offset = 0
+    for cone_size in numpy.nditer(cones_data):
+        if cone_size == 0:
+            continue
+        yield list(
+            numpy.nditer(cells_data[offset : offset + cone_size] - number_of_elements)
+        )
+        offset += cone_size
+
+
 def add_topology(parent: ET.Element, hdf_file: h5py.File) -> ET.Element:
     """
     Adds the topology element to the parent.
     """
-    if not "/viz/topology/cells" in hdf_file:
+    if not "/topology" in hdf_file:
         raise MeshInformationMissing()
 
-    number_of_elements = hdf_file["/viz/topology/cells"].shape[0]
-    number_of_corners = hdf_file["/viz/topology/cells"].attrs.get("cell_corners")
+    cones_data = hdf_file["/topology/cones"][()]
+
+    number_of_elements = numpy.sum(cones_data > 0)
+    topological_dimension = read_topological_dimension(hdf_file)
+
+    dataitem_dimension = sum(
+        cone_size
+        + len(number_of_corners_to_type(int(cone_size), topological_dimension))
+        for cone_size in numpy.nditer(cones_data)
+        if cone_size > 0
+    )
 
     topology = ET.SubElement(
         parent,
         "Topology",
-        {
-            "NumberOfElements": str(number_of_elements),
-            "Type": number_of_corners_to_type(
-                number_of_corners, read_topological_dimension(hdf_file)
-            ),
-        },
+        {"TopologyType": "Mixed", "NumberOfElements": str(number_of_elements)},
     )
-    add_hdf_dataitem(topology, hdf_file, "/viz/topology/cells")
+
+    dataitem = ET.SubElement(
+        topology,
+        "DataItem",
+        {"Format": "XML", "Dimensions": str(dataitem_dimension)},
+    )
+    dataitem.text = "  ".join(
+        "{} {}".format(
+            " ".join(
+                str(type_)
+                for type_ in number_of_corners_to_type(
+                    len(vertices), topological_dimension
+                )
+            ),
+            " ".join(str(vertex) for vertex in vertices),
+        )
+        for vertices in read_element_vertices(hdf_file)
+    )
 
     return topology
 

@@ -102,10 +102,11 @@ TEST_F(deserialize_Test,
   auto buffer = cpppetsc::Vector<cpppetsc::SequentialComputePolicy>::fromList(
       {1., 2., 3., 4., 5., 6.});
 
+  const auto range = buffer.localValues();
   const auto result =
-      deserializeRange(buffer.localBegin(), buffer.localEnd(), values.begin());
+      deserializeRange(range.begin(), range.end(), values.begin());
 
-  EXPECT_THAT(result, Eq(buffer.localEnd()));
+  EXPECT_THAT(result, Eq(range.end()));
 
   EXPECT_THAT(values.at(0)(0), DoubleEq(1.));
   EXPECT_THAT(values.at(0)(1), DoubleEq(2.));

@@ -15,9 +15,7 @@
 
 #pragma once
 
-#include "ae108/cpppetsc/IndexBasedAccessIterator.h"
 #include "ae108/cpppetsc/InsertionProxy.h"
-#include "ae108/cpppetsc/IteratorRange.h"
 #include "ae108/cpppetsc/Matrix_fwd.h"
 #include "ae108/cpppetsc/Mesh_fwd.h"
 #include "ae108/cpppetsc/ParallelComputePolicy_fwd.h"
@@ -46,8 +44,6 @@ public:
   using size_type = PetscInt;
   using value_type = PetscScalar;
   using matrix_type = Matrix<Policy>;
-
-  using const_iterator = IndexBasedAccessIterator<Vector>;
 
   /**
    * @brief Allocates a vector of length global_size.
@@ -205,19 +201,9 @@ public:
   std::pair<size_type, size_type> localRowRange() const;
 
   /**
-   * @brief The begin of the local row range.
-   */
-  const_iterator localBegin() const;
-
-  /**
-   * @brief The end of the local row range.
-   */
-  const_iterator localEnd() const;
-
-  /**
    * @brief Returns a loopable range of the local values.
    */
-  IteratorRange<const_iterator> localRange() const;
+  auto localValues() const;
 
   /**
    * @brief Set all elements of the vector to value.
@@ -255,6 +241,8 @@ extern template class Vector<ParallelComputePolicy>;
 #include "ae108/cpppetsc/Mesh.h"
 #include <petscdm.h>
 #include <petscmat.h>
+#include <range/v3/view/iota.hpp>
+#include <range/v3/view/transform.hpp>
 
 namespace ae108 {
 namespace cpppetsc {
@@ -425,8 +413,8 @@ template <class Policy> void Vector<Policy>::print() const {
 }
 
 template <class Policy>
-typename Vector<Policy>::value_type Vector<Policy>::
-operator()(const size_type index) const {
+typename Vector<Policy>::value_type
+Vector<Policy>::operator()(const size_type index) const {
   auto value = value_type{0.};
   size_type indices[] = {index};
   Policy::handleError(VecGetValues(_vec.get(), 1, indices, &value));
@@ -434,8 +422,8 @@ operator()(const size_type index) const {
 }
 
 template <class Policy>
-typename Vector<Policy>::value_type Vector<Policy>::
-operator[](const size_type index) const {
+typename Vector<Policy>::value_type
+Vector<Policy>::operator[](const size_type index) const {
   return (*this)(index);
 }
 
@@ -481,22 +469,11 @@ Vector<Policy>::localRowRange() const {
   return return_value;
 }
 
-template <class Policy>
-typename Vector<Policy>::const_iterator Vector<Policy>::localBegin() const {
-  return const_iterator{this, localRowRange().first};
-}
-
-template <class Policy>
-typename Vector<Policy>::const_iterator Vector<Policy>::localEnd() const {
-  return const_iterator{this, localRowRange().second};
-}
-
-template <class Policy>
-IteratorRange<typename Vector<Policy>::const_iterator>
-Vector<Policy>::localRange() const {
+template <class Policy> auto Vector<Policy>::localValues() const {
   const auto range = localRowRange();
-  return {const_iterator{this, range.first},
-          const_iterator{this, range.second}};
+  namespace rv = ranges::cpp20::views;
+  return rv::iota(range.first, range.second) |
+         rv::transform([this](const size_type id) { return (*this)(id); });
 }
 
 template <class Policy> void Vector<Policy>::fill(const value_type value) {

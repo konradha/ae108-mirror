@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "ae108/assembly/Assembler.h"
+#include "ae108/cpppetsc/Context.h"
 #include "ae108/cpppetsc/Mesh.h"
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/Vector.h"
@@ -28,6 +29,7 @@
 using namespace ae108;
 
 using Policy = cpppetsc::ParallelComputePolicy;
+using Context = cpppetsc::Context<Policy>;
 using Mesh = cpppetsc::Mesh<Policy>;
 using Vector = cpppetsc::Vector<Policy>;
 using BoundaryCondition = cpppetsc::MeshBoundaryCondition<Mesh>;
@@ -120,95 +122,92 @@ using Assembler =
 using Solver = solve::NonlinearSolver<Assembler>;
 
 int main(int argc, char **argv) {
-  // PETSc must be initialized before using it.
-  Policy::handleError(PetscInitialize(&argc, &argv, NULL, NULL));
+  // MPI/PETSc/cpppetsc must be initialized before using it.
 
-  // We use a scope around our computation to make sure everything is cleaned up
-  // before we call PetscFinalize.
-  {
-    const auto mesh = Mesh::fromConnectivity(
-        dimension, connectivity, number_of_vertices, dof_per_vertex);
-    auto assembler = Assembler();
+  const auto context = Context(&argc, &argv);
 
-    const auto model = MaterialModel(1.0, 0.);
+  // Let's create the mesh, an assembler, and a material model.
 
-    // Depending on whether we use MPI, our mesh may be distributed and not all
-    // elements are present on this computational node.
+  const auto mesh = Mesh::fromConnectivity(dimension, connectivity,
+                                           number_of_vertices, dof_per_vertex);
+  auto assembler = Assembler();
+  const auto model = MaterialModel(1.0, 0.);
 
-    // Let's add those elements that are "local" to the assembler.
+  // Depending on whether we use MPI, our mesh may be distributed and not all
+  // elements are present on this computational node.
 
-    for (const auto &element : mesh.localElements()) {
-      assembler.emplaceElement(
-          element, model,
-          Integrator(Embedding(Embedding::Collection<Embedding::PhysicalPoint>{{
-              vertex_positions.at(connectivity.at(element.index()).at(0)),
-              vertex_positions.at(connectivity.at(element.index()).at(1)),
-              vertex_positions.at(connectivity.at(element.index()).at(2)),
-              vertex_positions.at(connectivity.at(element.index()).at(3)),
-          }})));
-    }
+  // Let's add those elements that are "local" to the assembler.
 
-    // We need to create a solver. We do not use the time, so we can set it to
-    // zero.
-
-    const auto solver = Solver(&mesh);
-    const auto time = Element::Time{0.};
-
-    // Before we can produce meaningful results, we need to specify boundary
-    // conditions. Let's fix the nodes at x=0 and pull on the nodes at x=2.
-
-    std::vector<BoundaryCondition> boundary_conditions;
-    for (const auto &vertex : mesh.localVertices()) {
-      switch (vertex.index()) {
-      case 0:
-      case 3: {
-        // The displacement in x direction is zero.
-        boundary_conditions.push_back({vertex, 0, 0.});
-        // The displacement in y direction is zero.
-        boundary_conditions.push_back({vertex, 1, 0.});
-        break;
-      }
-      case 4:
-      case 5: {
-        // The displacement in x direction is .5.
-        boundary_conditions.push_back({vertex, 0, .5});
-        // The displacement in y direction is 0.
-        boundary_conditions.push_back({vertex, 1, 0.});
-        break;
-      }
-      }
-    }
-
-    // We are ready to minimize the energy.
-
-    const auto result = solver.computeSolution(
-        boundary_conditions, Vector::fromGlobalMesh(mesh), time, &assembler);
-
-    // As a final step, we print the result.
-    // We could use: result.unwrap().print();
-
-    // However, the output of this command changes when running the application
-    // in MPI-parallel mode. This happens because the vector "result" is
-    // distributed between the ranks in this case.
-
-    // So we gather all the results locally in the canonical data format first:
-    // [ vertex-0-dof-0, vertex-0-dof-1, vertex-1-dof-0, vertex-1-dof-1, ...].
-
-    const auto global_result =
-        Vector::fromDistributedInCanonicalOrder(result, mesh);
-
-    // Then we print this global vector only on the primary rank.
-    // We expect the degrees of freedom in x direction to be between 0 and .5,
-    // and the degrees of freedom in y direction to be 0:
-    // Vertex 0: (0.0, 0.0)
-    // Vertex 1: (.25, 0.0)
-    // Vertex 2: (.25, 0.0)
-    // Vertex 3: (0.0, 0.0)
-    // Vertex 4: (0.5, 0.0)
-    // Vertex 5: (0.5, 0.0)
-
-    if (Policy::isPrimaryRank())
-      global_result.unwrap().print();
+  for (const auto &element : mesh.localElements()) {
+    assembler.emplaceElement(
+        element, model,
+        Integrator(Embedding(Embedding::Collection<Embedding::PhysicalPoint>{{
+            vertex_positions.at(connectivity.at(element.index()).at(0)),
+            vertex_positions.at(connectivity.at(element.index()).at(1)),
+            vertex_positions.at(connectivity.at(element.index()).at(2)),
+            vertex_positions.at(connectivity.at(element.index()).at(3)),
+        }})));
   }
-  Policy::handleError(PetscFinalize());
+
+  // We need to create a solver. We do not use the time, so we can set it to
+  // zero.
+
+  const auto solver = Solver(&mesh);
+  const auto time = Element::Time{0.};
+
+  // Before we can produce meaningful results, we need to specify boundary
+  // conditions. Let's fix the nodes at x=0 and pull on the nodes at x=2.
+
+  std::vector<BoundaryCondition> boundary_conditions;
+  for (const auto &vertex : mesh.localVertices()) {
+    switch (vertex.index()) {
+    case 0:
+    case 3: {
+      // The displacement in x direction is zero.
+      boundary_conditions.push_back({vertex, 0, 0.});
+      // The displacement in y direction is zero.
+      boundary_conditions.push_back({vertex, 1, 0.});
+      break;
+    }
+    case 4:
+    case 5: {
+      // The displacement in x direction is .5.
+      boundary_conditions.push_back({vertex, 0, .5});
+      // The displacement in y direction is 0.
+      boundary_conditions.push_back({vertex, 1, 0.});
+      break;
+    }
+    }
+  }
+
+  // We are ready to minimize the energy.
+
+  const auto result = solver.computeSolution(
+      boundary_conditions, Vector::fromGlobalMesh(mesh), time, &assembler);
+
+  // As a final step, we print the result.
+  // We could use: result.unwrap().print();
+
+  // However, the output of this command changes when running the application
+  // in MPI-parallel mode. This happens because the vector "result" is
+  // distributed between the ranks in this case.
+
+  // So we gather all the results locally in the canonical data format first:
+  // [ vertex-0-dof-0, vertex-0-dof-1, vertex-1-dof-0, vertex-1-dof-1, ...].
+
+  const auto global_result =
+      Vector::fromDistributedInCanonicalOrder(result, mesh);
+
+  // Then we print this global vector only on the primary rank.
+  // We expect the degrees of freedom in x direction to be between 0 and .5,
+  // and the degrees of freedom in y direction to be 0:
+  // Vertex 0: (0.0, 0.0)
+  // Vertex 1: (.25, 0.0)
+  // Vertex 2: (.25, 0.0)
+  // Vertex 3: (0.0, 0.0)
+  // Vertex 4: (0.5, 0.0)
+  // Vertex 5: (0.5, 0.0)
+
+  if (Policy::isPrimaryRank())
+    global_result.unwrap().print();
 }

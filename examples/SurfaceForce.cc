@@ -14,6 +14,7 @@
 
 #include "ae108/assembly/Assembler.h"
 #include "ae108/assembly/plugins/AssembleForceIfPlugin.h"
+#include "ae108/cpppetsc/Context.h"
 #include "ae108/cpppetsc/Mesh.h"
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/Vector.h"
@@ -30,6 +31,7 @@
 using namespace ae108;
 
 using Policy = cpppetsc::ParallelComputePolicy;
+using Context = cpppetsc::Context<Policy>;
 using Mesh = cpppetsc::Mesh<Policy>;
 using Vector = cpppetsc::Vector<Policy>;
 using BoundaryCondition = cpppetsc::MeshBoundaryCondition<Mesh>;
@@ -136,91 +138,87 @@ void print_force_at_x(const typename Geometry::Point::value_type x,
     return force;
   }();
 
-  // We are done with the computation and print the results to stderr.
+  // We are done with the computation and print the results to stdout.
 
   if (Policy::isPrimaryRank()) {
     static_assert(dof_per_vertex == 3, "We assume 3 degrees of freedom.");
-    fprintf(stderr, "The force at x=%+f is [%+f, %+f, %+f].\n", x, force[0],
-            force[1], force[2]);
+    printf("The force at x=%+f is [%+f, %+f, %+f].\n", x, force[0], force[1],
+           force[2]);
   }
 }
 
 int main(int argc, char **argv) {
-  // PETSc must be initialized before using it.
-  Policy::handleError(PetscInitialize(&argc, &argv, NULL, NULL));
+  // MPI/PETSc/cpppetsc must be initialized before using it.
 
-  // We use a scope around our computation to make sure everything is cleaned
-  // up before we call PetscFinalize.
-  {
-    // Now we generate a geometry of 40 = 2 * 2 * 2 * 5 tetrahedra.
+  const auto context = Context(&argc, &argv);
 
-    const auto geometry =
-        mesh::generate_tetrahedron_mesh({{1., 1., 1.}}, {{2, 2, 2}});
-    const auto mesh =
-        Mesh::fromConnectivity(dimension, geometry.connectivity(),
-                               geometry.number_of_positions(), dof_per_vertex);
-    auto assembler = Assembler();
+  // Now we generate a geometry of 40 = 2 * 2 * 2 * 5 tetrahedra.
 
-    const auto model = MaterialModel(1.0, 0.);
+  const auto geometry =
+      mesh::generate_tetrahedron_mesh({{1., 1., 1.}}, {{2, 2, 2}});
+  const auto mesh =
+      Mesh::fromConnectivity(dimension, geometry.connectivity(),
+                             geometry.number_of_positions(), dof_per_vertex);
+  auto assembler = Assembler();
 
-    // Depending on whether we use MPI, our mesh may be distributed and not
-    // all elements are present on this computational node.
+  const auto model = MaterialModel(1.0, 0.);
 
-    // Let's add those elements that are "local" to the assembler.
+  // Depending on whether we use MPI, our mesh may be distributed and not
+  // all elements are present on this computational node.
 
-    for (const auto &element : mesh.localElements()) {
-      const auto vertexIndices = element.vertexIndices();
-      assembler.emplaceElement(
-          element, model,
-          Integrator(Embedding(Embedding::Collection<Embedding::PhysicalPoint>{{
-              geometry.position_of_vertex(vertexIndices.at(0)),
-              geometry.position_of_vertex(vertexIndices.at(1)),
-              geometry.position_of_vertex(vertexIndices.at(2)),
-              geometry.position_of_vertex(vertexIndices.at(3)),
-          }})));
-    }
+  // Let's add those elements that are "local" to the assembler.
 
-    // We need to create a solver. We do not use the time, so we can set it to
-    // zero.
-
-    const auto solver = Solver(&mesh);
-    const auto time = Element::Time{0.};
-
-    // Before we can produce meaningful results, we need to specify boundary
-    // conditions. Let's fix the nodes at x=0 and pull on the nodes at x=1.
-
-    std::vector<BoundaryCondition> boundary_conditions;
-    for (const auto &vertex : mesh.localVertices()) {
-      const auto position = geometry.position_of_vertex(vertex.index());
-      const auto tolerance = 1e-5;
-      if (std::abs(position[0] - 0.) < tolerance) {
-        // The displacement in x direction is zero.
-        boundary_conditions.push_back({vertex, 0, 0.});
-        // The displacement in y direction is zero.
-        boundary_conditions.push_back({vertex, 1, 0.});
-        // The displacement in z direction is zero.
-        boundary_conditions.push_back({vertex, 2, 0.});
-      } else if (std::abs(position[0] - 1.) < tolerance) {
-        // The displacement in x direction is .5.
-        boundary_conditions.push_back({vertex, 0, .5});
-        // The displacement in y direction is 0.
-        boundary_conditions.push_back({vertex, 1, 0.});
-        // The displacement in z direction is 0.
-        boundary_conditions.push_back({vertex, 2, 0.});
-      }
-    }
-
-    // We are ready to minimize the energy.
-
-    const auto result = solver.computeSolution(
-        boundary_conditions, Vector::fromGlobalMesh(mesh), time, &assembler);
-
-    // Finally we print the forces to stderr. We expect a force of magnitude .5
-    // at the surface.
-
-    print_force_at_x(0., geometry, mesh, assembler, time, result);
-    print_force_at_x(.5, geometry, mesh, assembler, time, result);
-    print_force_at_x(1., geometry, mesh, assembler, time, result);
+  for (const auto &element : mesh.localElements()) {
+    const auto vertexIndices = element.vertexIndices();
+    assembler.emplaceElement(
+        element, model,
+        Integrator(Embedding(Embedding::Collection<Embedding::PhysicalPoint>{{
+            geometry.position_of_vertex(vertexIndices.at(0)),
+            geometry.position_of_vertex(vertexIndices.at(1)),
+            geometry.position_of_vertex(vertexIndices.at(2)),
+            geometry.position_of_vertex(vertexIndices.at(3)),
+        }})));
   }
-  Policy::handleError(PetscFinalize());
+
+  // We need to create a solver. We do not use the time, so we can set it to
+  // zero.
+
+  const auto solver = Solver(&mesh);
+  const auto time = Element::Time{0.};
+
+  // Before we can produce meaningful results, we need to specify boundary
+  // conditions. Let's fix the nodes at x=0 and pull on the nodes at x=1.
+
+  std::vector<BoundaryCondition> boundary_conditions;
+  for (const auto &vertex : mesh.localVertices()) {
+    const auto position = geometry.position_of_vertex(vertex.index());
+    const auto tolerance = 1e-5;
+    if (std::abs(position[0] - 0.) < tolerance) {
+      // The displacement in x direction is zero.
+      boundary_conditions.push_back({vertex, 0, 0.});
+      // The displacement in y direction is zero.
+      boundary_conditions.push_back({vertex, 1, 0.});
+      // The displacement in z direction is zero.
+      boundary_conditions.push_back({vertex, 2, 0.});
+    } else if (std::abs(position[0] - 1.) < tolerance) {
+      // The displacement in x direction is .5.
+      boundary_conditions.push_back({vertex, 0, .5});
+      // The displacement in y direction is 0.
+      boundary_conditions.push_back({vertex, 1, 0.});
+      // The displacement in z direction is 0.
+      boundary_conditions.push_back({vertex, 2, 0.});
+    }
+  }
+
+  // We are ready to minimize the energy.
+
+  const auto result = solver.computeSolution(
+      boundary_conditions, Vector::fromGlobalMesh(mesh), time, &assembler);
+
+  // Finally we print the forces to stderr. We expect a force of magnitude .5
+  // at the surface.
+
+  print_force_at_x(0., geometry, mesh, assembler, time, result);
+  print_force_at_x(.5, geometry, mesh, assembler, time, result);
+  print_force_at_x(1., geometry, mesh, assembler, time, result);
 }

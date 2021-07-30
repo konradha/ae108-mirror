@@ -32,13 +32,13 @@ template <class MaterialModel_> struct AutomaticStressTrait {
              const typename MaterialModel::DisplacementGradient &gradient,
              const typename MaterialModel::Time time) const noexcept {
     using size_type = typename MaterialModel::size_type;
-    constexpr auto dimension = MaterialModel::dimension();
 
     typename MaterialModel::Stress result;
 
     auto modified_gradient = gradient;
-    for (auto row = size_type{0}; row < dimension; ++row) {
-      for (auto col = size_type{0}; col < dimension; ++col) {
+    for (auto row = size_type{0}; row < MaterialModel::degrees_of_freedom();
+         ++row) {
+      for (auto col = size_type{0}; col < MaterialModel::dimension(); ++col) {
         result[row][col] = tensor::differentiate(
             [&](const typename MaterialModel::value_type t) {
               modified_gradient[row][col] = t;

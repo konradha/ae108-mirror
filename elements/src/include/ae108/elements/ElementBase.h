@@ -25,7 +25,7 @@ namespace ae108 {
 namespace elements {
 
 template <class Derived_, class SizeType_, class ValueType_, SizeType_ Size_,
-          SizeType_ DegreesOfFreedom_, SizeType_ Dimension_ = DegreesOfFreedom_>
+          SizeType_ DegreesOfFreedom_>
 struct ElementBase {
   using size_type = SizeType_;
   using value_type = ValueType_;
@@ -66,11 +66,6 @@ struct ElementBase {
   static constexpr size_type degrees_of_freedom() noexcept {
     return DegreesOfFreedom_;
   }
-
-  /**
-   * @brief The dimension of physical space.
-   */
-  static constexpr size_type dimension() noexcept { return Dimension_; }
 
   /**
    * @brief Computes the energy for the given displacements.

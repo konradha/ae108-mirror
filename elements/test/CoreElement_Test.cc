@@ -16,6 +16,8 @@
 #include "ae108/elements/CoreElement.h"
 #include "ae108/elements/embedding/IsoparametricEmbedding.h"
 #include "ae108/elements/integrator/IsoparametricIntegrator.h"
+#include "ae108/elements/materialmodels/AutomaticStressTrait.h"
+#include "ae108/elements/materialmodels/AutomaticTangentMatrixTrait.h"
 #include "ae108/elements/materialmodels/Hookean.h"
 #include "ae108/elements/quadrature/Quadrature.h"
 #include "ae108/elements/shape/Hexa8.h"
@@ -232,6 +234,79 @@ TEST_F(CoreElement_Hexa8_Test, computes_correct_energy_with_displacements_2) {
   }};
 
   EXPECT_THAT(element.computeEnergy(displacements, time), DoubleEq(2.));
+}
+
+/**
+ * @brief A material model with a number of degrees of freedom different from
+ * the dimension.
+ */
+struct Model_Dof final
+    : materialmodels::MaterialModelBase<std::size_t, double, 1 /* dimension */,
+                                        2 /* degrees of freedom */> {
+  template <class... Args> explicit Model_Dof(Args &&...) {}
+};
+} // namespace
+
+namespace materialmodels {
+
+/**
+ * @brief Returns (x + y / 2)^2.
+ */
+template <> struct ComputeEnergyTrait<Model_Dof> {
+  template <class MaterialModel>
+  typename MaterialModel::Energy
+  operator()(const MaterialModel &, const typename MaterialModel::size_type,
+             const typename MaterialModel::DisplacementGradient &x,
+             const typename MaterialModel::Time) noexcept {
+    return std::pow(x.at(0).at(0) + x.at(1).at(0) / 2., 2.);
+  }
+};
+
+template <>
+struct ComputeStressTrait<Model_Dof> : AutomaticStressTrait<Model_Dof> {};
+
+template <>
+struct ComputeTangentMatrixTrait<Model_Dof>
+    : AutomaticTangentMatrixTrait<Model_Dof> {};
+
+} // namespace materialmodels
+
+namespace {
+using Element_Dof = CoreElement<
+    Model_Dof,
+    integrator::IsoparametricIntegrator<
+        shape::Seg2,
+        quadrature::Quadrature<quadrature::QuadratureType::Cube, 1, 1>>>;
+
+using Configurations_Dof = Types<Configuration_1D<Element_Dof>>;
+INSTANTIATE_TYPED_TEST_CASE_P(CoreElement_Dof_Test, Element_Test,
+                              Configurations_Dof);
+
+struct CoreElement_Dof_Test : Test {
+  using Element = Element_Dof;
+  const Element element = Configuration_1D<Element>::create_element();
+};
+
+TEST_F(CoreElement_Dof_Test, computes_energy_with_x_displacements_1) {
+  const auto time = Element::Time{0.};
+
+  const Element::NodalDisplacements displacements = {{
+      {{0., 0.}},
+      {{1., 0.}},
+  }};
+
+  EXPECT_THAT(element.computeEnergy(displacements, time), DoubleEq(1.));
+}
+
+TEST_F(CoreElement_Dof_Test, computes_energy_with_y_displacements_1) {
+  const auto time = Element::Time{0.};
+
+  const Element::NodalDisplacements displacements = {{
+      {{0., 0.}},
+      {{0., 1.}},
+  }};
+
+  EXPECT_THAT(element.computeEnergy(displacements, time), DoubleEq(.25));
 }
 
 } // namespace

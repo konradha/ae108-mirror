@@ -37,7 +37,7 @@ class CoreElement final
     : public ElementBase<CoreElement<MaterialModel_, Integrator_>,
                          typename Integrator_::size_type,
                          typename Integrator_::value_type, Integrator_::size(),
-                         MaterialModel_::dimension()> {
+                         MaterialModel_::degrees_of_freedom()> {
 public:
   using MaterialModel = MaterialModel_;
   using Integrator = Integrator_;
@@ -170,16 +170,18 @@ private:
   using TangentSlice = typename std::enable_if<
       Element::degrees_of_freedom() == 0 ||
           sizeof(typename Element::MaterialModel::TangentMatrix) ==
-              Element::degrees_of_freedom() * Element::degrees_of_freedom() *
+              Element::degrees_of_freedom() *
+                  Element::MaterialModel::dimension() *
                   Element::degrees_of_freedom() *
-                  Element::degrees_of_freedom() *
+                  Element::MaterialModel::dimension() *
                   sizeof(typename Element::MaterialModel::value_type),
       Eigen::Map<
           const Eigen::Matrix<typename Element::MaterialModel::value_type,
-                              Element::degrees_of_freedom(),
-                              Element::degrees_of_freedom(), Eigen::RowMajor>,
+                              Element::MaterialModel::dimension(),
+                              Element::MaterialModel::dimension(),
+                              Eigen::RowMajor>,
           0,
-          Eigen::Stride<Eigen::Index{Element::degrees_of_freedom() *
+          Eigen::Stride<Eigen::Index{Element::MaterialModel::dimension() *
                                      Element::degrees_of_freedom()},
                         Eigen::Index{1}>>>::type;
 };

@@ -36,9 +36,10 @@ template <class MaterialModel_> struct AutomaticTangentMatrixTrait {
     typename MaterialModel::TangentMatrix result;
 
     auto modified_gradient = gradient;
-    for (auto i = size_type{0}; i < MaterialModel::dimension(); ++i) {
+    for (auto i = size_type{0}; i < MaterialModel::degrees_of_freedom(); ++i) {
       for (auto j = size_type{0}; j < MaterialModel::dimension(); ++j) {
-        for (auto k = size_type{0}; k < MaterialModel::dimension(); ++k) {
+        for (auto k = size_type{0}; k < MaterialModel::degrees_of_freedom();
+             ++k) {
           for (auto l = size_type{0}; l < MaterialModel::dimension(); ++l) {
             result[i][j][k][l] = tensor::differentiate(
                 [&](const typename MaterialModel::value_type t) {

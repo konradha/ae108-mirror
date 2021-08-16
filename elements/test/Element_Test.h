@@ -144,10 +144,11 @@ template <typename TestConfiguration> struct Element_Test : ::testing::Test {
   static bool is_approximately(
       const Eigen::Matrix<ValueType, Rows, Cols> &value,
       const Eigen::Matrix<ValueType, Rows, Cols> &reference) noexcept {
-    constexpr auto epsilon =
-        std::numeric_limits<typename Element::value_type>::epsilon();
-    return (value.norm() <= epsilon && reference.norm() <= epsilon) ||
-           value.isApprox(reference);
+    // accept value if around half of the expected digits are correct
+    const auto epsilon =
+        std::sqrt(std::numeric_limits<typename Element::value_type>::epsilon());
+    return (value - reference).norm() <=
+           epsilon * std::max(reference.norm(), epsilon);
   }
 
   /**

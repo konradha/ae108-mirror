@@ -29,7 +29,7 @@ RUN apt-get update && \
         libeigen3-dev \
         librange-v3-dev \
         ninja-build \
-        petsc-dev \
+        libpetsc-complex-dev \
         python3 python3-pip \
         python3-h5py \
         gdb

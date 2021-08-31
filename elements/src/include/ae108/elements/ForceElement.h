@@ -28,7 +28,7 @@ namespace elements {
  */
 template <std::size_t DegreesOfFreedom_>
 struct ForceElement final
-    : ElementBase<ForceElement<DegreesOfFreedom_>, std::size_t, double,
+    : ElementBase<ForceElement<DegreesOfFreedom_>, std::size_t, double, double,
                   1 /* size */, DegreesOfFreedom_> {
 public:
   using Force =

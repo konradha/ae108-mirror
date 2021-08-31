@@ -32,12 +32,13 @@ namespace elements {
  * @brief An element that computes energy, forces, and stiffness matrix using a
  * material model and an integrator.
  */
-template <class MaterialModel_, class Integrator_>
+template <class MaterialModel_, class Integrator_, class ValueType_ = double,
+          class RealType_ = double>
 class CoreElement final
-    : public ElementBase<CoreElement<MaterialModel_, Integrator_>,
-                         typename Integrator_::size_type,
-                         typename Integrator_::value_type, Integrator_::size(),
-                         MaterialModel_::degrees_of_freedom()> {
+    : public ElementBase<
+          CoreElement<MaterialModel_, Integrator_, ValueType_, RealType_>,
+          typename Integrator_::size_type, ValueType_, RealType_,
+          Integrator_::size(), MaterialModel_::degrees_of_freedom()> {
 public:
   using MaterialModel = MaterialModel_;
   using Integrator = Integrator_;
@@ -64,8 +65,10 @@ private:
   Integrator integrator_;
 };
 
-template <class MaterialModel_, class Integrator_>
-struct ComputeEnergyTrait<CoreElement<MaterialModel_, Integrator_>> {
+template <class MaterialModel_, class Integrator_, class ValueType_,
+          class RealType_>
+struct ComputeEnergyTrait<
+    CoreElement<MaterialModel_, Integrator_, ValueType_, RealType_>> {
   template <class Element>
   typename Element::Energy
   operator()(const Element &element,
@@ -86,8 +89,10 @@ struct ComputeEnergyTrait<CoreElement<MaterialModel_, Integrator_>> {
   }
 };
 
-template <class MaterialModel_, class Integrator_>
-struct ComputeForcesTrait<CoreElement<MaterialModel_, Integrator_>> {
+template <class MaterialModel_, class Integrator_, class ValueType_,
+          class RealType_>
+struct ComputeForcesTrait<
+    CoreElement<MaterialModel_, Integrator_, ValueType_, RealType_>> {
   template <class Element>
   typename Element::Forces
   operator()(const Element &element,
@@ -116,8 +121,10 @@ struct ComputeForcesTrait<CoreElement<MaterialModel_, Integrator_>> {
   }
 };
 
-template <class MaterialModel_, class Integrator_>
-struct ComputeStiffnessMatrixTrait<CoreElement<MaterialModel_, Integrator_>> {
+template <class MaterialModel_, class Integrator_, class ValueType_,
+          class RealType_>
+struct ComputeStiffnessMatrixTrait<
+    CoreElement<MaterialModel_, Integrator_, ValueType_, RealType_>> {
   template <class Element>
   typename Element::StiffnessMatrix
   operator()(const Element &element,

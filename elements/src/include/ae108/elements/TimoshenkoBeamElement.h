@@ -75,8 +75,8 @@ timoshenko_beam_stiffness_matrix(
  */
 template <std::size_t Dimension_>
 struct TimoshenkoBeamElement final
-    : ElementBase<TimoshenkoBeamElement<Dimension_>, std::size_t, double, 2,
-                  (Dimension_ * (Dimension_ + 1)) / 2> {
+    : ElementBase<TimoshenkoBeamElement<Dimension_>, std::size_t, double,
+                  double, 2, (Dimension_ * (Dimension_ + 1)) / 2> {
 public:
   explicit TimoshenkoBeamElement(
       typename TimoshenkoBeamElement::StiffnessMatrix matrix) noexcept

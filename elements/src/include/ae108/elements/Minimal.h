@@ -30,8 +30,8 @@ namespace elements {
  */
 template <std::size_t Size_, std::size_t DegreesOfFreedom_>
 struct Minimal final
-    : ElementBase<Minimal<Size_, DegreesOfFreedom_>, std::size_t, double, Size_,
-                  DegreesOfFreedom_> {};
+    : ElementBase<Minimal<Size_, DegreesOfFreedom_>, std::size_t, double,
+                  double, Size_, DegreesOfFreedom_> {};
 
 /**
  * @brief Always returns 0.

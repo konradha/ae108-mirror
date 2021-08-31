@@ -48,6 +48,7 @@ public:
 
   using size_type = PetscInt;
   using value_type = PetscScalar;
+  using real_type = PetscReal;
   using vector_type = Vector<Policy>;
   using matrix_type = Matrix<Policy>;
 

@@ -39,6 +39,7 @@ public:
 
   using size_type = typename Vector<Policy>::size_type;
   using value_type = typename Vector<Policy>::value_type;
+  using real_type = typename Vector<Policy>::real_type;
 
   /**
    * @brief Initializes the nonlinear solver with the problem dimension.
@@ -99,7 +100,7 @@ public:
    * output.
    */
   using ObjectiveFunctor =
-      std::function<void(const distributed<vector_type> &, value_type *)>;
+      std::function<void(const distributed<vector_type> &, real_type *)>;
 
   /**
    * @remark The first parameter is the input, the second parameter is the
@@ -147,7 +148,7 @@ public:
                                  distributed<vector_type> guess) const;
 
 private:
-  static PetscErrorCode objectiveAdapter(Tao, Vec, value_type *, void *);
+  static PetscErrorCode objectiveAdapter(Tao, Vec, real_type *, void *);
   static PetscErrorCode gradientAdapter(Tao, Vec, Vec, void *);
   static PetscErrorCode hessianAdapter(Tao, Vec, Mat, Mat, void *);
 
@@ -354,7 +355,7 @@ TAOSolver<Policy>::solve(ObjectiveFunctor objective, GradientFunctor gradient,
 
 template <class Policy>
 PetscErrorCode TAOSolver<Policy>::objectiveAdapter(Tao, Vec input,
-                                                   value_type *output,
+                                                   real_type *output,
                                                    void *context) {
   const auto functionPtr = static_cast<ObjectiveFunctor *>(context);
   (*functionPtr)(distributed<vector_type>(UniqueEntity<Vec>(input, [](Vec) {})),

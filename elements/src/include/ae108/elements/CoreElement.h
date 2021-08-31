@@ -24,6 +24,7 @@
 #include "ae108/elements/materialmodels/compute_tangent_matrix.h"
 #include "ae108/elements/tensor/as_matrix_of_columns.h"
 #include "ae108/elements/tensor/as_matrix_of_rows.h"
+#include <type_traits>
 
 namespace ae108 {
 namespace elements {
@@ -39,6 +40,20 @@ class CoreElement final
           CoreElement<MaterialModel_, Integrator_, ValueType_, RealType_>,
           typename Integrator_::size_type, ValueType_, RealType_,
           Integrator_::size(), MaterialModel_::degrees_of_freedom()> {
+
+  static_assert(std::is_same<typename MaterialModel_::real_type,
+                             typename CoreElement::real_type>::value,
+                "The types are not consistent.");
+  static_assert(std::is_same<typename Integrator_::real_type,
+                             typename CoreElement::real_type>::value,
+                "The types are not consistent.");
+  static_assert(std::is_same<typename MaterialModel_::value_type,
+                             typename CoreElement::value_type>::value,
+                "The types are not consistent.");
+  static_assert(std::is_same<typename Integrator_::value_type,
+                             typename CoreElement::value_type>::value,
+                "The types are not consistent.");
+
 public:
   using MaterialModel = MaterialModel_;
   using Integrator = Integrator_;

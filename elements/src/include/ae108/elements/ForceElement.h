@@ -26,10 +26,12 @@ namespace elements {
 /**
  * @brief A single-vertex element that applies a force at that vertex.
  */
-template <std::size_t DegreesOfFreedom_>
+template <std::size_t DegreesOfFreedom_, class ValueType_ = double,
+          class RealType_ = double>
 struct ForceElement final
-    : ElementBase<ForceElement<DegreesOfFreedom_>, std::size_t, double, double,
-                  1 /* size */, DegreesOfFreedom_> {
+    : ElementBase<ForceElement<DegreesOfFreedom_, ValueType_, RealType_>,
+                  std::size_t, ValueType_, RealType_, 1 /* size */,
+                  DegreesOfFreedom_> {
 public:
   using Force =
       tensor::Tensor<typename ForceElement::value_type, DegreesOfFreedom_>;
@@ -48,8 +50,9 @@ private:
   Force force_;
 };
 
-template <std::size_t DegreesOfFreedom_>
-struct ComputeEnergyTrait<ForceElement<DegreesOfFreedom_>> {
+template <std::size_t DegreesOfFreedom_, class ValueType_, class RealType_>
+struct ComputeEnergyTrait<
+    ForceElement<DegreesOfFreedom_, ValueType_, RealType_>> {
   template <class Element>
   typename Element::Energy
   operator()(const Element &element,
@@ -60,8 +63,9 @@ struct ComputeEnergyTrait<ForceElement<DegreesOfFreedom_>> {
   }
 };
 
-template <std::size_t DegreesOfFreedom_>
-struct ComputeForcesTrait<ForceElement<DegreesOfFreedom_>> {
+template <std::size_t DegreesOfFreedom_, class ValueType_, class RealType_>
+struct ComputeForcesTrait<
+    ForceElement<DegreesOfFreedom_, ValueType_, RealType_>> {
   template <class Element>
   typename Element::Forces
   operator()(const Element &element,
@@ -71,8 +75,9 @@ struct ComputeForcesTrait<ForceElement<DegreesOfFreedom_>> {
   }
 };
 
-template <std::size_t DegreesOfFreedom_>
-struct ComputeStiffnessMatrixTrait<ForceElement<DegreesOfFreedom_>> {
+template <std::size_t DegreesOfFreedom_, class ValueType_, class RealType_>
+struct ComputeStiffnessMatrixTrait<
+    ForceElement<DegreesOfFreedom_, ValueType_, RealType_>> {
   template <class Element>
   typename Element::StiffnessMatrix
   operator()(const Element &, const typename Element::NodalDisplacements &,

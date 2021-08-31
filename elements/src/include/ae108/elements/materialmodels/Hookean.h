@@ -31,43 +31,44 @@ namespace materialmodels {
  * @brief A material model for linear elastic isotropic materials.
  * @remark See https://en.wikipedia.org/wiki/Hooke%27s_law
  */
-template <std::size_t Dimension_>
+template <std::size_t Dimension_, class ValueType_ = double,
+          class RealType_ = double>
 class Hookean final
-    : public MaterialModelBase<std::size_t, double, Dimension_> {
+    : public MaterialModelBase<std::size_t, ValueType_, RealType_, Dimension_> {
 public:
   /**
    * @brief Constructs the material model using Young's modulus E and the
    * Poisson ratio nu.
    */
   explicit constexpr Hookean(
-      const typename Hookean::value_type &youngs_modulus,
-      const typename Hookean::value_type &poisson_ratio) noexcept
+      const typename Hookean::real_type &youngs_modulus,
+      const typename Hookean::real_type &poisson_ratio) noexcept
       : lambda_(youngs_modulus * poisson_ratio /
-                (typename Hookean::value_type{1.} -
-                 typename Hookean::value_type{2.} * poisson_ratio) /
-                (typename Hookean::value_type{1.} + poisson_ratio)),
-        mu_(youngs_modulus / typename Hookean::value_type{2.} /
-            (typename Hookean::value_type{1.} + poisson_ratio)) {}
+                (typename Hookean::real_type{1.} -
+                 typename Hookean::real_type{2.} * poisson_ratio) /
+                (typename Hookean::real_type{1.} + poisson_ratio)),
+        mu_(youngs_modulus / typename Hookean::real_type{2.} /
+            (typename Hookean::real_type{1.} + poisson_ratio)) {}
 
   /**
    * @brief Returns the first Lame constant.
    */
-  constexpr typename Hookean::value_type lambda() const noexcept {
+  constexpr typename Hookean::real_type lambda() const noexcept {
     return lambda_;
   }
 
   /**
    * @brief Returns the second Lame constant.
    */
-  constexpr typename Hookean::value_type mu() const noexcept { return mu_; }
+  constexpr typename Hookean::real_type mu() const noexcept { return mu_; }
 
 private:
-  typename Hookean::value_type lambda_;
-  typename Hookean::value_type mu_;
+  typename Hookean::real_type lambda_;
+  typename Hookean::real_type mu_;
 };
 
-template <std::size_t Dimension_>
-struct ComputeEnergyTrait<Hookean<Dimension_>> {
+template <std::size_t Dimension_, class ValueType_, class RealType_>
+struct ComputeEnergyTrait<Hookean<Dimension_, ValueType_, RealType_>> {
   template <class MaterialModel>
   typename MaterialModel::Energy
   operator()(const MaterialModel &model,
@@ -76,15 +77,15 @@ struct ComputeEnergyTrait<Hookean<Dimension_>> {
              const typename MaterialModel::Time time) noexcept {
     const auto strain = compute_strain(model, id, gradient, time);
     const auto stress = compute_stress(model, id, gradient, time);
-    return typename MaterialModel::value_type{0.5} *
+    return typename MaterialModel::real_type{0.5} *
            tensor::as_matrix_of_rows(&strain)
                .cwiseProduct(tensor::as_matrix_of_rows(&stress))
                .sum();
   }
 };
 
-template <std::size_t Dimension_>
-struct ComputeStrainTrait<Hookean<Dimension_>> {
+template <std::size_t Dimension_, class ValueType_, class RealType_>
+struct ComputeStrainTrait<Hookean<Dimension_, ValueType_, RealType_>> {
   template <class MaterialModel>
   typename MaterialModel::Strain
   operator()(const MaterialModel &, const typename MaterialModel::size_type,
@@ -94,14 +95,14 @@ struct ComputeStrainTrait<Hookean<Dimension_>> {
 
     typename MaterialModel::Strain result;
     tensor::as_matrix_of_rows(&result) =
-        typename MaterialModel::value_type{.5} *
+        typename MaterialModel::real_type{.5} *
         (gradient_matrix + gradient_matrix.transpose());
     return result;
   }
 };
 
-template <std::size_t Dimension_>
-struct ComputeStressTrait<Hookean<Dimension_>> {
+template <std::size_t Dimension_, class ValueType_, class RealType_>
+struct ComputeStressTrait<Hookean<Dimension_, ValueType_, RealType_>> {
   template <class MaterialModel>
   typename MaterialModel::Stress
   operator()(const MaterialModel &model,
@@ -114,13 +115,13 @@ struct ComputeStressTrait<Hookean<Dimension_>> {
     typename MaterialModel::Stress result;
     tensor::as_matrix_of_rows(&result) =
         model.lambda() * strain_matrix.trace() * strain_matrix.Identity() +
-        typename MaterialModel::value_type{2.} * model.mu() * strain_matrix;
+        typename MaterialModel::real_type{2.} * model.mu() * strain_matrix;
     return result;
   }
 };
 
-template <std::size_t Dimension_>
-struct ComputeTangentMatrixTrait<Hookean<Dimension_>> {
+template <std::size_t Dimension_, class ValueType_, class RealType_>
+struct ComputeTangentMatrixTrait<Hookean<Dimension_, ValueType_, RealType_>> {
   template <class MaterialModel>
   typename MaterialModel::TangentMatrix
   operator()(const MaterialModel &model,

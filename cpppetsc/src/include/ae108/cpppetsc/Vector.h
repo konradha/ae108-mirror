@@ -43,6 +43,7 @@ template <class Policy> class Vector {
 public:
   using size_type = PetscInt;
   using value_type = PetscScalar;
+  using real_type = PetscReal;
   using matrix_type = Matrix<Policy>;
 
   /**
@@ -148,7 +149,7 @@ public:
   /**
    * @brief Computes the 2-norm of the vector.
    */
-  value_type norm() const;
+  real_type norm() const;
 
   /**
    * @brief Print the vector to world stdout.
@@ -402,8 +403,8 @@ Vector<Policy>::fromList(const std::initializer_list<value_type> list) {
 }
 
 template <class Policy>
-typename Vector<Policy>::value_type Vector<Policy>::norm() const {
-  auto result = value_type{};
+typename Vector<Policy>::real_type Vector<Policy>::norm() const {
+  auto result = real_type{};
   Policy::handleError(VecNorm(_vec.get(), NORM_2, &result));
   return result;
 }

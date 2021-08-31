@@ -40,6 +40,7 @@ template <class Policy> class Matrix {
 public:
   using size_type = PetscInt;
   using value_type = PetscScalar;
+  using real_type = PetscReal;
 
   /**
    * @brief Allocates a matrix with global_rows rows and global_columns columns.
@@ -148,7 +149,7 @@ public:
   /**
    * @brief Computes the Frobenius norm of the matrix.
    */
-  value_type norm() const;
+  real_type norm() const;
 
   /**
    * @brief Print the matrix to world stdout.
@@ -515,8 +516,8 @@ Matrix<Policy>::localRowRange() const {
 }
 
 template <class Policy>
-typename Matrix<Policy>::value_type Matrix<Policy>::norm() const {
-  auto result = value_type{};
+typename Matrix<Policy>::real_type Matrix<Policy>::norm() const {
+  auto result = real_type{};
   Policy::handleError(MatNorm(_mat.get(), NORM_FROBENIUS, &result));
   return result;
 }

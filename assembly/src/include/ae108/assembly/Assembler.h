@@ -154,6 +154,15 @@ struct ValueTypeTrait<Assembler<Element, Plugins, Policy>> {
 };
 
 /**
+ * @brief Type is an alias for the real type used by Assembler.
+ */
+template <class Element, class Plugins, class Policy>
+struct RealTypeTrait<Assembler<Element, Plugins, Policy>> {
+  using type = typename MeshTypeTrait<
+      Assembler<Element, Plugins, Policy>>::type::real_type;
+};
+
+/**
  * @brief Type is an alias for the element type used by Assembler.
  */
 template <class Element, class Plugins, class Policy>

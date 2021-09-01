@@ -28,8 +28,9 @@
 #include <gmock/gmock.h>
 
 using ae108::cppptest::AlmostEqIfLocal;
+using ae108::cppptest::ValueAlmostEq;
+using ae108::cppptest::ValueNear;
 using testing::DoubleEq;
-using testing::DoubleNear;
 using testing::Eq;
 using testing::SizeIs;
 using testing::Test;
@@ -115,8 +116,8 @@ TYPED_TEST(DynamicSolver_Test, passes_on_displacements) {
           typename solver_type::DistributedStiffnessMatrixAssembler) {
         const auto full = TestFixture::vector_type::fromDistributed(guess);
         EXPECT_THAT(full.unwrap(), SizeIs(2));
-        EXPECT_THAT(full(0), DoubleEq(2.));
-        EXPECT_THAT(full(1), DoubleEq(3.));
+        EXPECT_THAT(full(0), ValueAlmostEq(2.));
+        EXPECT_THAT(full(1), ValueAlmostEq(3.));
         return guess;
       };
 
@@ -193,8 +194,8 @@ TYPED_TEST(DynamicSolver_Test, returns_correct_displacements) {
       TestFixture::vector_type::fromDistributed(solution.displacements);
 
   ASSERT_THAT(displacements.unwrap(), SizeIs(2));
-  EXPECT_THAT(displacements(0), DoubleEq(7.));
-  EXPECT_THAT(displacements(1), DoubleEq(77.));
+  EXPECT_THAT(displacements(0), ValueAlmostEq(7.));
+  EXPECT_THAT(displacements(1), ValueAlmostEq(77.));
 }
 
 TYPED_TEST(DynamicSolver_Test, returns_correct_velocities) {
@@ -218,8 +219,8 @@ TYPED_TEST(DynamicSolver_Test, returns_correct_velocities) {
       TestFixture::vector_type::fromDistributed(solution.velocities);
 
   ASSERT_THAT(velocities.unwrap(), SizeIs(2));
-  EXPECT_THAT(velocities(0), DoubleNear(99., 1e-7));
-  EXPECT_THAT(velocities(1), DoubleNear(1476., 1e-7));
+  EXPECT_THAT(velocities(0), ValueNear(99., 1e-7));
+  EXPECT_THAT(velocities(1), ValueNear(1476., 1e-7));
 }
 
 TYPED_TEST(DynamicSolver_Test, returns_correct_accelerations) {
@@ -243,8 +244,8 @@ TYPED_TEST(DynamicSolver_Test, returns_correct_accelerations) {
       TestFixture::vector_type::fromDistributed(solution.accelerations);
 
   ASSERT_THAT(accelerations.unwrap(), SizeIs(2));
-  EXPECT_THAT(accelerations(0), DoubleNear(1961., 1e-7));
-  EXPECT_THAT(accelerations(1), DoubleNear(29442., 1e-7));
+  EXPECT_THAT(accelerations(0), ValueNear(1961., 1e-7));
+  EXPECT_THAT(accelerations(1), ValueNear(29442., 1e-7));
 }
 
 TYPED_TEST(DynamicSolver_Test, computes_correct_effective_forces) {
@@ -261,8 +262,8 @@ TYPED_TEST(DynamicSolver_Test, computes_correct_effective_forces) {
         const auto full = TestFixture::vector_type::fromDistributed(forces);
 
         EXPECT_THAT(full.unwrap(), SizeIs(2));
-        EXPECT_THAT(full(0), DoubleEq(-260.));
-        EXPECT_THAT(full(1), DoubleEq(-483.));
+        EXPECT_THAT(full(0), ValueAlmostEq(-260.));
+        EXPECT_THAT(full(1), ValueAlmostEq(-483.));
 
         return TestFixture::vector_type::fromGlobalMesh(this->mesh);
       };
@@ -318,8 +319,8 @@ TYPED_TEST(DynamicSolver_Test,
         const auto full = TestFixture::vector_type::fromDistributed(forces);
 
         EXPECT_THAT(full.unwrap(), SizeIs(2));
-        EXPECT_THAT(full(0), DoubleEq(1253.));
-        EXPECT_THAT(full(1), DoubleEq(1944.));
+        EXPECT_THAT(full(0), ValueAlmostEq(1253.));
+        EXPECT_THAT(full(1), ValueAlmostEq(1944.));
 
         return TestFixture::vector_type::fromGlobalMesh(this->mesh);
       };

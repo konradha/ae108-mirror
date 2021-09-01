@@ -100,7 +100,7 @@ TYPED_TEST(TransformingSolver_Test, bc_solve_works) {
 
   ASSERT_THAT(fullSolution.unwrap(), SizeIs(2));
   EXPECT_THAT(fullSolution(0), ValueNear(-6., 1e-6));
-  EXPECT_THAT(fullSolution(1), ValueNear(1., 1e-6));
+  EXPECT_THAT(fullSolution(1), ValueNear(2., 1e-6));
 }
 
 } // namespace

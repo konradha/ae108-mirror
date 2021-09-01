@@ -41,7 +41,7 @@ template <class Policy> struct Assembler_Mock {
   using real_type = typename mesh_type::real_type;
 
   /**
-   * @brief Computes |x - 1|^2 * |y + 2|^2 + 1
+   * @brief Computes |x - 1|^2 * |y - 2|^2 + 1
    * @remark Expects to be called with the time constant.
    * @remark Expects two degrees of freedom.
    */
@@ -55,7 +55,7 @@ template <class Policy> struct Assembler_Mock {
       const auto x = displacements(0);
       const auto y = displacements(1);
 
-      *energy = std::norm(x - 1) + std::norm(y + 2) + 1.;
+      *energy = std::norm(x - 1) + std::norm(y - 2) + 1.;
     }
   }
 
@@ -77,7 +77,7 @@ template <class Policy> struct Assembler_Mock {
       const auto y = displacements(1);
 
       replacer(0) = 2. * std::real(x - 1.);
-      replacer(1) = 2. * std::real(y + 2.);
+      replacer(1) = 2. * std::real(y - 2.);
     }
   }
 
@@ -183,7 +183,7 @@ TYPED_TEST_P(Solver_Test, bc_solve_works) {
   const auto fullSolution = TestFixture::vector_type::fromDistributed(solution);
   EXPECT_THAT(fullSolution.unwrap(), ::testing::SizeIs(2));
   EXPECT_THAT(fullSolution(0), ::ae108::cppptest::ValueNear(-6., 1e-6));
-  EXPECT_THAT(fullSolution(1), ::ae108::cppptest::ValueNear(1., 1e-6));
+  EXPECT_THAT(fullSolution(1), ::ae108::cppptest::ValueNear(2., 1e-6));
 }
 
 TYPED_TEST_P(Solver_Test, full_bc_solve_works) {

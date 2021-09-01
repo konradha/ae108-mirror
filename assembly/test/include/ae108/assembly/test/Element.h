@@ -24,28 +24,31 @@ namespace ae108 {
 namespace assembly {
 namespace test {
 
-struct Element {
+template <class ValueType_> struct Element {
   static constexpr std::size_t SpatialDimension = 1;
   static constexpr std::size_t DegreesOfFreedom = 1;
   static constexpr std::size_t NumberOfNodes = 1;
 
-  using Vector = Eigen::Matrix<double, 1, 1>;
+  using value_type = ValueType_;
+
+  using Vector = Eigen::Matrix<value_type, 1, 1>;
   using StiffnessMatrix = Vector;
   using Strain = Vector;
 
   using NodalDisplacements = std::array<Vector, NumberOfNodes>;
   using Forces = NodalDisplacements;
 
-  MOCK_CONST_METHOD2(computeEnergy,
-                     double(const NodalDisplacements &, const double));
-  MOCK_CONST_METHOD2(computeForces,
-                     Forces(const NodalDisplacements &, const double));
-  MOCK_CONST_METHOD2(computeStiffnessMatrix,
-                     StiffnessMatrix(const NodalDisplacements &, const double));
-  MOCK_CONST_METHOD0(computeLumpedMassMatrix, StiffnessMatrix());
-  MOCK_CONST_METHOD0(computeConsistentMassMatrix, StiffnessMatrix());
-  MOCK_METHOD2(updateInternalVariables,
-               void(const NodalDisplacements &, const double));
+  MOCK_CONST_METHOD2_T(computeEnergy,
+                       double(const NodalDisplacements &, const double));
+  MOCK_CONST_METHOD2_T(computeForces,
+                       Forces(const NodalDisplacements &, const double));
+  MOCK_CONST_METHOD2_T(computeStiffnessMatrix,
+                       StiffnessMatrix(const NodalDisplacements &,
+                                       const double));
+  MOCK_CONST_METHOD0_T(computeLumpedMassMatrix, StiffnessMatrix());
+  MOCK_CONST_METHOD0_T(computeConsistentMassMatrix, StiffnessMatrix());
+  MOCK_METHOD2_T(updateInternalVariables,
+                 void(const NodalDisplacements &, const double));
 };
 } // namespace test
 } // namespace assembly

@@ -59,7 +59,8 @@ constexpr auto dof_per_vertex = Mesh::size_type{3};
 
 // First, we select a Hookean (linear elastic) material model in 3D.
 
-using MaterialModel = materialmodels::Hookean<dimension>;
+using MaterialModel =
+    materialmodels::Hookean<dimension, Vector::value_type, Vector::real_type>;
 
 // We'll choose the Tet10 shape functions (10 shape functions) that are defined
 // in 3D reference space.
@@ -79,11 +80,14 @@ using Quadrature = quadrature::Quadrature<quadrature::QuadratureType::Simplex,
 // on the selected quadrature rule and the embedding. In the case of the
 // isoparametric embedding, this embedding is specified by the "Shape".
 
-using Integrator = integrator::IsoparametricIntegrator<Shape, Quadrature>;
+using Integrator =
+    integrator::IsoparametricIntegrator<Shape, Quadrature, Vector::value_type,
+                                        Vector::real_type>;
 
 // Now we are ready to select our element type.
 
-using Element = elements::CoreElement<MaterialModel, Integrator>;
+using Element = elements::CoreElement<MaterialModel, Integrator,
+                                      Vector::value_type, Vector::real_type>;
 
 // We will assemble e.g. energy using a collection of elements. This is done by
 // the assembler. (The list DefaultFeaturePlugins contain the features (e.g.

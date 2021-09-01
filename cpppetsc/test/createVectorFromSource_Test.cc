@@ -64,7 +64,7 @@ TYPED_TEST(createVectorFromSource_Test, creates_correct_vector_with_two_dofs) {
   using DataSource = std::function<void(size_type, value_type *)>;
   const auto result = createVectorFromSource(
       this->mesh, dofs,
-      DataSource([](const size_type index, value_type *const data) {
+      DataSource([&](const size_type index, value_type *const data) {
         data[0] = static_cast<value_type>(index);
         data[1] = static_cast<value_type>(index) + increment;
       }));

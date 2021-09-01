@@ -17,13 +17,14 @@
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
 #include "ae108/cpppetsc/TaggedVector.h"
 #include "ae108/cpppetsc/Vector.h"
+#include "ae108/cppptest/Matchers.h"
 #include "ae108/solve/TAOSolver.h"
 #include "ae108/solve/test/Solver_Test.h"
 #include <gmock/gmock.h>
 #include <mpi.h>
 #include <petscsys.h>
 
-using testing::DoubleNear;
+using ae108::cppptest::ValueNear;
 using testing::Eq;
 using testing::SizeIs;
 using testing::Types;
@@ -62,7 +63,7 @@ TEST_F(TAOSolver_Test, local_functional_interface_works) {
   const auto solution = this->solver.computeSolution(
       {}, std::move(guess), factor * assembler_type::constantTime,
       [&](const cpppetsc::local<vector_type> &input, const double time,
-          value_type *const output) {
+          real_type *const output) {
         this->assembler.assembleEnergy(input, time / factor, output);
       },
       [&](const cpppetsc::local<vector_type> &input, const double time,
@@ -74,8 +75,8 @@ TEST_F(TAOSolver_Test, local_functional_interface_works) {
         this->assembler.assembleStiffnessMatrix(input, time / factor, output);
       });
   EXPECT_THAT(solution.unwrap(), SizeIs(2));
-  EXPECT_THAT(solution(0), DoubleNear(1., 1e-7));
-  EXPECT_THAT(solution(1), DoubleNear(2., 1e-7));
+  EXPECT_THAT(solution(0), ValueNear(1., 1e-7));
+  EXPECT_THAT(solution(1), ValueNear(2., 1e-7));
 }
 
 TEST_F(TAOSolver_Test, distributed_functional_interface_works) {
@@ -86,12 +87,12 @@ TEST_F(TAOSolver_Test, distributed_functional_interface_works) {
   const auto solution = this->solver.computeSolution(
       {}, std::move(guess), factor * assembler_type::constantTime,
       [&](const cpppetsc::distributed<vector_type> &input, const double time,
-          value_type *const output) {
+          real_type *const output) {
         auto displacements = vector_type::fromLocalMesh(this->mesh);
         this->mesh.copyToLocalVector(input, &displacements);
         this->assembler.assembleEnergy(displacements, time / factor, output);
-        ASSERT_THAT(MPI_Allreduce(MPI_IN_PLACE, output, 1, MPIU_SCALAR,
-                                  MPIU_SUM, policy_type::communicator()),
+        ASSERT_THAT(MPI_Allreduce(MPI_IN_PLACE, output, 1, MPIU_REAL, MPIU_SUM,
+                                  policy_type::communicator()),
                     Eq(0));
       },
       [&](const cpppetsc::distributed<vector_type> &input, const double time,
@@ -112,8 +113,8 @@ TEST_F(TAOSolver_Test, distributed_functional_interface_works) {
         output->finalize();
       });
   EXPECT_THAT(solution.unwrap(), SizeIs(2));
-  EXPECT_THAT(solution(0), DoubleNear(1., 1e-7));
-  EXPECT_THAT(solution(1), DoubleNear(2., 1e-7));
+  EXPECT_THAT(solution(0), ValueNear(1., 1e-7));
+  EXPECT_THAT(solution(1), ValueNear(2., 1e-7));
 }
 
 } // namespace

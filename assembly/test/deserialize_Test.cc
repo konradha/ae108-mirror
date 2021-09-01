@@ -15,11 +15,13 @@
 
 #include "ae108/assembly/utilities/deserialize.h"
 #include "ae108/cpppetsc/Vector.h"
+#include "ae108/cppptest/Matchers.h"
 #include <Eigen/Core>
 #include <array>
 #include <gmock/gmock.h>
 #include <vector>
 
+using ae108::cppptest::ValueAlmostEq;
 using testing::DoubleEq;
 using testing::ElementsAre;
 using testing::Eq;
@@ -98,9 +100,9 @@ TEST_F(deserialize_Test, deserializing_range_works) {
 
 TEST_F(deserialize_Test,
        deserializing_cpppetsc_vector_into_eigen_vectors_works) {
-  std::vector<Eigen::Vector3d> values(2);
-  auto buffer = cpppetsc::Vector<cpppetsc::SequentialComputePolicy>::fromList(
-      {1., 2., 3., 4., 5., 6.});
+  using vector_type = cpppetsc::Vector<cpppetsc::SequentialComputePolicy>;
+  std::vector<Eigen::Matrix<vector_type::value_type, 3, 1>> values(2);
+  auto buffer = vector_type::fromList({1., 2., 3., 4., 5., 6.});
 
   const auto range = buffer.localValues();
   const auto result =
@@ -108,12 +110,12 @@ TEST_F(deserialize_Test,
 
   EXPECT_THAT(result, Eq(range.end()));
 
-  EXPECT_THAT(values.at(0)(0), DoubleEq(1.));
-  EXPECT_THAT(values.at(0)(1), DoubleEq(2.));
-  EXPECT_THAT(values.at(0)(2), DoubleEq(3.));
-  EXPECT_THAT(values.at(1)(0), DoubleEq(4.));
-  EXPECT_THAT(values.at(1)(1), DoubleEq(5.));
-  EXPECT_THAT(values.at(1)(2), DoubleEq(6.));
+  EXPECT_THAT(values.at(0)(0), ValueAlmostEq(1.));
+  EXPECT_THAT(values.at(0)(1), ValueAlmostEq(2.));
+  EXPECT_THAT(values.at(0)(2), ValueAlmostEq(3.));
+  EXPECT_THAT(values.at(1)(0), ValueAlmostEq(4.));
+  EXPECT_THAT(values.at(1)(1), ValueAlmostEq(5.));
+  EXPECT_THAT(values.at(1)(2), ValueAlmostEq(6.));
 }
 } // namespace
 } // namespace utilities

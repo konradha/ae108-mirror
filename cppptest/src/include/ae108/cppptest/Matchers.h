@@ -18,6 +18,7 @@
 #include "ae108/cppptest/isLocal.h"
 #include <algorithm>
 #include <cmath>
+#include <complex>
 #include <gmock/gmock.h>
 #include <limits>
 #include <string>
@@ -30,11 +31,46 @@ namespace {
  * @brief Returns true if and only if value is approximately equal to the
  * reference.
  */
-inline bool almost_equal_to_reference(const double value,
-                                      const double reference) noexcept {
-  const auto tolerance = std::numeric_limits<double>::epsilon();
-  return std::abs(value - reference) <=
-         tolerance * std::max(tolerance, std::abs(reference));
+inline bool almost_equal_to_reference(
+    const double value, const double reference,
+    ::testing::MatchResultListener *const stream) noexcept {
+  return ::testing::ExplainMatchResult(::testing::DoubleEq(reference), value,
+                                       stream);
+}
+
+/**
+ * @brief Returns true if and only if value is approximately equal to the
+ * reference.
+ */
+inline bool almost_equal_to_reference(
+    const std::complex<double> &value, const std::complex<double> &reference,
+    ::testing::MatchResultListener *const stream) noexcept {
+  return almost_equal_to_reference(value.real(), reference.real(), stream) &&
+         almost_equal_to_reference(value.imag(), reference.imag(), stream);
+}
+
+/**
+ * @brief Returns true if and only if value is approximately equal to the
+ * reference.
+ */
+inline bool
+near_to_reference(const double value, const double reference,
+                  const double tolerance,
+                  ::testing::MatchResultListener *const stream) noexcept {
+  return ::testing::ExplainMatchResult(
+      ::testing::DoubleNear(reference, tolerance), value, stream);
+}
+
+/**
+ * @brief Returns true if and only if value is approximately equal to the
+ * reference.
+ */
+inline bool
+near_to_reference(const std::complex<double> &value,
+                  const std::complex<double> &reference, const double tolerance,
+                  ::testing::MatchResultListener *const stream) noexcept {
+  return near_to_reference(value.real(), reference.real(), tolerance, stream) &&
+         near_to_reference(value.imag(), reference.imag(), tolerance, stream);
 }
 
 /**
@@ -45,7 +81,8 @@ MATCHER_P2(AlmostEqIfLocal, row, reference,
            std::string(negation ? "not " : "") + "equal to " +
                ::testing::PrintToString(reference) + " at (" +
                ::testing::PrintToString(row) + ")") {
-  return !isLocal(arg, row) || almost_equal_to_reference(arg(row), reference);
+  return !isLocal(arg, row) ||
+         almost_equal_to_reference(arg(row), reference, result_listener);
 }
 
 /**
@@ -58,7 +95,7 @@ MATCHER_P3(AlmostEqIfLocal, row, col, reference,
                ::testing::PrintToString(row) + ", " +
                ::testing::PrintToString(col) + ")") {
   return !isLocal(arg, row) ||
-         almost_equal_to_reference(arg(row, col), reference);
+         almost_equal_to_reference(arg(row, col), reference, result_listener);
 }
 
 /**
@@ -67,7 +104,32 @@ MATCHER_P3(AlmostEqIfLocal, row, col, reference,
 MATCHER_P(AddressEq, reference,
           "address " + std::string(negation ? "not " : "") + "equal to " +
               ::testing::PrintToString(reference)) {
-  return reference == &arg;
+  return ::testing::ExplainMatchResult(::testing::Eq(reference), &arg,
+                                       result_listener);
+}
+
+/**
+ * @brief Check that the value has almost the same values as reference.
+ */
+MATCHER_P(ValueAlmostEq, reference,
+          "value " + std::string(negation ? "not " : "") + "equal to " +
+              ::testing::PrintToString(reference)) {
+  return almost_equal_to_reference(arg, reference, result_listener);
+}
+
+MATCHER(ValueAlmostEq,
+        "value " + std::string(negation ? "not " : "") + "equal to reference") {
+  return almost_equal_to_reference(std::get<0>(arg), std::get<1>(arg),
+                                   result_listener);
+}
+
+/**
+ * @brief Check that the value has almost the same values as reference.
+ */
+MATCHER_P2(ValueNear, reference, tolerance,
+           "value " + std::string(negation ? "not " : "") + "equal to " +
+               ::testing::PrintToString(reference)) {
+  return near_to_reference(arg, reference, tolerance, result_listener);
 }
 } // namespace
 } // namespace cppptest

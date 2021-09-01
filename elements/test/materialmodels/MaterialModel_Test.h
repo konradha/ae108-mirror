@@ -42,6 +42,7 @@ struct MaterialModel_Test : ::testing::Test {
   static_assert(
       std::is_base_of<MaterialModelBase<typename MaterialModel::size_type,
                                         typename MaterialModel::value_type,
+                                        typename MaterialModel::real_type,
                                         MaterialModel::dimension()>,
                       MaterialModel>::value,
       "The material model must derive from MaterialModelBase.");

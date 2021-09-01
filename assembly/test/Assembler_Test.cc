@@ -73,7 +73,9 @@ DEFINE_ASSEMBLER_PLUGIN(
 }
 
 template <class Policy> struct Assembler_Test : Test {
-  using Element = NiceMock<test::Element>;
+  using mesh_type = cpppetsc::Mesh<Policy>;
+
+  using Element = NiceMock<test::Element<typename mesh_type::value_type>>;
   using Plugins = FeaturePlugins<
       plugins::AssembleEnergyPlugin, plugins::AssembleForceVectorPlugin,
       plugins::AssembleStiffnessMatrixPlugin,
@@ -82,8 +84,6 @@ template <class Policy> struct Assembler_Test : Test {
       plugins::AssembleLumpedMassMatrixPlugin, plugins::AssembleForceIfPlugin,
       SumUpElementIndicesPlugin, SumUpElementIndicesPluginNonConst>;
   using AssemblerWithPlugins = Assembler<Element, Plugins, Policy>;
-
-  using mesh_type = cpppetsc::Mesh<Policy>;
 
   const double time = .7;
 

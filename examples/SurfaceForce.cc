@@ -55,7 +55,8 @@ constexpr auto dof_per_vertex = Mesh::size_type{3};
 
 // First, we select a Hookean (linear elastic) material model in 3D.
 
-using MaterialModel = materialmodels::Hookean<dimension>;
+using MaterialModel =
+    materialmodels::Hookean<dimension, Vector::value_type, Vector::real_type>;
 
 // We'll choose the Tet4 shape functions (4 shape functions) that are defined
 // in 3D reference space.
@@ -75,11 +76,14 @@ using Quadrature = quadrature::Quadrature<quadrature::QuadratureType::Simplex,
 // on the selected quadrature rule and the embedding. In the case of the
 // isoparametric embedding, this embedding is specified by the "Shape".
 
-using Integrator = integrator::IsoparametricIntegrator<Shape, Quadrature>;
+using Integrator =
+    integrator::IsoparametricIntegrator<Shape, Quadrature, Vector::value_type,
+                                        Vector::real_type>;
 
 // Now we are ready to select our element type.
 
-using Element = elements::CoreElement<MaterialModel, Integrator>;
+using Element = elements::CoreElement<MaterialModel, Integrator,
+                                      Vector::value_type, Vector::real_type>;
 
 // We will assemble e.g. energy using a collection of elements. This is done by
 // the assembler. Note that we have selected which features we are going to use.
@@ -142,8 +146,8 @@ void print_force_at_x(const typename Geometry::Point::value_type x,
 
   if (Policy::isPrimaryRank()) {
     static_assert(dof_per_vertex == 3, "We assume 3 degrees of freedom.");
-    printf("The force at x=%+f is [%+f, %+f, %+f].\n", x, force[0], force[1],
-           force[2]);
+    printf("The real part of the force at x=%+f is [%+f, %+f, %+f].\n", x,
+           std::real(force[0]), std::real(force[1]), std::real(force[2]));
   }
 }
 

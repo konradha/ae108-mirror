@@ -17,11 +17,12 @@
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
 #include "ae108/cpppetsc/TaggedVector.h"
+#include "ae108/cppptest/Matchers.h"
 #include "ae108/cppptest/isLocal.h"
 #include <gmock/gmock.h>
 
 using ae108::cppptest::isLocal;
-using testing::DoubleNear;
+using ae108::cppptest::ValueNear;
 using testing::Test;
 using testing::Types;
 
@@ -35,7 +36,7 @@ template <class Policy> struct NonlinearSolver_Test : Test {
   using matrix_type = typename solver_type::matrix_type;
 
   /**
-   * @brief Solves x^3 == 1 with the given solver.
+   * @brief Solves x^2 == 1 with the given solver.
    *
    * @return The solution.
    */
@@ -46,14 +47,14 @@ template <class Policy> struct NonlinearSolver_Test : Test {
            distributed<vector_type> *const output) {
           const auto replacer = output->unwrap().replace();
           if (isLocal(output->unwrap(), 0)) {
-            replacer(0) = input(0) * input(0) * input(0) - 1.;
+            replacer(0) = std::norm(input(0)) - 1.;
           }
         },
         [](const distributed<vector_type> &input, matrix_type *const output) {
           const auto full = vector_type::fromDistributed(input);
           const auto replacer = output->assemblyView().replace();
           if (isLocal(*output, 0)) {
-            replacer(0, 0) = 3. * full(0) * full(0);
+            replacer(0, 0) = 2. * full(0);
           }
         },
         tag<DistributedTag>(vector_type::fromList({7.})));
@@ -85,17 +86,17 @@ template <class Policy> struct NonlinearSolver_Test : Test {
 using Policies = Types<SequentialComputePolicy, ParallelComputePolicy>;
 TYPED_TEST_CASE(NonlinearSolver_Test, Policies);
 
-TYPED_TEST(NonlinearSolver_Test, solves_x3_eq_1) {
+TYPED_TEST(NonlinearSolver_Test, solves_x2_eq_1) {
   using vector_type = typename TestFixture::solver_type::vector_type;
 
   typename TestFixture::solver_type solver(1);
   const auto solution =
       vector_type::fromDistributed(this->solveConvergingProblem(solver));
 
-  EXPECT_THAT(solution(0), DoubleNear(1., 1e-6));
+  EXPECT_THAT(solution(0), ValueNear(1., 1e-6));
 }
 
-TYPED_TEST(NonlinearSolver_Test, solves_x3_eq_1_when_provided_buffer) {
+TYPED_TEST(NonlinearSolver_Test, solves_x2_eq_1_when_provided_buffer) {
   using vector_type = typename TestFixture::solver_type::vector_type;
   using matrix_type = typename TestFixture::solver_type::matrix_type;
 
@@ -104,7 +105,7 @@ TYPED_TEST(NonlinearSolver_Test, solves_x3_eq_1_when_provided_buffer) {
   const auto solution =
       vector_type::fromDistributed(this->solveConvergingProblem(solver));
 
-  EXPECT_THAT(solution(0), DoubleNear(1., 1e-6));
+  EXPECT_THAT(solution(0), ValueNear(1., 1e-6));
 }
 
 TYPED_TEST(NonlinearSolver_Test,

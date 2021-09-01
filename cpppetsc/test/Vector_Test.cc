@@ -23,11 +23,14 @@
 using ae108::cppptest::AlmostEqIfLocal;
 using ae108::cppptest::ValueAlmostEq;
 using testing::DoubleEq;
+using testing::EndsWith;
 using testing::Eq;
 using testing::Ge;
+using testing::HasSubstr;
 using testing::Le;
 using testing::Not;
 using testing::Pair;
+using testing::StartsWith;
 using testing::Test;
 using testing::Types;
 
@@ -331,6 +334,36 @@ TYPED_TEST(Vector_Test, computing_norm_works) {
   const auto vec = TestFixture::vector_type::fromList({3., 4.});
 
   EXPECT_THAT(vec.norm(), DoubleEq(5.));
+}
+
+/**
+ * @brief Converts the parameter to a string using a stringstream and
+ * operator<<.
+ */
+template <class T> std::string toString(const T &t) {
+  std::stringstream stream;
+  stream << t;
+  return stream.str();
+};
+
+TYPED_TEST(Vector_Test, writing_to_stream_uses_square_brackets) {
+  const auto vec = TestFixture::vector_type::fromList({3., 4.});
+
+  const auto result = toString(vec);
+
+  EXPECT_THAT(result, StartsWith("["));
+  EXPECT_THAT(result, EndsWith("]"));
+}
+
+TYPED_TEST(Vector_Test, local_values_are_written_to_stream) {
+  const auto vec = TestFixture::vector_type::fromList({3., 4.});
+
+  const auto result = toString(vec);
+
+  const auto range = vec.localRowRange();
+  for (auto row = range.first; row < range.second; ++row) {
+    EXPECT_THAT(result, HasSubstr(toString(vec(row))));
+  }
 }
 } // namespace
 } // namespace cpppetsc

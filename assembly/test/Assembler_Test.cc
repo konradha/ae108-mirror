@@ -40,6 +40,7 @@
 #include <vector>
 
 using ae108::cppptest::AlmostEqIfLocal;
+using ae108::cppptest::ValueAlmostEq;
 using testing::DoubleEq;
 using testing::ElementsAre;
 using testing::Eq;
@@ -138,8 +139,10 @@ TYPED_TEST_CASE(Assembler_Test, Policies);
 MATCHER_P(IsWrappedSingleValue, value,
           std::string(negation ? "not " : "") + "wrapped single value " +
               PrintToString(value)) {
-  return arg.size() == 1u && arg[0].size() == 1 &&
-         cppptest::almost_equal_to_reference(arg[0](0), value);
+  return ::testing::ExplainMatchResult(SizeIs(1), arg, result_listener) &&
+         ::testing::ExplainMatchResult(SizeIs(1), arg[0], result_listener) &&
+         ::testing::ExplainMatchResult(ValueAlmostEq(value), arg[0](0),
+                                       result_listener);
 }
 
 TYPED_TEST(Assembler_Test, type_traits_are_correct) {
@@ -204,9 +207,9 @@ TYPED_TEST(Assembler_Test, type_traits_are_correct) {
 }
 
 TYPED_TEST(Assembler_Test, assembling_energy_works) {
-  using value_type = typename TestFixture::mesh_type::value_type;
+  using real_type = typename TestFixture::mesh_type::real_type;
 
-  auto energy = value_type{0.};
+  auto energy = real_type{0.};
   const auto fullInput = this->fullInput();
 
   for (const auto &annotatedElement : this->assembler.meshElements()) {
@@ -218,7 +221,7 @@ TYPED_TEST(Assembler_Test, assembling_energy_works) {
   }
 
   this->assembler.assembleEnergy(this->localInput(), this->time, &energy);
-  ASSERT_THAT(MPI_Allreduce(MPI_IN_PLACE, &energy, 1, MPIU_SCALAR, MPIU_SUM,
+  ASSERT_THAT(MPI_Allreduce(MPI_IN_PLACE, &energy, 1, MPIU_REAL, MPIU_SUM,
                             TypeParam::communicator()),
               Eq(0));
 
@@ -249,8 +252,8 @@ TYPED_TEST(Assembler_Test, assembling_forces_works) {
   const auto result =
       vector_type::fromDistributedInCanonicalOrder(globalForces, this->mesh);
   ASSERT_THAT(result.unwrap(), SizeIs(this->numberOfNodes));
-  EXPECT_THAT(result(0), DoubleEq(1. + 2.));
-  EXPECT_THAT(result(1), DoubleEq(3.));
+  EXPECT_THAT(result(0), ValueAlmostEq(1. + 2.));
+  EXPECT_THAT(result(1), ValueAlmostEq(3.));
 }
 
 TYPED_TEST(Assembler_Test, assembling_stiffness_matrix_works) {
@@ -356,7 +359,7 @@ TYPED_TEST(Assembler_Test, assembling_force_if_condition_holds_works) {
   ASSERT_THAT(MPI_Allreduce(MPI_IN_PLACE, forces.data(), forces.size(),
                             MPIU_SCALAR, MPIU_SUM, TypeParam::communicator()),
               Eq(0));
-  EXPECT_THAT(forces, ElementsAre(DoubleEq(1. + 2.)));
+  EXPECT_THAT(forces, ElementsAre(ValueAlmostEq(1. + 2.)));
 }
 
 TYPED_TEST(Assembler_Test, updating_internal_variables_works) {

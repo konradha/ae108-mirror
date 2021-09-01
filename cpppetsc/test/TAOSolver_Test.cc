@@ -34,6 +34,7 @@ namespace {
 template <class Policy> struct TAOSolver_Test : Test {
   using solver_type = TAOSolver<Policy>;
   using value_type = typename solver_type::value_type;
+  using real_type = typename solver_type::real_type;
   using vector_type = typename solver_type::vector_type;
   using matrix_type = typename solver_type::matrix_type;
 };
@@ -43,14 +44,15 @@ TYPED_TEST_CASE(TAOSolver_Test, Policies);
 
 TYPED_TEST(TAOSolver_Test, minimizes_x_minus_1_squared) {
   using value_type = typename TestFixture::value_type;
+  using real_type = typename TestFixture::real_type;
   using vector_type = typename TestFixture::vector_type;
   using matrix_type = typename TestFixture::matrix_type;
 
   typename TestFixture::solver_type solver(matrix_type(1, 1));
   const auto solution = solver.solve(
-      [](const distributed<vector_type> &input, value_type *const output) {
+      [](const distributed<vector_type> &input, real_type *const output) {
         const auto full = vector_type::fromDistributed(input);
-        *output = (full(0) - 1.) * (full(0) - 1.);
+        *output = std::norm(full(0) - 1.);
       },
       [](const distributed<vector_type> &input,
          distributed<vector_type> *const output) {
@@ -73,15 +75,16 @@ TYPED_TEST(TAOSolver_Test, minimizes_x_minus_1_squared) {
 
 TYPED_TEST(TAOSolver_Test, minimizes_two_dimensional_problem) {
   using value_type = typename TestFixture::value_type;
+  using real_type = typename TestFixture::real_type;
   using vector_type = typename TestFixture::vector_type;
   using matrix_type = typename TestFixture::matrix_type;
 
   typename TestFixture::solver_type solver(matrix_type(2, 2));
   const auto solution = solver.solve(
-      [](const distributed<vector_type> &input, value_type *const output) {
+      [](const distributed<vector_type> &input, real_type *const output) {
         const auto full = vector_type::fromDistributed(input);
-        *output = std::pow(full(0) - 1., 2.) +
-                  std::pow(2. * full(0) - full(1), 2.) + 7;
+        *output =
+            std::norm(full(0) - 1) + std::norm(2. * full(0) - full(1)) + 7;
       },
       [](const distributed<vector_type> &input,
          distributed<vector_type> *const output) {
@@ -113,13 +116,14 @@ TYPED_TEST(TAOSolver_Test, minimizes_two_dimensional_problem) {
 
 TYPED_TEST(TAOSolver_Test, raises_exception_on_nonconvergence) {
   using value_type = typename TestFixture::value_type;
+  using real_type = typename TestFixture::real_type;
   using vector_type = typename TestFixture::vector_type;
   using matrix_type = typename TestFixture::matrix_type;
 
   typename TestFixture::solver_type solver(matrix_type(1, 1));
   const auto callSolve = [&solver]() {
     solver.solve(
-        [](const distributed<vector_type> &, value_type *const output) {
+        [](const distributed<vector_type> &, real_type *const output) {
           *output = 1.;
         },
         [](const distributed<vector_type> &,
@@ -140,6 +144,7 @@ TYPED_TEST(TAOSolver_Test, raises_exception_on_nonconvergence) {
 template <class Policy> struct TAOSolver_BoundsTest : Test {
   using solver_type = TAOSolver<Policy>;
   using value_type = typename solver_type::value_type;
+  using real_type = typename solver_type::real_type;
   using vector_type = typename solver_type::vector_type;
   using matrix_type = typename solver_type::matrix_type;
 
@@ -147,9 +152,9 @@ template <class Policy> struct TAOSolver_BoundsTest : Test {
 
   distributed<vector_type> minimizeQuadratic(const value_type guess) {
     return solver.solve(
-        [](const distributed<vector_type> &input, value_type *const output) {
+        [](const distributed<vector_type> &input, real_type *const output) {
           const auto full = vector_type::fromDistributed(input);
-          *output = std::pow(full(0) - 1., 2.);
+          *output = std::norm(full(0) - 1.);
         },
         [](const distributed<vector_type> &input,
            distributed<vector_type> *const output) {

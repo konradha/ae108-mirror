@@ -24,7 +24,7 @@
 #include <vector>
 
 using ae108::cppptest::AlmostEqIfLocal;
-using testing::DoubleEq;
+using ae108::cppptest::ValueAlmostEq;
 using testing::Each;
 using testing::ElementsAre;
 using testing::ElementsAreArray;
@@ -103,6 +103,7 @@ template <typename T> struct Mesh_Test : Test {
   using matrix_type = typename mesh_type::matrix_type;
   using size_type = typename mesh_type::size_type;
   using value_type = typename mesh_type::value_type;
+  using real_type = typename mesh_type::real_type;
 
   const typename mesh_type::TopologicalDimension topologicalDimension =
       typename mesh_type::TopologicalDimension(1);
@@ -344,7 +345,7 @@ TYPED_TEST(Mesh_Test, global_vectors_are_initialized_to_zero) {
   using vector_type = typename TestFixture::vector_type;
   const auto vector = vector_type::fromGlobalMesh(this->mesh);
 
-  EXPECT_THAT(localValues(vector.unwrap()), Each(DoubleEq(0.)));
+  EXPECT_THAT(localValues(vector.unwrap()), Each(ValueAlmostEq(0.)));
 }
 
 TYPED_TEST(Mesh_Test, value_can_be_read_from_global_vector) {
@@ -361,7 +362,7 @@ TYPED_TEST(Mesh_Test, value_can_be_read_from_global_vector) {
   const auto reference = this->totalNumberOfVertices * this->dofPerVertex +
                          this->totalNumberOfElements * this->dofPerElement;
   EXPECT_THAT(localValues(fullVector.unwrap()), SizeIs(reference));
-  EXPECT_THAT(localValues(fullVector.unwrap()), Each(DoubleEq(value)));
+  EXPECT_THAT(localValues(fullVector.unwrap()), Each(ValueAlmostEq(value)));
 }
 
 TYPED_TEST(Mesh_Test, created_local_vector_has_plausible_size) {
@@ -384,7 +385,7 @@ TYPED_TEST(Mesh_Test, local_vectors_are_initialized_to_zero) {
   using vector_type = typename TestFixture::vector_type;
   const auto vector = vector_type::fromLocalMesh(this->mesh);
 
-  EXPECT_THAT(localValues(vector.unwrap()), Each(DoubleEq(0.)));
+  EXPECT_THAT(localValues(vector.unwrap()), Each(ValueAlmostEq(0.)));
 }
 
 TYPED_TEST(Mesh_Test, value_can_be_read_from_local_vector) {
@@ -398,7 +399,7 @@ TYPED_TEST(Mesh_Test, value_can_be_read_from_local_vector) {
   const auto reference = this->totalNumberOfVertices * this->dofPerVertex +
                          this->totalNumberOfElements * this->dofPerElement;
   EXPECT_THAT(localValues(vector.unwrap()), SizeIs(Le(reference)));
-  EXPECT_THAT(localValues(vector.unwrap()), Each(DoubleEq(value)));
+  EXPECT_THAT(localValues(vector.unwrap()), Each(ValueAlmostEq(value)));
 }
 
 TYPED_TEST(Mesh_Test, local_entities_correspond_to_local_vector_size) {
@@ -423,20 +424,20 @@ TYPED_TEST(Mesh_Test, copying_to_local_vector_works) {
   auto localVector = vector_type::fromLocalMesh(this->mesh);
   this->mesh.copyToLocalVector(globalVector, &localVector);
 
-  EXPECT_THAT(localValues(localVector.unwrap()), Each(DoubleEq(value)));
+  EXPECT_THAT(localValues(localVector.unwrap()), Each(ValueAlmostEq(value)));
 }
 
 TYPED_TEST(Mesh_Test, adding_to_global_vector_works) {
   using vector_type = typename TestFixture::vector_type;
   using size_type = typename TestFixture::size_type;
-  using value_type = typename TestFixture::value_type;
+  using real_type = typename TestFixture::real_type;
 
   auto localVector = vector_type::fromLocalMesh(this->mesh);
-  const auto value = value_type{.7};
+  const auto value = real_type{.7};
   localVector.unwrap().fill(value);
 
   auto globalVector = vector_type::fromGlobalMesh(this->mesh);
-  const auto value_2 = value_type{.3};
+  const auto value_2 = real_type{.3};
   globalVector.unwrap().fill(value_2);
 
   this->mesh.addToGlobalVector(localVector, &globalVector);
@@ -450,22 +451,22 @@ TYPED_TEST(Mesh_Test, adding_to_global_vector_works) {
 
   auto index = size_type{0};
   for (size_type i = 0; i < this->dofPerElement; ++i) {
-    EXPECT_THAT(fullVector(index++), DoubleEq(value + value_2));
+    EXPECT_THAT(fullVector(index++), ValueAlmostEq(value + value_2));
   }
   for (size_type i = 0; i < this->dofPerElement; ++i) {
-    EXPECT_THAT(fullVector(index++), DoubleEq(value + value_2));
+    EXPECT_THAT(fullVector(index++), ValueAlmostEq(value + value_2));
   }
   for (size_type i = 0; i < this->dofPerElement; ++i) {
-    EXPECT_THAT(fullVector(index++), DoubleEq(value + value_2));
+    EXPECT_THAT(fullVector(index++), ValueAlmostEq(value + value_2));
   }
   for (size_type i = 0; i < this->dofPerVertex; ++i) {
-    EXPECT_THAT(fullVector(index++), Ge(value + value_2));
+    EXPECT_THAT(std::abs(fullVector(index++)), Ge(value + value_2));
   }
   for (size_type i = 0; i < this->dofPerVertex; ++i) {
-    EXPECT_THAT(fullVector(index++), DoubleEq(value + value_2));
+    EXPECT_THAT(fullVector(index++), ValueAlmostEq(value + value_2));
   }
   for (size_type i = 0; i < this->dofPerVertex; ++i) {
-    EXPECT_THAT(fullVector(index++), Ge(value + value_2));
+    EXPECT_THAT(std::abs(fullVector(index++)), Ge(value + value_2));
   }
 }
 
@@ -489,7 +490,7 @@ TYPED_TEST(Mesh_Test, copying_to_global_vector_works) {
   ASSERT_THAT(fullVector.unwrap(),
               SizeIs(this->totalNumberOfVertices * this->dofPerVertex +
                      this->totalNumberOfElements * this->dofPerElement));
-  EXPECT_THAT(localValues(fullVector.unwrap()), Each(DoubleEq(value)));
+  EXPECT_THAT(localValues(fullVector.unwrap()), Each(ValueAlmostEq(value)));
 }
 
 TYPED_TEST(Mesh_Test, begin_element_iterator_starts_at_index_0) {
@@ -629,13 +630,13 @@ TYPED_TEST(Mesh_Test, local_line_range_accesses_correct_region) {
   for (const auto &vertex : this->mesh.localVertices()) {
     const auto range = vertex.localDofLineRange();
     for (auto i = range.first; i < range.second; ++i) {
-      EXPECT_THAT(localVector(i), DoubleEq(vertex.index()));
+      EXPECT_THAT(localVector(i), ValueAlmostEq(vertex.index()));
     }
   }
   for (const auto &element : this->mesh.localElements()) {
     const auto range = element.localDofLineRange();
     for (auto i = range.first; i < range.second; ++i) {
-      EXPECT_THAT(localVector(i), DoubleEq(element.index()));
+      EXPECT_THAT(localVector(i), ValueAlmostEq(element.index()));
     }
   }
 }
@@ -646,13 +647,13 @@ TYPED_TEST(Mesh_Test, global_line_range_accesses_correct_region) {
   for (const auto &vertex : this->mesh.localVertices()) {
     const auto range = vertex.globalDofLineRange();
     for (auto i = range.first; i < range.second; ++i) {
-      EXPECT_THAT(globalVector(i), DoubleEq(vertex.index()));
+      EXPECT_THAT(globalVector(i), ValueAlmostEq(vertex.index()));
     }
   }
   for (const auto &element : this->mesh.localElements()) {
     const auto range = element.globalDofLineRange();
     for (auto i = range.first; i < range.second; ++i) {
-      EXPECT_THAT(globalVector(i), DoubleEq(element.index()));
+      EXPECT_THAT(globalVector(i), ValueAlmostEq(element.index()));
     }
   }
 }
@@ -744,7 +745,7 @@ TYPED_TEST(Mesh_Test, add_transferring_element_data_from_and_to_vector_works) {
     const auto reference = createData<value_type>(
         this->verticesPerElement * this->dofPerVertex + this->dofPerElement,
         value_type{2.});
-    EXPECT_THAT(output, Pointwise(DoubleEq(), reference));
+    EXPECT_THAT(output, Pointwise(ValueAlmostEq(), reference));
   }
 }
 
@@ -782,7 +783,7 @@ TYPED_TEST(Mesh_Test, add_transferring_vertex_data_from_and_to_vector_works) {
 
     const auto reference =
         createData<value_type>(this->dofPerVertex, value_type{2.});
-    EXPECT_THAT(output, Pointwise(DoubleEq(), reference));
+    EXPECT_THAT(output, Pointwise(ValueAlmostEq(), reference));
   }
 }
 
@@ -815,7 +816,8 @@ TYPED_TEST(Mesh_Test, adding_element_data_targets_local_dof_range) {
 
     const auto range = element.localDofLineRange();
     for (auto index = range.first; index < range.second; ++index) {
-      EXPECT_THAT(localVector(index), DoubleEq(input.at(index - range.first)));
+      EXPECT_THAT(localVector(index),
+                  ValueAlmostEq(input.at(index - range.first)));
     }
   }
 }
@@ -831,13 +833,15 @@ TYPED_TEST(Mesh_Test, adding_vertex_data_target_local_dof_range) {
 
     const auto range = vertex.localDofLineRange();
     for (auto index = range.first; index < range.second; ++index) {
-      EXPECT_THAT(localVector(index), DoubleEq(input.at(index - range.first)));
+      EXPECT_THAT(localVector(index),
+                  ValueAlmostEq(input.at(index - range.first)));
     }
   }
 }
 
 TYPED_TEST(Mesh_Test, adding_element_0_to_matrix_works) {
   using value_type = typename TestFixture::value_type;
+  using real_type = typename TestFixture::real_type;
   using size_type = typename TestFixture::size_type;
   using matrix_type = typename TestFixture::matrix_type;
 
@@ -874,7 +878,7 @@ TYPED_TEST(Mesh_Test, adding_element_0_to_matrix_works) {
     }
 
     const auto range = vertex.globalDofLineRange();
-    auto reference = value_type{vertex.index() == vertexIndex_1 ? 1. : 11.};
+    auto reference = real_type{vertex.index() == vertexIndex_1 ? 1. : 11.};
 
     for (auto i = range.first; i < range.second; ++i) {
       for (auto j = range.first; j < range.second; ++j) {
@@ -888,6 +892,7 @@ TYPED_TEST(Mesh_Test, adding_element_0_to_matrix_works) {
 
 TYPED_TEST(Mesh_Test, adding_vertex_0_to_matrix_works) {
   using value_type = typename TestFixture::value_type;
+  using real_type = typename TestFixture::real_type;
   using matrix_type = typename TestFixture::matrix_type;
 
   const auto vertexIndex = 0;
@@ -912,7 +917,7 @@ TYPED_TEST(Mesh_Test, adding_vertex_0_to_matrix_works) {
     }
 
     const auto range = vertex.globalDofLineRange();
-    auto reference = value_type{1.};
+    auto reference = real_type{1.};
 
     for (auto i = range.first; i < range.second; ++i) {
       for (auto j = range.first; j < range.second; ++j) {

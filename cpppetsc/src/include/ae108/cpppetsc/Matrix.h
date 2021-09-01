@@ -259,8 +259,20 @@ private:
   std::shared_ptr<Matrix> _matrix;
 };
 
+/**
+ * @brief Writes the local rows of the matrix to the stream.
+ */
+template <class Policy>
+std::ostream &operator<<(std::ostream &stream, const Matrix<Policy> &matrix);
+
 extern template class Matrix<SequentialComputePolicy>;
 extern template class Matrix<ParallelComputePolicy>;
+
+extern template std::ostream &
+operator<<(std::ostream &, const Matrix<SequentialComputePolicy> &);
+extern template std::ostream &operator<<(std::ostream &,
+                                         const Matrix<ParallelComputePolicy> &);
+
 } // namespace cpppetsc
 } // namespace ae108
 
@@ -581,5 +593,27 @@ template <class Policy> void Matrix<Policy>::finalize() {
 }
 
 template <class Policy> Mat Matrix<Policy>::data() const { return _mat.get(); }
+
+template <class Policy>
+std::ostream &operator<<(std::ostream &stream, const Matrix<Policy> &matrix) {
+  const auto range = matrix.localRowRange();
+  const auto size = matrix.size();
+
+  stream << "[";
+  for (auto row = range.first; row < range.second; ++row) {
+    if (row != range.first)
+      stream << ", ";
+    stream << "[";
+    for (auto col = decltype(size.second){0}; col < size.second; ++col) {
+      if (col != 0)
+        stream << ", ";
+      stream << matrix(row, col);
+    }
+    stream << "]";
+  }
+  stream << "]";
+  return stream;
+}
+
 } // namespace cpppetsc
 } // namespace ae108

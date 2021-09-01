@@ -21,10 +21,13 @@
 
 using ae108::cppptest::AlmostEqIfLocal;
 using testing::DoubleEq;
+using testing::EndsWith;
 using testing::Eq;
 using testing::Ge;
+using testing::HasSubstr;
 using testing::Le;
 using testing::Pair;
+using testing::StartsWith;
 using testing::Test;
 using testing::Types;
 
@@ -425,6 +428,45 @@ TYPED_TEST(Matrix_Test, computing_the_norm_works) {
   });
 
   EXPECT_THAT(mat.norm(), DoubleEq(5.));
+}
+
+/**
+ * @brief Converts the parameter to a string using a stringstream and
+ * operator<<.
+ */
+template <class T> std::string toString(const T &t) {
+  std::stringstream stream;
+  stream << t;
+  return stream.str();
+};
+
+TYPED_TEST(Matrix_Test, writing_to_stream_uses_square_brackets) {
+  const auto mat = TestFixture::matrix_type::fromList({
+      {3., 0.},
+      {0., 4.},
+  });
+
+  const auto result = toString(mat);
+
+  EXPECT_THAT(result, StartsWith("[["));
+  EXPECT_THAT(result, EndsWith("]]"));
+}
+
+TYPED_TEST(Matrix_Test, local_values_are_written_to_stream) {
+  const auto mat = TestFixture::matrix_type::fromList({
+      {3., 0.},
+      {0., 4.},
+  });
+
+  const auto result = toString(mat);
+
+  const auto range = mat.localRowRange();
+  const auto size = mat.size();
+  for (auto row = range.first; row < range.second; ++row) {
+    for (auto col = decltype(size.second){0}; col < size.second; ++col) {
+      EXPECT_THAT(result, HasSubstr(toString(mat(row, col))));
+    }
+  }
 }
 
 } // namespace

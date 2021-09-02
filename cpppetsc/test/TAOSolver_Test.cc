@@ -24,8 +24,8 @@
 #include <cmath>
 #include <gmock/gmock.h>
 
-using ae108::cppptest::AlmostEqIfLocal;
 using ae108::cppptest::isLocal;
+using ae108::cppptest::ScalarEqIfLocal;
 using testing::Test;
 using testing::Types;
 
@@ -71,7 +71,7 @@ TYPED_TEST(TAOSolver_Test, minimizes_x_minus_1_squared) {
       },
       tag<DistributedTag>(vector_type::fromList({7.})));
 
-  EXPECT_THAT(solution.unwrap(), AlmostEqIfLocal(0, 1.));
+  EXPECT_THAT(solution.unwrap(), ScalarEqIfLocal(0, 1.));
 }
 
 TYPED_TEST(TAOSolver_Test, minimizes_two_dimensional_problem) {
@@ -110,8 +110,8 @@ TYPED_TEST(TAOSolver_Test, minimizes_two_dimensional_problem) {
       },
       tag<DistributedTag>(vector_type::fromList({3., 4.})));
 
-  EXPECT_THAT(solution.unwrap(), AlmostEqIfLocal(0, 1.));
-  EXPECT_THAT(solution.unwrap(), AlmostEqIfLocal(1, 2.));
+  EXPECT_THAT(solution.unwrap(), ScalarEqIfLocal(0, 1.));
+  EXPECT_THAT(solution.unwrap(), ScalarEqIfLocal(1, 2.));
 }
 
 TYPED_TEST(TAOSolver_Test, raises_exception_on_nonconvergence) {
@@ -183,7 +183,7 @@ TYPED_TEST(TAOSolver_BoundsTest, minimizes_with_lower_bounds) {
                              {TestFixture::solver_type::no_upper_bound})));
 
   const auto solution = this->minimizeQuadratic(7.);
-  EXPECT_THAT(solution.unwrap(), AlmostEqIfLocal(0, 2.));
+  EXPECT_THAT(solution.unwrap(), ScalarEqIfLocal(0, 2.));
 }
 
 TYPED_TEST(TAOSolver_BoundsTest, minimizes_with_upper_bounds) {
@@ -193,7 +193,7 @@ TYPED_TEST(TAOSolver_BoundsTest, minimizes_with_upper_bounds) {
                          tag<DistributedTag>(vector_type::fromList({-2.})));
 
   const auto solution = this->minimizeQuadratic(-7.);
-  EXPECT_THAT(solution.unwrap(), AlmostEqIfLocal(0, -2.));
+  EXPECT_THAT(solution.unwrap(), ScalarEqIfLocal(0, -2.));
 }
 
 TYPED_TEST(TAOSolver_BoundsTest, minimizes_with_both_bounds) {
@@ -202,7 +202,7 @@ TYPED_TEST(TAOSolver_BoundsTest, minimizes_with_both_bounds) {
                          tag<DistributedTag>(vector_type::fromList({2.})));
 
   const auto solution = this->minimizeQuadratic(-7.);
-  EXPECT_THAT(solution.unwrap(), AlmostEqIfLocal(0, 2.));
+  EXPECT_THAT(solution.unwrap(), ScalarEqIfLocal(0, 2.));
 }
 
 TYPED_TEST(TAOSolver_BoundsTest, lmvm_does_not_apply_bounds) {
@@ -212,7 +212,7 @@ TYPED_TEST(TAOSolver_BoundsTest, lmvm_does_not_apply_bounds) {
                          tag<DistributedTag>(vector_type::fromList({2.})));
 
   const auto solution = this->minimizeQuadratic(-7.);
-  EXPECT_THAT(solution.unwrap(), AlmostEqIfLocal(0, 1.));
+  EXPECT_THAT(solution.unwrap(), ScalarEqIfLocal(0, 1.));
 }
 } // namespace
 } // namespace cpppetsc

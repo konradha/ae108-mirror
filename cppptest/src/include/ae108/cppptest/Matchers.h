@@ -77,7 +77,7 @@ near_to_reference(const std::complex<double> &value,
  * @brief Check that the value at index row is almost equal to reference (if it
  * is available locally).
  */
-MATCHER_P2(AlmostEqIfLocal, row, reference,
+MATCHER_P2(ScalarEqIfLocal, row, reference,
            std::string(negation ? "not " : "") + "equal to " +
                ::testing::PrintToString(reference) + " at (" +
                ::testing::PrintToString(row) + ")") {
@@ -89,7 +89,7 @@ MATCHER_P2(AlmostEqIfLocal, row, reference,
  * @brief Check that the value at index (row, col) is almost equal to reference
  * (if it is available locally).
  */
-MATCHER_P3(AlmostEqIfLocal, row, col, reference,
+MATCHER_P3(ScalarEqIfLocal, row, col, reference,
            std::string(negation ? "not " : "") + "equal to " +
                ::testing::PrintToString(reference) + " at (" +
                ::testing::PrintToString(row) + ", " +

@@ -21,7 +21,7 @@
 #include "ae108/cppptest/Matchers.h"
 #include <gmock/gmock.h>
 
-using ae108::cppptest::AlmostEqIfLocal;
+using ae108::cppptest::ScalarEqIfLocal;
 using testing::Test;
 using testing::Types;
 
@@ -58,8 +58,8 @@ TYPED_TEST(asTransformedMatrix_Test,
   input.unwrap().replace()(0) = 1.;
   const auto result = multiply(matrix, input);
 
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(0, 3. * 3. + 8. * 4.));
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(1, 3. * 5. + 8. * 6.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, 3. * 3. + 8. * 4.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, 3. * 5. + 8. * 6.));
 }
 
 TYPED_TEST(asTransformedMatrix_Test,
@@ -71,8 +71,8 @@ TYPED_TEST(asTransformedMatrix_Test,
   input.unwrap().replace()(1) = 1.;
   const auto result = multiply(matrix, input);
 
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(0, 5. * 3. + 12. * 4.));
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(1, 5. * 5. + 12. * 6.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, 5. * 3. + 12. * 4.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, 5. * 5. + 12. * 6.));
 }
 
 TYPED_TEST(asTransformedMatrix_Test,
@@ -84,7 +84,7 @@ TYPED_TEST(asTransformedMatrix_Test,
   input.unwrap().replace()(0) = 1.;
   const auto result = multiply(matrix, input);
 
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(0, 3. * 3. + 8. * 4.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, 3. * 3. + 8. * 4.));
 }
 
 } // namespace

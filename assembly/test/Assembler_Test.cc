@@ -39,8 +39,8 @@
 #include <type_traits>
 #include <vector>
 
-using ae108::cppptest::AlmostEqIfLocal;
 using ae108::cppptest::ScalarEq;
+using ae108::cppptest::ScalarEqIfLocal;
 using testing::DoubleEq;
 using testing::ElementsAre;
 using testing::Eq;
@@ -279,10 +279,10 @@ TYPED_TEST(Assembler_Test, assembling_stiffness_matrix_works) {
 
   ASSERT_THAT(matrix.size(),
               Pair(Eq(this->numberOfNodes), Eq(this->numberOfNodes)));
-  EXPECT_THAT(matrix, AlmostEqIfLocal(0, 0, 1. + 2.));
-  EXPECT_THAT(matrix, AlmostEqIfLocal(0, 1, 0.));
-  EXPECT_THAT(matrix, AlmostEqIfLocal(1, 0, 0.));
-  EXPECT_THAT(matrix, AlmostEqIfLocal(1, 1, 3.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(0, 0, 1. + 2.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(0, 1, 0.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(1, 0, 0.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(1, 1, 3.));
 }
 
 TYPED_TEST(Assembler_Test, assembling_lumped_mass_matrix_works) {
@@ -303,10 +303,10 @@ TYPED_TEST(Assembler_Test, assembling_lumped_mass_matrix_works) {
 
   ASSERT_THAT(matrix.size(),
               Pair(Eq(this->numberOfNodes), Eq(this->numberOfNodes)));
-  EXPECT_THAT(matrix, AlmostEqIfLocal(0, 0, 1. + 2.));
-  EXPECT_THAT(matrix, AlmostEqIfLocal(0, 1, 0.));
-  EXPECT_THAT(matrix, AlmostEqIfLocal(1, 0, 0.));
-  EXPECT_THAT(matrix, AlmostEqIfLocal(1, 1, 3.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(0, 0, 1. + 2.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(0, 1, 0.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(1, 0, 0.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(1, 1, 3.));
 }
 
 TYPED_TEST(Assembler_Test, assembling_consistent_mass_matrix_works) {
@@ -327,10 +327,10 @@ TYPED_TEST(Assembler_Test, assembling_consistent_mass_matrix_works) {
 
   ASSERT_THAT(matrix.size(),
               Pair(Eq(this->numberOfNodes), Eq(this->numberOfNodes)));
-  EXPECT_THAT(matrix, AlmostEqIfLocal(0, 0, 1. + 2.));
-  EXPECT_THAT(matrix, AlmostEqIfLocal(0, 1, 0.));
-  EXPECT_THAT(matrix, AlmostEqIfLocal(1, 0, 0.));
-  EXPECT_THAT(matrix, AlmostEqIfLocal(1, 1, 3.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(0, 0, 1. + 2.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(0, 1, 0.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(1, 0, 0.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(1, 1, 3.));
 }
 
 TYPED_TEST(Assembler_Test, assembling_force_if_condition_holds_works) {

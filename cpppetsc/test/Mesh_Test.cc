@@ -23,8 +23,8 @@
 #include <numeric>
 #include <vector>
 
-using ae108::cppptest::AlmostEqIfLocal;
 using ae108::cppptest::ScalarEq;
+using ae108::cppptest::ScalarEqIfLocal;
 using testing::Each;
 using testing::ElementsAre;
 using testing::ElementsAreArray;
@@ -216,7 +216,7 @@ TYPED_TEST(Mesh_Test, canonical_vectors_are_the_same_for_cloned_mesh) {
 
   ASSERT_THAT(result.unwrap().size(), Eq(reference.unwrap().size()));
   for (size_type i = 0; i < result.unwrap().size(); ++i) {
-    EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(i, reference(i)));
+    EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(i, reference(i)));
   }
 }
 
@@ -236,11 +236,11 @@ TYPED_TEST(Mesh_Test, sorting_in_canonical_order_works_for_cloned_mesh) {
                      this->totalNumberOfElements * dofPerElement));
   for (size_type i = 0; i < this->totalNumberOfElements * dofPerElement; ++i) {
     EXPECT_THAT(sortedVector.unwrap(),
-                AlmostEqIfLocal(i, static_cast<double>(i / dofPerElement)));
+                ScalarEqIfLocal(i, static_cast<double>(i / dofPerElement)));
   }
   for (size_type i = 0; i < this->totalNumberOfVertices * dofPerVertex; ++i) {
     EXPECT_THAT(sortedVector.unwrap(),
-                AlmostEqIfLocal(this->totalNumberOfElements * dofPerElement + i,
+                ScalarEqIfLocal(this->totalNumberOfElements * dofPerElement + i,
                                 static_cast<double>(i / dofPerVertex)));
   }
 }
@@ -671,13 +671,13 @@ TYPED_TEST(Mesh_Test, sorting_in_canonical_order_works) {
        ++i) {
     EXPECT_THAT(
         sortedVector.unwrap(),
-        AlmostEqIfLocal(i, static_cast<double>(i / this->dofPerElement)));
+        ScalarEqIfLocal(i, static_cast<double>(i / this->dofPerElement)));
   }
   for (size_type i = 0; i < this->totalNumberOfVertices * this->dofPerVertex;
        ++i) {
     EXPECT_THAT(
         sortedVector.unwrap(),
-        AlmostEqIfLocal(this->totalNumberOfElements * this->dofPerElement + i,
+        ScalarEqIfLocal(this->totalNumberOfElements * this->dofPerElement + i,
                         static_cast<double>(i / this->dofPerVertex)));
   }
 }
@@ -693,7 +693,7 @@ TYPED_TEST(Mesh_Test, sorting_to_canonical_order_and_back_yields_same_vector) {
 
   ASSERT_THAT(result.unwrap(), SizeIs(reference.unwrap().size()));
   for (size_type i = 0; i < result.unwrap().size(); ++i) {
-    EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(i, reference(i)));
+    EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(i, reference(i)));
   }
 }
 
@@ -709,7 +709,7 @@ TYPED_TEST(Mesh_Test,
 
   ASSERT_THAT(fullVector.unwrap(), SizeIs(reference.unwrap().size()));
   for (size_type i = 0; i < reference.unwrap().size(); ++i) {
-    EXPECT_THAT(reference.unwrap(), AlmostEqIfLocal(i, fullVector(i)));
+    EXPECT_THAT(reference.unwrap(), ScalarEqIfLocal(i, fullVector(i)));
   }
 }
 
@@ -880,7 +880,7 @@ TYPED_TEST(Mesh_Test, adding_element_0_to_matrix_works) {
 
     for (auto i = range.first; i < range.second; ++i) {
       for (auto j = range.first; j < range.second; ++j) {
-        EXPECT_THAT(result, AlmostEqIfLocal(i, j, reference));
+        EXPECT_THAT(result, ScalarEqIfLocal(i, j, reference));
         reference++;
       }
       reference += 2.;
@@ -919,7 +919,7 @@ TYPED_TEST(Mesh_Test, adding_vertex_0_to_matrix_works) {
 
     for (auto i = range.first; i < range.second; ++i) {
       for (auto j = range.first; j < range.second; ++j) {
-        EXPECT_THAT(result, AlmostEqIfLocal(i, j, reference));
+        EXPECT_THAT(result, ScalarEqIfLocal(i, j, reference));
         reference++;
       }
     }

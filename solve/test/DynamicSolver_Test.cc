@@ -27,8 +27,8 @@
 #include <functional>
 #include <gmock/gmock.h>
 
-using ae108::cppptest::AlmostEqIfLocal;
 using ae108::cppptest::ScalarEq;
+using ae108::cppptest::ScalarEqIfLocal;
 using ae108::cppptest::ScalarNear;
 using testing::DoubleEq;
 using testing::Eq;
@@ -343,10 +343,10 @@ TYPED_TEST(DynamicSolver_Test, computes_correct_effective_stiffness) {
         auto matrix = TestFixture::matrix_type::fromMesh(this->mesh);
         assemble(guess, time, &matrix);
 
-        EXPECT_THAT(matrix, AlmostEqIfLocal(0, 0, -378.));
-        EXPECT_THAT(matrix, AlmostEqIfLocal(0, 1, 740.));
-        EXPECT_THAT(matrix, AlmostEqIfLocal(1, 0, -1160.));
-        EXPECT_THAT(matrix, AlmostEqIfLocal(1, 1, 1522.));
+        EXPECT_THAT(matrix, ScalarEqIfLocal(0, 0, -378.));
+        EXPECT_THAT(matrix, ScalarEqIfLocal(0, 1, 740.));
+        EXPECT_THAT(matrix, ScalarEqIfLocal(1, 0, -1160.));
+        EXPECT_THAT(matrix, ScalarEqIfLocal(1, 1, 1522.));
 
         return TestFixture::vector_type::fromGlobalMesh(this->mesh);
       };
@@ -402,10 +402,10 @@ TYPED_TEST(DynamicSolver_Test,
 
         assemble(probe, time, &matrix);
 
-        EXPECT_THAT(matrix, AlmostEqIfLocal(0, 0, -378.));
-        EXPECT_THAT(matrix, AlmostEqIfLocal(0, 1, 740.));
-        EXPECT_THAT(matrix, AlmostEqIfLocal(1, 0, -1160.));
-        EXPECT_THAT(matrix, AlmostEqIfLocal(1, 1, 1522.));
+        EXPECT_THAT(matrix, ScalarEqIfLocal(0, 0, -378.));
+        EXPECT_THAT(matrix, ScalarEqIfLocal(0, 1, 740.));
+        EXPECT_THAT(matrix, ScalarEqIfLocal(1, 0, -1160.));
+        EXPECT_THAT(matrix, ScalarEqIfLocal(1, 1, 1522.));
 
         return TestFixture::vector_type::fromGlobalMesh(this->mesh);
       };

@@ -20,7 +20,7 @@
 #include "ae108/solve/AffineTransform.h"
 #include <gmock/gmock.h>
 
-using ae108::cppptest::AlmostEqIfLocal;
+using ae108::cppptest::ScalarEqIfLocal;
 using testing::SizeIs;
 using testing::Test;
 using testing::Types;
@@ -53,8 +53,8 @@ TYPED_TEST(AffineTransform_Test, applies_transform_and_returns_vector) {
   const auto result = apply(this->transform, x);
 
   ASSERT_THAT(result.unwrap(), SizeIs(2.));
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(0, -1.));
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(1, 1.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, -1.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, 1.));
 }
 
 TYPED_TEST(AffineTransform_Test,
@@ -69,8 +69,8 @@ TYPED_TEST(AffineTransform_Test,
   apply(this->transform, x, &result);
 
   ASSERT_THAT(result.unwrap(), SizeIs(2.));
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(0, -1.));
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(1, 1.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, -1.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, 1.));
 }
 } // namespace
 } // namespace solve

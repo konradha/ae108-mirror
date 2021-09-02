@@ -29,6 +29,7 @@ add_executable(${PROJECT_NAME}-ElementsTests
                mesh/generate_quadratic_triangle_mesh_Test.cc
                mesh/generate_tetrahedron_mesh_Test.cc
                mesh/generate_triangle_mesh_Test.cc
+               mesh/refine_segment_mesh_Test.cc
                quadrature/Quadrature_Test.cc
                shape/Hexa8_Test.cc
                shape/Quad4_Test.cc

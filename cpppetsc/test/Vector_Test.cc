@@ -344,7 +344,7 @@ template <class T> std::string toString(const T &t) {
   std::stringstream stream;
   stream << t;
   return stream.str();
-};
+}
 
 TYPED_TEST(Vector_Test, writing_to_stream_uses_square_brackets) {
   const auto vec = TestFixture::vector_type::fromList({3., 4.});

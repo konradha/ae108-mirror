@@ -438,7 +438,7 @@ template <class T> std::string toString(const T &t) {
   std::stringstream stream;
   stream << t;
   return stream.str();
-};
+}
 
 TYPED_TEST(Matrix_Test, writing_to_stream_uses_square_brackets) {
   const auto mat = TestFixture::matrix_type::fromList({

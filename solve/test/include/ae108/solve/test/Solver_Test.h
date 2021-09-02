@@ -95,9 +95,6 @@ template <class Policy> struct Assembler_Mock {
 
     const auto replacer = matrix->assemblyView().replace();
     if (displacements.unwrap().size() > 0) {
-      const auto x = displacements(0);
-      const auto y = displacements(1);
-
       replacer(0, 0) = 2.;
       replacer(0, 1) = 0.;
       replacer(1, 0) = 0.;

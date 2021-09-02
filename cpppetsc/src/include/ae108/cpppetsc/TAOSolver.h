@@ -15,6 +15,8 @@
 
 #pragma once
 
+#ifndef AE108_PETSC_COMPLEX
+
 #include "ae108/cpppetsc/Matrix.h"
 #include "ae108/cpppetsc/ParallelComputePolicy_fwd.h"
 #include "ae108/cpppetsc/SequentialComputePolicy_fwd.h"
@@ -384,3 +386,5 @@ PetscErrorCode TAOSolver<Policy>::hessianAdapter(Tao, Vec input, Mat,
 }
 } // namespace cpppetsc
 } // namespace ae108
+
+#endif

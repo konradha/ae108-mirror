@@ -14,6 +14,9 @@
 // limitations under the License.
 
 #include "ae108/cpppetsc/TAOSolver.h"
+
+#ifndef AE108_PETSC_COMPLEX
+
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
 
@@ -25,3 +28,5 @@ template class TAOSolver<ParallelComputePolicy>;
 
 } // namespace cpppetsc
 } // namespace ae108
+
+#endif

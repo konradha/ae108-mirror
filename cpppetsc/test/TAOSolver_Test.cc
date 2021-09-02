@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef AE108_PETSC_COMPLEX
+
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
 #include "ae108/cpppetsc/TAOSolver.h"
@@ -218,3 +220,5 @@ TYPED_TEST(TAOSolver_BoundsTest, lmvm_does_not_apply_bounds) {
 } // namespace
 } // namespace cpppetsc
 } // namespace ae108
+
+#endif

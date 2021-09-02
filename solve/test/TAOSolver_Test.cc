@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef AE108_PETSC_COMPLEX
+
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
 #include "ae108/cpppetsc/TaggedVector.h"
@@ -120,3 +122,5 @@ TEST_F(TAOSolver_Test, distributed_functional_interface_works) {
 } // namespace
 } // namespace solve
 } // namespace ae108
+
+#endif

@@ -34,7 +34,7 @@ stages:
                 "$CI_REGISTRY_PASSWORD" > /kaniko/.docker/config.json
         - >
             /kaniko/executor \
-                --build-arg PETSC_SCALAR_TYPE=$PETSC_SCALAR_TYPE
+                --build-arg PETSC_SCALAR_TYPE=$PETSC_SCALAR_TYPE \
                 --cache-ttl=730h \
                 --cache=true \
                 --destination $CI_REGISTRY_IMAGE/$IMAGE_NAME:$CI_COMMIT_REF_SLUG \

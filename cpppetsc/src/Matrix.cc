@@ -23,10 +23,10 @@ namespace cpppetsc {
 template class Matrix<SequentialComputePolicy>;
 template class Matrix<ParallelComputePolicy>;
 
-template std::ostream &
-operator<<(std::ostream &, const Matrix<SequentialComputePolicy> &);
 template std::ostream &operator<<(std::ostream &,
-                                         const Matrix<ParallelComputePolicy> &);
+                                  const Matrix<SequentialComputePolicy> &);
+template std::ostream &operator<<(std::ostream &,
+                                  const Matrix<ParallelComputePolicy> &);
 
 } // namespace cpppetsc
 } // namespace ae108

@@ -126,7 +126,7 @@ build-library-complex:
     image: $CI_REGISTRY_IMAGE/dev-complex:$CI_COMMIT_REF_SLUG
     <<: *build-library
 
-install-library: &install-library
+.install-library: &install-library
     stage: build
     script:
         - mkdir build

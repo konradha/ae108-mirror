@@ -55,7 +55,7 @@ if(AE108_PETSc_FOUND AND NOT TARGET ae108::external::petsc)
         target_compile_definitions(ae108::external::petsc
             INTERFACE AE108_PETSC_COMPLEX=1
         )
-        message(STATUS "A version of PETSc with complex value type was found.")
+        message(STATUS "A version of PETSc with complex scalar type was found.")
     else()
         try_compile_with_petsc("-DAE108_PETSC_REAL")
         if(NOT AE108_PETSc_COMPILE_RESULT)

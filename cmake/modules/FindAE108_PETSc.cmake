@@ -32,4 +32,34 @@ if(AE108_PETSc_FOUND AND NOT TARGET ae108::external::petsc)
                           INTERFACE MPI::MPI_CXX
                           INTERFACE PkgConfig::PETSc
     )
+
+    macro(try_compile_with_petsc COMPILE_DEFINITIONS)
+        try_compile(
+            AE108_PETSc_COMPILE_RESULT
+            "${CMAKE_CURRENT_BINARY_DIR}/petsc"
+            SOURCES "${CMAKE_CURRENT_LIST_DIR}/AE108_PETSc.cc"
+            COMPILE_DEFINITIONS "${COMPILE_DEFINITIONS}"
+            CXX_STANDARD 11
+            CXX_STANDARD_REQUIRED TRUE
+            LINK_LIBRARIES ae108::external::petsc
+        )
+    endmacro()
+    
+    try_compile_with_petsc("")
+    if(NOT AE108_PETSc_COMPILE_RESULT)
+        message(FATAL_ERROR "Compiling a simple executable that uses PETSc failed.")
+    endif()
+
+    try_compile_with_petsc("-DAE108_PETSC_COMPLEX")
+    if(AE108_PETSc_COMPILE_RESULT)
+        target_compile_definitions(ae108::external::petsc
+            INTERFACE AE108_PETSC_COMPLEX=1
+        )
+        message(STATUS "A version of PETSc with complex value type was found.")
+    else()
+        try_compile_with_petsc("-DAE108_PETSC_REAL")
+        if(NOT AE108_PETSc_COMPILE_RESULT)
+            MESSAGE(WARNING "PETSc uses an incompatible scalar type.")
+        endif()
+    endif()
 endif()

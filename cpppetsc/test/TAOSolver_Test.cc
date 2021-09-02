@@ -45,7 +45,6 @@ using Policies = Types<SequentialComputePolicy, ParallelComputePolicy>;
 TYPED_TEST_CASE(TAOSolver_Test, Policies);
 
 TYPED_TEST(TAOSolver_Test, minimizes_x_minus_1_squared) {
-  using value_type = typename TestFixture::value_type;
   using real_type = typename TestFixture::real_type;
   using vector_type = typename TestFixture::vector_type;
   using matrix_type = typename TestFixture::matrix_type;
@@ -76,7 +75,6 @@ TYPED_TEST(TAOSolver_Test, minimizes_x_minus_1_squared) {
 }
 
 TYPED_TEST(TAOSolver_Test, minimizes_two_dimensional_problem) {
-  using value_type = typename TestFixture::value_type;
   using real_type = typename TestFixture::real_type;
   using vector_type = typename TestFixture::vector_type;
   using matrix_type = typename TestFixture::matrix_type;
@@ -117,7 +115,6 @@ TYPED_TEST(TAOSolver_Test, minimizes_two_dimensional_problem) {
 }
 
 TYPED_TEST(TAOSolver_Test, raises_exception_on_nonconvergence) {
-  using value_type = typename TestFixture::value_type;
   using real_type = typename TestFixture::real_type;
   using vector_type = typename TestFixture::vector_type;
   using matrix_type = typename TestFixture::matrix_type;

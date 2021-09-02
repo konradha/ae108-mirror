@@ -21,7 +21,7 @@
 #include <gmock/gmock.h>
 #include <vector>
 
-using ae108::cppptest::ValueAlmostEq;
+using ae108::cppptest::ScalarEq;
 using testing::DoubleEq;
 using testing::ElementsAre;
 using testing::Eq;
@@ -110,12 +110,12 @@ TEST_F(deserialize_Test,
 
   EXPECT_THAT(result, Eq(range.end()));
 
-  EXPECT_THAT(values.at(0)(0), ValueAlmostEq(1.));
-  EXPECT_THAT(values.at(0)(1), ValueAlmostEq(2.));
-  EXPECT_THAT(values.at(0)(2), ValueAlmostEq(3.));
-  EXPECT_THAT(values.at(1)(0), ValueAlmostEq(4.));
-  EXPECT_THAT(values.at(1)(1), ValueAlmostEq(5.));
-  EXPECT_THAT(values.at(1)(2), ValueAlmostEq(6.));
+  EXPECT_THAT(values.at(0)(0), ScalarEq(1.));
+  EXPECT_THAT(values.at(0)(1), ScalarEq(2.));
+  EXPECT_THAT(values.at(0)(2), ScalarEq(3.));
+  EXPECT_THAT(values.at(1)(0), ScalarEq(4.));
+  EXPECT_THAT(values.at(1)(1), ScalarEq(5.));
+  EXPECT_THAT(values.at(1)(2), ScalarEq(6.));
 }
 } // namespace
 } // namespace utilities

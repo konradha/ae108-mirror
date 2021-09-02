@@ -111,13 +111,16 @@ MATCHER_P(AddressEq, reference,
 /**
  * @brief Check that the value has almost the same values as reference.
  */
-MATCHER_P(ValueAlmostEq, reference,
+MATCHER_P(ScalarEq, reference,
           "value " + std::string(negation ? "not " : "") + "equal to " +
               ::testing::PrintToString(reference)) {
   return almost_equal_to_reference(arg, reference, result_listener);
 }
 
-MATCHER(ValueAlmostEq,
+/**
+ * @brief Check that the value has almost the same values as reference.
+ */
+MATCHER(ScalarEq,
         "value " + std::string(negation ? "not " : "") + "equal to reference") {
   return almost_equal_to_reference(std::get<0>(arg), std::get<1>(arg),
                                    result_listener);
@@ -126,7 +129,7 @@ MATCHER(ValueAlmostEq,
 /**
  * @brief Check that the value has almost the same values as reference.
  */
-MATCHER_P2(ValueNear, reference, tolerance,
+MATCHER_P2(ScalarNear, reference, tolerance,
            "value " + std::string(negation ? "not " : "") + "equal to " +
                ::testing::PrintToString(reference)) {
   return near_to_reference(arg, reference, tolerance, result_listener);

@@ -158,8 +158,8 @@ TYPED_TEST_P(Solver_Test, no_bc_solve_works) {
 
   const auto fullSolution = TestFixture::vector_type::fromDistributed(solution);
   EXPECT_THAT(fullSolution.unwrap(), ::testing::SizeIs(2));
-  EXPECT_THAT(fullSolution(0), ::ae108::cppptest::ValueNear(1., 1e-6));
-  EXPECT_THAT(fullSolution(1), ::ae108::cppptest::ValueNear(2., 1e-6));
+  EXPECT_THAT(fullSolution(0), ::ae108::cppptest::ScalarNear(1., 1e-6));
+  EXPECT_THAT(fullSolution(1), ::ae108::cppptest::ScalarNear(2., 1e-6));
 }
 
 TYPED_TEST_P(Solver_Test, bc_solve_works) {
@@ -179,8 +179,8 @@ TYPED_TEST_P(Solver_Test, bc_solve_works) {
       &this->assembler);
   const auto fullSolution = TestFixture::vector_type::fromDistributed(solution);
   EXPECT_THAT(fullSolution.unwrap(), ::testing::SizeIs(2));
-  EXPECT_THAT(fullSolution(0), ::ae108::cppptest::ValueNear(-6., 1e-6));
-  EXPECT_THAT(fullSolution(1), ::ae108::cppptest::ValueNear(2., 1e-6));
+  EXPECT_THAT(fullSolution(0), ::ae108::cppptest::ScalarNear(-6., 1e-6));
+  EXPECT_THAT(fullSolution(1), ::ae108::cppptest::ScalarNear(2., 1e-6));
 }
 
 TYPED_TEST_P(Solver_Test, full_bc_solve_works) {
@@ -203,8 +203,8 @@ TYPED_TEST_P(Solver_Test, full_bc_solve_works) {
       &this->assembler);
   const auto fullSolution = TestFixture::vector_type::fromDistributed(solution);
   EXPECT_THAT(fullSolution.unwrap(), ::testing::SizeIs(2));
-  EXPECT_THAT(fullSolution(0), ::ae108::cppptest::ValueNear(7., 1e-6));
-  EXPECT_THAT(fullSolution(1), ::ae108::cppptest::ValueNear(77., 1e-6));
+  EXPECT_THAT(fullSolution(0), ::ae108::cppptest::ScalarNear(7., 1e-6));
+  EXPECT_THAT(fullSolution(1), ::ae108::cppptest::ScalarNear(77., 1e-6));
 }
 
 REGISTER_TYPED_TEST_CASE_P(Solver_Test, bc_solve_works, no_bc_solve_works,

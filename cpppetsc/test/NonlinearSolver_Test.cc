@@ -22,7 +22,7 @@
 #include <gmock/gmock.h>
 
 using ae108::cppptest::isLocal;
-using ae108::cppptest::ValueNear;
+using ae108::cppptest::ScalarNear;
 using testing::Test;
 using testing::Types;
 
@@ -93,7 +93,7 @@ TYPED_TEST(NonlinearSolver_Test, solves_x2_eq_1) {
   const auto solution =
       vector_type::fromDistributed(this->solveConvergingProblem(solver));
 
-  EXPECT_THAT(solution(0), ValueNear(1., 1e-6));
+  EXPECT_THAT(solution(0), ScalarNear(1., 1e-6));
 }
 
 TYPED_TEST(NonlinearSolver_Test, solves_x2_eq_1_when_provided_buffer) {
@@ -105,7 +105,7 @@ TYPED_TEST(NonlinearSolver_Test, solves_x2_eq_1_when_provided_buffer) {
   const auto solution =
       vector_type::fromDistributed(this->solveConvergingProblem(solver));
 
-  EXPECT_THAT(solution(0), ValueNear(1., 1e-6));
+  EXPECT_THAT(solution(0), ScalarNear(1., 1e-6));
 }
 
 TYPED_TEST(NonlinearSolver_Test,

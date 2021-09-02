@@ -26,7 +26,7 @@
 #include <mpi.h>
 #include <petscsys.h>
 
-using ae108::cppptest::ValueNear;
+using ae108::cppptest::ScalarNear;
 using testing::Eq;
 using testing::SizeIs;
 using testing::Types;
@@ -77,8 +77,8 @@ TEST_F(TAOSolver_Test, local_functional_interface_works) {
         this->assembler.assembleStiffnessMatrix(input, time / factor, output);
       });
   EXPECT_THAT(solution.unwrap(), SizeIs(2));
-  EXPECT_THAT(solution(0), ValueNear(1., 1e-7));
-  EXPECT_THAT(solution(1), ValueNear(2., 1e-7));
+  EXPECT_THAT(solution(0), ScalarNear(1., 1e-7));
+  EXPECT_THAT(solution(1), ScalarNear(2., 1e-7));
 }
 
 TEST_F(TAOSolver_Test, distributed_functional_interface_works) {
@@ -115,8 +115,8 @@ TEST_F(TAOSolver_Test, distributed_functional_interface_works) {
         output->finalize();
       });
   EXPECT_THAT(solution.unwrap(), SizeIs(2));
-  EXPECT_THAT(solution(0), ValueNear(1., 1e-7));
-  EXPECT_THAT(solution(1), ValueNear(2., 1e-7));
+  EXPECT_THAT(solution(0), ScalarNear(1., 1e-7));
+  EXPECT_THAT(solution(1), ScalarNear(2., 1e-7));
 }
 
 } // namespace

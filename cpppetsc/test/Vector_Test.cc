@@ -21,7 +21,7 @@
 #include <gmock/gmock.h>
 
 using ae108::cppptest::AlmostEqIfLocal;
-using ae108::cppptest::ValueAlmostEq;
+using ae108::cppptest::ScalarEq;
 using testing::DoubleEq;
 using testing::EndsWith;
 using testing::Eq;
@@ -89,7 +89,7 @@ TYPED_TEST(Vector_Test, accessing_using_square_brackets_works) {
 
   const auto range = vec.localRowRange();
   for (auto i = range.first; i != range.second; ++i) {
-    EXPECT_THAT(vec(i), ValueAlmostEq(vec[i]));
+    EXPECT_THAT(vec(i), ScalarEq(vec[i]));
   }
 }
 
@@ -101,8 +101,8 @@ TYPED_TEST(Vector_Test, constructing_sequential_copies_works) {
 
   const auto range = local.unwrap().localRowRange();
   EXPECT_THAT(range, Pair(Eq(0), Eq(2)));
-  EXPECT_THAT(local(0), ValueAlmostEq(value));
-  EXPECT_THAT(local(1), ValueAlmostEq(value));
+  EXPECT_THAT(local(0), ScalarEq(value));
+  EXPECT_THAT(local(1), ScalarEq(value));
 }
 
 TYPED_TEST(Vector_Test, move_construction_works) {

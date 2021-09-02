@@ -40,7 +40,7 @@
 #include <vector>
 
 using ae108::cppptest::AlmostEqIfLocal;
-using ae108::cppptest::ValueAlmostEq;
+using ae108::cppptest::ScalarEq;
 using testing::DoubleEq;
 using testing::ElementsAre;
 using testing::Eq;
@@ -141,7 +141,7 @@ MATCHER_P(IsWrappedSingleValue, value,
               PrintToString(value)) {
   return ::testing::ExplainMatchResult(SizeIs(1), arg, result_listener) &&
          ::testing::ExplainMatchResult(SizeIs(1), arg[0], result_listener) &&
-         ::testing::ExplainMatchResult(ValueAlmostEq(value), arg[0](0),
+         ::testing::ExplainMatchResult(ScalarEq(value), arg[0](0),
                                        result_listener);
 }
 
@@ -252,8 +252,8 @@ TYPED_TEST(Assembler_Test, assembling_forces_works) {
   const auto result =
       vector_type::fromDistributedInCanonicalOrder(globalForces, this->mesh);
   ASSERT_THAT(result.unwrap(), SizeIs(this->numberOfNodes));
-  EXPECT_THAT(result(0), ValueAlmostEq(1. + 2.));
-  EXPECT_THAT(result(1), ValueAlmostEq(3.));
+  EXPECT_THAT(result(0), ScalarEq(1. + 2.));
+  EXPECT_THAT(result(1), ScalarEq(3.));
 }
 
 TYPED_TEST(Assembler_Test, assembling_stiffness_matrix_works) {
@@ -359,7 +359,7 @@ TYPED_TEST(Assembler_Test, assembling_force_if_condition_holds_works) {
   ASSERT_THAT(MPI_Allreduce(MPI_IN_PLACE, forces.data(), forces.size(),
                             MPIU_SCALAR, MPIU_SUM, TypeParam::communicator()),
               Eq(0));
-  EXPECT_THAT(forces, ElementsAre(ValueAlmostEq(1. + 2.)));
+  EXPECT_THAT(forces, ElementsAre(ScalarEq(1. + 2.)));
 }
 
 TYPED_TEST(Assembler_Test, updating_internal_variables_works) {

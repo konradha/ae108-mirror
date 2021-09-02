@@ -23,7 +23,7 @@
 #include <gmock/gmock.h>
 #include <utility>
 
-using ae108::cppptest::ValueNear;
+using ae108::cppptest::ScalarNear;
 using testing::SizeIs;
 using testing::Types;
 
@@ -69,8 +69,8 @@ TEST_F(NonlinearSolver_Test, local_functional_interface_works) {
         this->assembler.assembleStiffnessMatrix(input, time / factor, output);
       });
   EXPECT_THAT(solution.unwrap(), SizeIs(2));
-  EXPECT_THAT(solution(0), ValueNear(1., 1e-7));
-  EXPECT_THAT(solution(1), ValueNear(2., 1e-7));
+  EXPECT_THAT(solution(0), ScalarNear(1., 1e-7));
+  EXPECT_THAT(solution(1), ScalarNear(2., 1e-7));
 }
 
 TEST_F(NonlinearSolver_Test, distributed_functional_interface_works) {
@@ -98,8 +98,8 @@ TEST_F(NonlinearSolver_Test, distributed_functional_interface_works) {
         output->finalize();
       });
   EXPECT_THAT(solution.unwrap(), SizeIs(2));
-  EXPECT_THAT(solution(0), ValueNear(1., 1e-7));
-  EXPECT_THAT(solution(1), ValueNear(2., 1e-7));
+  EXPECT_THAT(solution(0), ScalarNear(1., 1e-7));
+  EXPECT_THAT(solution(1), ScalarNear(2., 1e-7));
 }
 
 } // namespace

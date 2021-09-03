@@ -22,6 +22,7 @@ add_library(${PROJECT_NAME}-elements
             ComputeStiffnessMatrixTrait.cc
             ComputeLumpedMassMatrixTrait.cc
             ComputeConsistentMassMatrixTrait.cc
+            ComputeMassMatrixTrait.cc
             CoreElement.cc
             ElementBase.cc
             ForceElement.cc

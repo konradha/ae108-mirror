@@ -36,6 +36,7 @@ template <class ValueType_> struct TimoshenkoBeamProperties<ValueType_, 3> {
   value_type shear_correction_factor_z;
 
   value_type area;
+  value_type density;
 
   value_type area_moment_z;
   value_type area_moment_y;
@@ -51,6 +52,7 @@ template <class ValueType_> struct TimoshenkoBeamProperties<ValueType_, 2> {
   value_type shear_correction_factor_y;
 
   value_type area;
+  value_type density;
 
   value_type area_moment_z;
 };

@@ -20,8 +20,6 @@ add_library(${PROJECT_NAME}-elements
             ComputeEnergyTrait.cc
             ComputeForcesTrait.cc
             ComputeStiffnessMatrixTrait.cc
-            ComputeLumpedMassMatrixTrait.cc
-            ComputeConsistentMassMatrixTrait.cc
             ComputeMassMatrixTrait.cc
             CoreElement.cc
             ElementBase.cc
@@ -33,8 +31,6 @@ add_library(${PROJECT_NAME}-elements
             compute_energy.cc
             compute_forces.cc
             compute_stiffness_matrix.cc
-            compute_lumped_mass_matrix.cc
-            compute_consistent_mass_matrix.cc
             embedding/AutomaticJacobianTrait.cc
             embedding/EmbedTrait.cc
             embedding/EmbeddingBase.cc

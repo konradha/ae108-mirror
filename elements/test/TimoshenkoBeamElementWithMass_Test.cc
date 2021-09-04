@@ -72,6 +72,40 @@ template <class Element_> struct ReferenceConfigurationLumped {
   }
 };
 
+template <class Element_> struct ReferenceConfigurationConsistent {
+  using Element = Element_;
+  static Element create_element() noexcept {
+    return Element(Element::StiffnessMatrix::Zero(),
+                   timoshenko_beam_consistent_mass_matrix(
+                       create_reference_element_axis<Element_>(),
+                       create_element_properties<Element_::dimension()>()));
+  }
+
+  static typename Element::Time calculate_mass() noexcept {
+    const auto element_axis = create_reference_element_axis<Element_>();
+    const auto properties = create_element_properties<Element_::dimension()>();
+    return tensor::as_vector(&element_axis).norm() * properties.area *
+           properties.density;
+  }
+};
+
+template <class Element_> struct RotatedAndStretchedConfigurationConsistent {
+  using Element = Element_;
+  static Element create_element() noexcept {
+    return Element(Element::StiffnessMatrix::Zero(),
+                   timoshenko_beam_consistent_mass_matrix(
+                       create_rotated_and_stretched_element_axis<Element_>(),
+                       create_element_properties<Element_::dimension()>()));
+  }
+  static typename Element::Time calculate_mass() noexcept {
+    const auto element_axis =
+        create_rotated_and_stretched_element_axis<Element_>();
+    const auto properties = create_element_properties<Element_::dimension()>();
+    return tensor::as_vector(&element_axis).norm() * properties.area *
+           properties.density;
+  }
+};
+
 template <class Element_> struct RotatedAndStretchedConfigurationLumped {
   using Element = Element_;
   static Element create_element() noexcept {
@@ -155,7 +189,14 @@ using MassConfigurations = Types<
     ReferenceConfigurationLumped<TimoshenkoBeamElementWithMass<2>>,
     ReferenceConfigurationLumped<TimoshenkoBeamElementWithMass<3>>,
     RotatedAndStretchedConfigurationLumped<TimoshenkoBeamElementWithMass<2>>,
-    RotatedAndStretchedConfigurationLumped<TimoshenkoBeamElementWithMass<3>>>;
+    RotatedAndStretchedConfigurationLumped<TimoshenkoBeamElementWithMass<3>>,
+    ReferenceConfigurationConsistent<TimoshenkoBeamElementWithMass<2>>,
+    ReferenceConfigurationConsistent<TimoshenkoBeamElementWithMass<3>>,
+    RotatedAndStretchedConfigurationConsistent<
+        TimoshenkoBeamElementWithMass<2>>,
+    RotatedAndStretchedConfigurationConsistent<
+        TimoshenkoBeamElementWithMass<3>>>;
+
 INSTANTIATE_TYPED_TEST_CASE_P(TimoshenkoBeamElementWithMass_Test,
                               ElementWithMass_Test, MassConfigurations);
 

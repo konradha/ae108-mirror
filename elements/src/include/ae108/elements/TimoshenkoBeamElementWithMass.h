@@ -33,6 +33,19 @@ timoshenko_beam_lumped_mass_matrix(
     const tensor::Tensor<double, Dimension_> &axis,
     const TimoshenkoBeamProperties<double, Dimension_> &properties) noexcept;
 
+/**
+ * @brief Computes the consistent mass matrix for a Timoshenko beam with the
+ * given axis and the given properties.
+ * @tparam Dimension_ The dimenion of the physical space. Only dimensions 2 and
+ * 3 are supported.
+ */
+template <std::size_t Dimension_>
+Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
+              Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
+timoshenko_beam_consistent_mass_matrix(
+    const tensor::Tensor<double, Dimension_> &axis,
+    const TimoshenkoBeamProperties<double, Dimension_> &properties) noexcept;
+
 template <std::size_t Dimension_>
 struct TimoshenkoBeamElementWithMass final
     : ElementBase<TimoshenkoBeamElementWithMass<Dimension_>, std::size_t,

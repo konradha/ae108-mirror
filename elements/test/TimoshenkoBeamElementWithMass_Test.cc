@@ -133,7 +133,7 @@ struct ElementWithMass_Test : ::testing::Test {
   /**
    * Checks that the mass matrix is positive (semi-)definite
    */
-  void check_mass_matrix() const noexcept {
+  void check_semi_positive_definite() const noexcept {
     const auto mass_matrix = element.computeMassMatrix();
     Eigen::LLT<typename Element::MassMatrix> llt_of_mass_matrix(mass_matrix);
 
@@ -145,7 +145,7 @@ struct ElementWithMass_Test : ::testing::Test {
   /**
    * Checks that the mass matrix complies with Newton's second law
    */
-  void check_mass_matrix2() const noexcept {
+  void check_second_law_of_motion() const noexcept {
 
     const Eigen::Matrix<double, Element::dimension(), 1>
         rigid_body_translational_acceleration =
@@ -175,14 +175,15 @@ struct ElementWithMass_Test : ::testing::Test {
 };
 
 TYPED_TEST_CASE_P(ElementWithMass_Test);
-TYPED_TEST_P(ElementWithMass_Test, mass_matrix_is_PD_or_PSD) {
-  this->check_mass_matrix();
+TYPED_TEST_P(ElementWithMass_Test, mass_matrix_is_semi_positive_definite) {
+  this->check_semi_positive_definite();
 }
 TYPED_TEST_P(ElementWithMass_Test,
              mass_matrix_complies_with_newtons_second_law) {
-  this->check_mass_matrix2();
+  this->check_second_law_of_motion();
 }
-REGISTER_TYPED_TEST_CASE_P(ElementWithMass_Test, mass_matrix_is_PD_or_PSD,
+REGISTER_TYPED_TEST_CASE_P(ElementWithMass_Test,
+                           mass_matrix_is_semi_positive_definite,
                            mass_matrix_complies_with_newtons_second_law);
 
 using MassConfigurations = Types<

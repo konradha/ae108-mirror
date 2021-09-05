@@ -159,8 +159,8 @@ consistent_mass_matrix(
     const TimoshenkoBeamProperties<double, Dimension_> &properties,
     const double length) noexcept;
 
-// refer to Gan, Buntara S. (2018), "An Isogeometric Approach to Beam
-// Structures", p.227, doi.org/10.1007/978-3-319-56493-7
+// refer to Felippa et al (2015), "Mass Matrix Templates: General Description
+// and 1D Examples", p.46, http://dx.doi.org/10.1007/s11831-014-9108-x
 template <>
 tensor::Tensor<double, 6, 6>
 consistent_mass_matrix<2>(const TimoshenkoBeamProperties<double, 2> &properties,

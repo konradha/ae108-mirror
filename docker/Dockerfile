@@ -45,4 +45,5 @@ RUN pip3 install \
 RUN apt-get update && \
         DEBIAN_FRONTEND="noninteractive" \
         apt-get install -y \
-        libpetsc-$PETSC_SCALAR_TYPE-dev
+        libpetsc-${PETSC_SCALAR_TYPE}-dev \
+        libslepc-${PETSC_SCALAR_TYPE}3.12-dev

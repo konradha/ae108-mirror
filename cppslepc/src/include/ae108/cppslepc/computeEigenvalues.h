@@ -99,7 +99,7 @@ computeEigenvalues(const cpppetsc::Matrix<Policy> &A) {
 #ifdef AE108_PETSC_COMPLEX
                eigenvalue.first
 #else
-               std::complex<real_type> {
+               std::complex<typename solver_type::real_type> {
              eigenvalue.first, eigenvalue.second
            }
 #endif
@@ -135,7 +135,7 @@ computeGeneralizedEigenvalues(const cpppetsc::Matrix<Policy> &A,
 #ifdef AE108_PETSC_COMPLEX
                eigenvalue.first
 #else
-               std::complex<real_type> {
+               std::complex<typename solver_type::real_type> {
              eigenvalue.first, eigenvalue.second
            }
 #endif

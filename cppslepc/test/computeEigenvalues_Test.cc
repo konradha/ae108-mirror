@@ -16,6 +16,7 @@
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
 #include "ae108/cpppetsc/asTransformedMatrix.h"
+#include "ae108/cpppetsc/computeElementsOfMatrix.h"
 #include "ae108/cppslepc/computeEigenvalues.h"
 #include <gmock/gmock.h>
 
@@ -98,6 +99,31 @@ TYPED_TEST(
 
   EXPECT_THAT(computeGeneralizedEigenvalues(A, B),
               ElementsAre(ComplexNear(2., 1e-7), ComplexNear(1., 1e-7)));
+}
+
+TYPED_TEST(
+    computeEigenvalues_Test,
+    transformed_generalized_eigenvalue_problem_with_identity_matrix_returns_eigenvalues) {
+  using matrix_type = typename TestFixture::matrix_type;
+
+  const auto A = matrix_type::fromList({
+      {1., 0.},
+      {0., 2.},
+  });
+  const auto B = matrix_type::fromList({
+      {1., 0.},
+      {0., 1.},
+  });
+  const auto T = matrix_type::fromList({
+      {1., 0.},
+      {0., 1.},
+  });
+
+  EXPECT_THAT(
+      computeGeneralizedEigenvalues(cpppetsc::asTransformedMatrix(&A, &T),
+                                    cpppetsc::computeElementsOfMatrix(
+                                        cpppetsc::asTransformedMatrix(&B, &T))),
+      ElementsAre(ComplexNear(2., 1e-7), ComplexNear(1., 1e-7)));
 }
 
 TYPED_TEST(

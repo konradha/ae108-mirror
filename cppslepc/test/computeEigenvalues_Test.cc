@@ -15,6 +15,7 @@
 #include "ae108/cpppetsc/Matrix.h"
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
+#include "ae108/cpppetsc/asTransformedMatrix.h"
 #include "ae108/cppslepc/computeEigenvalues.h"
 #include <gmock/gmock.h>
 
@@ -61,6 +62,23 @@ TYPED_TEST(computeEigenvalues_Test,
   });
 
   EXPECT_THAT(computeEigenvalues(A),
+              ElementsAre(ComplexNear(2., 1e-7), ComplexNear(1., 1e-7)));
+}
+
+TYPED_TEST(computeEigenvalues_Test,
+           finds_the_two_eigenvalues_of_transformed_diagonal_matrix) {
+  using matrix_type = typename TestFixture::matrix_type;
+
+  const auto A = matrix_type::fromList({
+      {1., 0.},
+      {0., 2.},
+  });
+  const auto T = matrix_type::fromList({
+      {1., 0.},
+      {0., 1.},
+  });
+
+  EXPECT_THAT(computeEigenvalues(cpppetsc::asTransformedMatrix(&A, &T)),
               ElementsAre(ComplexNear(2., 1e-7), ComplexNear(1., 1e-7)));
 }
 

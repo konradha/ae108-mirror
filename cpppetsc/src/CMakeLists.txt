@@ -47,11 +47,12 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./asInverseMatrix.cc
             ./asSchurComplement.cc
             ./asTransformedMatrix.cc
+            ./asTransposedMatrix.cc
             ./clone.cc
             ./computeSchurComplement.cc
             ./copy.cc
-            ./createRhsTransform.cc
             ./createLhsTransform.cc
+            ./createRhsTransform.cc
             ./createTransformInput.cc
             ./createTransformOutput.cc
             ./createVectorFromSource.cc

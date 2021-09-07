@@ -15,7 +15,7 @@
 #include "ae108/cpppetsc/Matrix.h"
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
-#include "ae108/cppslepc/LinearEigenvalueProblemSolver.h"
+#include "ae108/cppslepc/computeEigenvalues.h"
 #include <gmock/gmock.h>
 
 using testing::ElementsAre;
@@ -42,19 +42,16 @@ namespace ae108 {
 namespace cppslepc {
 namespace {
 
-template <class Policy> struct LinearEigenvalueProblemSolver_Test : Test {
+template <class Policy> struct computeEigenvalues_Test : Test {
   using matrix_type = cpppetsc::Matrix<Policy>;
-
-  using solver_type = LinearEigenvalueProblemSolver<Policy>;
-  solver_type solver;
 };
 
 using Policies =
     Types<cpppetsc::SequentialComputePolicy, cpppetsc::ParallelComputePolicy>;
 
-TYPED_TEST_CASE(LinearEigenvalueProblemSolver_Test, Policies);
+TYPED_TEST_CASE(computeEigenvalues_Test, Policies);
 
-TYPED_TEST(LinearEigenvalueProblemSolver_Test,
+TYPED_TEST(computeEigenvalues_Test,
            finds_the_two_eigenvalues_of_diagonal_matrix) {
   using matrix_type = typename TestFixture::matrix_type;
 
@@ -63,30 +60,12 @@ TYPED_TEST(LinearEigenvalueProblemSolver_Test,
       {0., 2.},
   });
 
-  EXPECT_THAT(this->solver.solve(A),
+  EXPECT_THAT(computeEigenvalues(A),
               ElementsAre(ComplexNear(2., 1e-7), ComplexNear(1., 1e-7)));
 }
 
-TYPED_TEST(LinearEigenvalueProblemSolver_Test, solve_can_be_called_twice) {
-  using matrix_type = typename TestFixture::matrix_type;
-
-  const auto A = matrix_type::fromList({
-      {1., 0.},
-      {0., 2.},
-  });
-  this->solver.solve(A);
-
-  const auto B = matrix_type::fromList({
-      {3., 0.},
-      {0., 4.},
-  });
-
-  EXPECT_THAT(this->solver.solve(B),
-              ElementsAre(ComplexNear(4., 1e-7), ComplexNear(3., 1e-7)));
-}
-
 TYPED_TEST(
-    LinearEigenvalueProblemSolver_Test,
+    computeEigenvalues_Test,
     generalized_eigenvalue_problem_with_identity_matrix_returns_eigenvalues) {
   using matrix_type = typename TestFixture::matrix_type;
 
@@ -99,12 +78,12 @@ TYPED_TEST(
       {0., 1.},
   });
 
-  EXPECT_THAT(this->solver.solve(A, B),
+  EXPECT_THAT(computeGeneralizedEigenvalues(A, B),
               ElementsAre(ComplexNear(2., 1e-7), ComplexNear(1., 1e-7)));
 }
 
 TYPED_TEST(
-    LinearEigenvalueProblemSolver_Test,
+    computeEigenvalues_Test,
     generalized_eigenvalue_problem_with_scaled_identity_matrix_returns_scaled_eigenvalues) {
   using matrix_type = typename TestFixture::matrix_type;
 
@@ -118,7 +97,7 @@ TYPED_TEST(
   });
 
   EXPECT_THAT(
-      this->solver.solve(A, B),
+      computeGeneralizedEigenvalues(A, B),
       ElementsAre(ComplexNear(2. / 2., 1e-7), ComplexNear(1. / 2., 1e-7)));
 }
 

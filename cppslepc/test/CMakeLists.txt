@@ -15,7 +15,7 @@
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
 add_executable(${PROJECT_NAME}-CppSlepcTests
-        LinearEigenvalueProblemSolver_Test.cc
+        computeEigenvalues_Test.cc
         main.cc
 )
 

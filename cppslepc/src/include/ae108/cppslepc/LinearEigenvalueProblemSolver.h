@@ -18,9 +18,7 @@
 #include "ae108/cpppetsc/ParallelComputePolicy_fwd.h"
 #include "ae108/cpppetsc/SequentialComputePolicy_fwd.h"
 #include "ae108/cpppetsc/UniqueEntity.h"
-#include <complex>
 #include <slepc/slepceps.h>
-#include <vector>
 
 namespace ae108 {
 namespace cppslepc {
@@ -32,20 +30,6 @@ public:
   using real_type = PetscReal;
 
   explicit LinearEigenvalueProblemSolver();
-
-  /**
-   * @brief Returns the detected eigenvalues of the generalized eigenvalue
-   * problem A x = lambda * B x.
-   */
-  std::vector<std::complex<real_type>>
-  solve(const cpppetsc::Matrix<Policy> &A,
-        const cpppetsc::Matrix<Policy> &B) const;
-
-  /**
-   * @brief Returns the detected eigenvalues of A.
-   */
-  std::vector<std::complex<real_type>>
-  solve(const cpppetsc::Matrix<Policy> &A) const;
 
   /**
    * @brief Returns the internal solver.
@@ -64,9 +48,6 @@ extern template class LinearEigenvalueProblemSolver<
 } // namespace cppslepc
 } // namespace ae108
 
-#include <range/v3/view/iota.hpp>
-#include <range/v3/view/transform.hpp>
-
 namespace ae108 {
 namespace cppslepc {
 
@@ -79,71 +60,6 @@ LinearEigenvalueProblemSolver<Policy>::LinearEigenvalueProblemSolver()
             solver, [](EPS eps) { Policy::handleError(EPSDestroy(&eps)); });
       }()) {
   Policy::handleError(EPSSetFromOptions(eps_.get()));
-}
-
-template <class Policy>
-std::vector<
-    std::complex<typename LinearEigenvalueProblemSolver<Policy>::real_type>>
-LinearEigenvalueProblemSolver<Policy>::solve(
-    const cpppetsc::Matrix<Policy> &A,
-    const cpppetsc::Matrix<Policy> &B) const {
-  Policy::handleError(EPSSetOperators(eps_.get(), A.data(), B.data()));
-  Policy::handleError(EPSSolve(eps_.get()));
-
-  const auto size = [&]() {
-    auto size = size_type{};
-    Policy::handleError(EPSGetConverged(eps_.get(), &size));
-    return size;
-  }();
-
-  namespace rv = ranges::cpp20::views;
-  return rv::iota(0, size) | rv::transform([&](const size_type index) {
-           auto eigenvalue = std::pair<PetscScalar, PetscScalar>();
-           Policy::handleError(EPSGetEigenvalue(
-               eps_.get(), index, &eigenvalue.first, &eigenvalue.second));
-           return
-#ifdef AE108_PETSC_COMPLEX
-               eigenvalue.first
-#else
-               std::complex<real_type> {
-             eigenvalue.first, eigenvalue.second
-           }
-#endif
-               ;
-         }) |
-         ranges::to<std::vector>();
-}
-
-template <class Policy>
-std::vector<
-    std::complex<typename LinearEigenvalueProblemSolver<Policy>::real_type>>
-LinearEigenvalueProblemSolver<Policy>::solve(
-    const cpppetsc::Matrix<Policy> &A) const {
-  Policy::handleError(EPSSetOperators(eps_.get(), A.data(), nullptr));
-  Policy::handleError(EPSSolve(eps_.get()));
-
-  const auto size = [&]() {
-    auto size = size_type{};
-    Policy::handleError(EPSGetConverged(eps_.get(), &size));
-    return size;
-  }();
-
-  namespace rv = ranges::cpp20::views;
-  return rv::iota(0, size) | rv::transform([&](const size_type index) {
-           auto eigenvalue = std::pair<PetscScalar, PetscScalar>();
-           Policy::handleError(EPSGetEigenvalue(
-               eps_.get(), index, &eigenvalue.first, &eigenvalue.second));
-           return
-#ifdef AE108_PETSC_COMPLEX
-               eigenvalue.first
-#else
-               std::complex<real_type> {
-             eigenvalue.first, eigenvalue.second
-           }
-#endif
-               ;
-         }) |
-         ranges::to<std::vector>();
 }
 
 template <class Policy>

@@ -17,6 +17,7 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 add_library(${PROJECT_NAME}-cppslepc
     Context.cc
     LinearEigenvalueProblemSolver.cc
+    computeEigenvalues.cc
 )
 
 target_include_directories(${PROJECT_NAME}-cppslepc PUBLIC

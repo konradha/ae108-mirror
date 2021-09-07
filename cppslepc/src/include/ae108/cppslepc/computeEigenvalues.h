@@ -36,6 +36,14 @@ std::vector<
     std::complex<typename LinearEigenvalueProblemSolver<Policy>::real_type>>
 computeEigenvalues(const cpppetsc::Matrix<Policy> &A);
 
+extern template std::vector<std::complex<typename LinearEigenvalueProblemSolver<
+    cpppetsc::SequentialComputePolicy>::real_type>>
+computeEigenvalues(const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &);
+
+extern template std::vector<std::complex<typename LinearEigenvalueProblemSolver<
+    cpppetsc::ParallelComputePolicy>::real_type>>
+computeEigenvalues(const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &);
+
 /**
  * @brief Returns the detected eigenvalues of the generalized eigenvalue
  * problem A x = lambda * B x.
@@ -51,24 +59,15 @@ computeGeneralizedEigenvalues(const cpppetsc::Matrix<Policy> &A,
 
 extern template std::vector<std::complex<typename LinearEigenvalueProblemSolver<
     cpppetsc::SequentialComputePolicy>::real_type>>
-computeEigenvalues(
-    const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &A);
-
-extern template std::vector<std::complex<typename LinearEigenvalueProblemSolver<
-    cpppetsc::ParallelComputePolicy>::real_type>>
-computeEigenvalues(const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &A);
-
-extern template std::vector<std::complex<typename LinearEigenvalueProblemSolver<
-    cpppetsc::SequentialComputePolicy>::real_type>>
 computeGeneralizedEigenvalues(
-    const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &A,
-    const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &B);
+    const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &,
+    const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &);
 
 extern template std::vector<std::complex<typename LinearEigenvalueProblemSolver<
     cpppetsc::ParallelComputePolicy>::real_type>>
 computeGeneralizedEigenvalues(
-    const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &A,
-    const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &B);
+    const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &,
+    const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &);
 
 } // namespace cppslepc
 } // namespace ae108

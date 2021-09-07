@@ -21,18 +21,17 @@ namespace cppslepc {
 
 template std::vector<std::complex<typename LinearEigenvalueProblemSolver<
     cpppetsc::SequentialComputePolicy>::real_type>>
-computeEigenvalues(
-    const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &A);
+computeEigenvalues(const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &);
 
 template std::vector<std::complex<typename LinearEigenvalueProblemSolver<
     cpppetsc::ParallelComputePolicy>::real_type>>
-computeEigenvalues(const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &A);
+computeEigenvalues(const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &);
 
 template std::vector<std::complex<typename LinearEigenvalueProblemSolver<
     cpppetsc::SequentialComputePolicy>::real_type>>
 computeGeneralizedEigenvalues(
-    const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &A,
-    const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &B);
+    const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &,
+    const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &);
 
 template std::vector<std::complex<typename LinearEigenvalueProblemSolver<
     cpppetsc::ParallelComputePolicy>::real_type>>

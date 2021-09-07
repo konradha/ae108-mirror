@@ -33,13 +33,14 @@ add_executable(${PROJECT_NAME}-CppPetscTests
                ./asTransformedMatrix_Test.cc
                ./asTransposedMatrix_Test.cc
                ./clone_Test.cc
+               ./computeElementsOfMatrix_Test.cc
+               ./computeSchurComplement_Test.cc
                ./copy_Test.cc
-               ./createRhsTransform_Test.cc
                ./createLhsTransform_Test.cc
+               ./createRhsTransform_Test.cc
                ./createTransformInput_Test.cc
                ./createTransformOutput_Test.cc
                ./createVectorFromSource_Test.cc
-               ./computeSchurComplement_Test.cc
                ./multiply_Test.cc
                ./setName_Test.cc
                ./vertexDataOffsets_Test.cc

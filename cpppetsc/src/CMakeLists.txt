@@ -49,6 +49,7 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./asTransformedMatrix.cc
             ./asTransposedMatrix.cc
             ./clone.cc
+            ./computeElementsOfMatrix.cc
             ./computeSchurComplement.cc
             ./copy.cc
             ./createLhsTransform.cc

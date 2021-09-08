@@ -27,11 +27,11 @@ namespace ae108 {
 namespace elements {
 namespace integrator {
 
-template <class Shape_, class Quadrature_>
+template <class Shape_, class Quadrature_, class ValueType_ = double,
+          class RealType_ = double>
 class IsoparametricIntegrator final
-    : public IntegratorBase<typename Shape_::size_type,
-                            typename Shape_::value_type, Shape_::size(),
-                            Shape_::dimension()> {
+    : public IntegratorBase<typename Shape_::size_type, ValueType_, RealType_,
+                            Shape_::size(), Shape_::dimension()> {
 public:
   using Embedding = embedding::IsoparametricEmbedding<Shape_>;
   using Quadrature = Quadrature_;
@@ -72,8 +72,9 @@ private:
   typename Quadrature::template Collection<PostTransform> J_;
 };
 
-template <class Shape_, class Quadrature_>
-struct IntegrateTrait<IsoparametricIntegrator<Shape_, Quadrature_>> {
+template <class Shape_, class Quadrature_, class ValueType_, class RealType_>
+struct IntegrateTrait<
+    IsoparametricIntegrator<Shape_, Quadrature_, ValueType_, RealType_>> {
   /**
    * @tparam DiscretizedFunction Equal to an
    * Integrator::DiscretizedFunction<...>.

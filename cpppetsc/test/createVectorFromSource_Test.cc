@@ -20,7 +20,7 @@
 #include "ae108/cppptest/Matchers.h"
 #include <gmock/gmock.h>
 
-using ae108::cppptest::AlmostEqIfLocal;
+using ae108::cppptest::ScalarEqIfLocal;
 using testing::DoubleEq;
 using testing::SizeIs;
 using testing::Test;
@@ -64,14 +64,14 @@ TYPED_TEST(createVectorFromSource_Test, creates_correct_vector_with_two_dofs) {
   using DataSource = std::function<void(size_type, value_type *)>;
   const auto result = createVectorFromSource(
       this->mesh, dofs,
-      DataSource([](const size_type index, value_type *const data) {
+      DataSource([&](const size_type index, value_type *const data) {
         data[0] = static_cast<value_type>(index);
         data[1] = static_cast<value_type>(index) + increment;
       }));
 
   ASSERT_THAT(result.unwrap(), SizeIs(dofs * this->numberOfVertices));
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(0, 0.));
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(1, 0. + increment));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, 0.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, 0. + increment));
 }
 
 } // namespace

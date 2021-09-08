@@ -46,19 +46,22 @@ timoshenko_beam_consistent_mass_matrix(
     const tensor::Tensor<double, Dimension_> &axis,
     const TimoshenkoBeamProperties<double, Dimension_> &properties) noexcept;
 
-template <std::size_t Dimension_>
+template <std::size_t Dimension_, class ValueType_ = double,
+          class RealType_ = double>
 struct TimoshenkoBeamElementWithMass final
-    : ElementBase<TimoshenkoBeamElementWithMass<Dimension_>, std::size_t,
-                  double, 2, (Dimension_ * (Dimension_ + 1)) / 2> {
+    : ElementBase<
+          TimoshenkoBeamElementWithMass<Dimension_, ValueType_, RealType_>,
+                  std::size_t, ValueType_, RealType_, 2,
+                  (Dimension_ * (Dimension_ + 1)) / 2> {
 public:
   using Element = TimoshenkoBeamElement<Dimension_>;
   using StiffnessMatrix =
       typename TimoshenkoBeamElementWithMass::StiffnessMatrix;
   using MassMatrix = StiffnessMatrix;
 
-  explicit TimoshenkoBeamElementWithMass(StiffnessMatrix stiffness_matrix,
+  explicit TimoshenkoBeamElementWithMass(Element element,
                                          MassMatrix mass_matrix) noexcept
-      : element_(stiffness_matrix), mass_matrix_(std::move(mass_matrix)) {}
+      : element_(std::move(element)), mass_matrix_(std::move(mass_matrix)) {}
 
   const StiffnessMatrix &stiffness_matrix() const {
     return element_.stiffness_matrix();

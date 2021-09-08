@@ -21,7 +21,7 @@
 #include "ae108/cppptest/Matchers.h"
 #include <gmock/gmock.h>
 
-using ae108::cppptest::AlmostEqIfLocal;
+using ae108::cppptest::ScalarEqIfLocal;
 using testing::Pair;
 using testing::SizeIs;
 using testing::Test;
@@ -47,8 +47,8 @@ TYPED_TEST(clone_Test, clones_vectors) {
   const auto result = clone(from);
 
   ASSERT_THAT(result.unwrap(), SizeIs(2));
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(0, 3.));
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(1, 7.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, 3.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, 7.));
 }
 
 TYPED_TEST(clone_Test, clones_matrices) {
@@ -59,10 +59,10 @@ TYPED_TEST(clone_Test, clones_matrices) {
   const auto result = clone(from);
 
   ASSERT_THAT(result.size(), Pair(2, 2));
-  EXPECT_THAT(result, AlmostEqIfLocal(0, 0, 1.));
-  EXPECT_THAT(result, AlmostEqIfLocal(0, 1, 2.));
-  EXPECT_THAT(result, AlmostEqIfLocal(1, 0, 3.));
-  EXPECT_THAT(result, AlmostEqIfLocal(1, 1, 4.));
+  EXPECT_THAT(result, ScalarEqIfLocal(0, 0, 1.));
+  EXPECT_THAT(result, ScalarEqIfLocal(0, 1, 2.));
+  EXPECT_THAT(result, ScalarEqIfLocal(1, 0, 3.));
+  EXPECT_THAT(result, ScalarEqIfLocal(1, 1, 4.));
 }
 
 } // namespace cpppetsc

@@ -24,14 +24,15 @@
 namespace ae108 {
 namespace elements {
 
-template <class Derived_, class SizeType_, class ValueType_, SizeType_ Size_,
-          SizeType_ DegreesOfFreedom_>
+template <class Derived_, class SizeType_, class ValueType_, class RealType_,
+          SizeType_ Size_, SizeType_ DegreesOfFreedom_>
 struct ElementBase {
   using size_type = SizeType_;
   using value_type = ValueType_;
+  using real_type = RealType_;
 
-  using Energy = value_type;
-  using Time = value_type;
+  using Energy = real_type;
+  using Time = real_type;
 
   /**
    * @brief The displacements per node.

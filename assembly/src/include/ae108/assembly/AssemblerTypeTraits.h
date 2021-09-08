@@ -52,6 +52,11 @@ template <class Assembler> struct SizeTypeTrait {};
 template <class Assembler> struct ValueTypeTrait {};
 
 /**
+ * @brief Deduces the real type corresponding to an Assembler class.
+ */
+template <class Assembler> struct RealTypeTrait {};
+
+/**
  * @brief Deduces the element type corresponding to an Assembler class.
  */
 template <class Assembler> struct ElementTypeTrait {};

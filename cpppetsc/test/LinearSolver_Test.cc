@@ -18,9 +18,10 @@
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
 #include "ae108/cpppetsc/Vector.h"
+#include "ae108/cppptest/Matchers.h"
 #include <gmock/gmock.h>
 
-using testing::DoubleEq;
+using ae108::cppptest::ScalarEq;
 using testing::Test;
 using testing::Types;
 
@@ -47,8 +48,8 @@ TYPED_TEST(LinearSolver_Test, solving_works) {
   const auto result = TestFixture::vector_type::fromDistributed(
       this->solver.solve(this->vector));
 
-  EXPECT_THAT(result(0), DoubleEq(4.));
-  EXPECT_THAT(result(1), DoubleEq(2.));
+  EXPECT_THAT(result(0), ScalarEq(4.));
+  EXPECT_THAT(result(1), ScalarEq(2.));
 }
 
 TYPED_TEST(LinearSolver_Test, solving_works_with_provided_result_vector) {
@@ -58,8 +59,8 @@ TYPED_TEST(LinearSolver_Test, solving_works_with_provided_result_vector) {
           tag<DistributedTag>(
               TestFixture::vector_type::fromLayoutOf(this->vector))));
 
-  EXPECT_THAT(result(0), DoubleEq(4.));
-  EXPECT_THAT(result(1), DoubleEq(2.));
+  EXPECT_THAT(result(0), ScalarEq(4.));
+  EXPECT_THAT(result(1), ScalarEq(2.));
 }
 
 TYPED_TEST(LinearSolver_Test, move_construction_works) {
@@ -68,8 +69,8 @@ TYPED_TEST(LinearSolver_Test, move_construction_works) {
   const auto result =
       TestFixture::vector_type::fromDistributed(copy.solve(this->vector));
 
-  EXPECT_THAT(result(0), DoubleEq(4.));
-  EXPECT_THAT(result(1), DoubleEq(2.));
+  EXPECT_THAT(result(0), ScalarEq(4.));
+  EXPECT_THAT(result(1), ScalarEq(2.));
 }
 
 TYPED_TEST(LinearSolver_Test, move_assignment_works) {
@@ -81,8 +82,8 @@ TYPED_TEST(LinearSolver_Test, move_assignment_works) {
   const auto result =
       TestFixture::vector_type::fromDistributed(copy.solve(this->vector));
 
-  EXPECT_THAT(result(0), DoubleEq(4.));
-  EXPECT_THAT(result(1), DoubleEq(2.));
+  EXPECT_THAT(result(0), ScalarEq(4.));
+  EXPECT_THAT(result(1), ScalarEq(2.));
 }
 
 TYPED_TEST(LinearSolver_Test, solving_singular_system_reports_error) {
@@ -111,8 +112,8 @@ TYPED_TEST(LinearSolver_Test, solver_keeps_reference) {
   const auto result =
       TestFixture::vector_type::fromDistributed(solver.solve(this->vector));
 
-  EXPECT_THAT(result(0), DoubleEq(8.));
-  EXPECT_THAT(result(1), DoubleEq(6.));
+  EXPECT_THAT(result(0), ScalarEq(8.));
+  EXPECT_THAT(result(1), ScalarEq(6.));
 }
 } // namespace
 } // namespace cpppetsc

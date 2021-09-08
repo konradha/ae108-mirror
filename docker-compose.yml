@@ -14,8 +14,19 @@
 
 version: "3.3"
 services:
-  dev:
+  dev-real:
     build:
+      args:
+        PETSC_SCALAR_TYPE: real
+      context: ./docker
+      dockerfile: Dockerfile
+    volumes:
+    - .:/mnt/io
+    tty: true
+  dev-complex:
+    build:
+      args:
+        PETSC_SCALAR_TYPE: complex
       context: ./docker
       dockerfile: Dockerfile
     volumes:

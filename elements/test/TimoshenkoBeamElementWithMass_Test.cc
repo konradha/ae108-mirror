@@ -58,7 +58,7 @@ TimoshenkoBeamProperties<double, 2> create_element_properties<2>() noexcept {
 template <class Element_> struct ReferenceConfigurationLumped {
   using Element = Element_;
   static Element create_element() noexcept {
-    return Element(Element::StiffnessMatrix::Zero(),
+    return Element(typename Element::Element(Element::StiffnessMatrix::Zero()),
                    timoshenko_beam_lumped_mass_matrix(
                        create_reference_element_axis<Element_>(),
                        create_element_properties<Element_::dimension()>()));
@@ -75,7 +75,7 @@ template <class Element_> struct ReferenceConfigurationLumped {
 template <class Element_> struct ReferenceConfigurationConsistent {
   using Element = Element_;
   static Element create_element() noexcept {
-    return Element(Element::StiffnessMatrix::Zero(),
+    return Element(typename Element::Element(Element::StiffnessMatrix::Zero()),
                    timoshenko_beam_consistent_mass_matrix(
                        create_reference_element_axis<Element_>(),
                        create_element_properties<Element_::dimension()>()));
@@ -92,7 +92,7 @@ template <class Element_> struct ReferenceConfigurationConsistent {
 template <class Element_> struct RotatedAndStretchedConfigurationConsistent {
   using Element = Element_;
   static Element create_element() noexcept {
-    return Element(Element::StiffnessMatrix::Zero(),
+    return Element(typename Element::Element(Element::StiffnessMatrix::Zero()),
                    timoshenko_beam_consistent_mass_matrix(
                        create_rotated_and_stretched_element_axis<Element_>(),
                        create_element_properties<Element_::dimension()>()));
@@ -109,7 +109,7 @@ template <class Element_> struct RotatedAndStretchedConfigurationConsistent {
 template <class Element_> struct RotatedAndStretchedConfigurationLumped {
   using Element = Element_;
   static Element create_element() noexcept {
-    return Element(Element::StiffnessMatrix::Zero(),
+    return Element(typename Element::Element(Element::StiffnessMatrix::Zero()),
                    timoshenko_beam_lumped_mass_matrix(
                        create_rotated_and_stretched_element_axis<Element_>(),
                        create_element_properties<Element_::dimension()>()));

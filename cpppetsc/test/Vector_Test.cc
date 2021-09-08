@@ -20,13 +20,17 @@
 #include "ae108/cppptest/Matchers.h"
 #include <gmock/gmock.h>
 
-using ae108::cppptest::AlmostEqIfLocal;
+using ae108::cppptest::ScalarEq;
+using ae108::cppptest::ScalarEqIfLocal;
 using testing::DoubleEq;
+using testing::EndsWith;
 using testing::Eq;
 using testing::Ge;
+using testing::HasSubstr;
 using testing::Le;
 using testing::Not;
 using testing::Pair;
+using testing::StartsWith;
 using testing::Test;
 using testing::Types;
 
@@ -85,7 +89,7 @@ TYPED_TEST(Vector_Test, accessing_using_square_brackets_works) {
 
   const auto range = vec.localRowRange();
   for (auto i = range.first; i != range.second; ++i) {
-    EXPECT_THAT(vec(i), DoubleEq(vec[i]));
+    EXPECT_THAT(vec(i), ScalarEq(vec[i]));
   }
 }
 
@@ -97,8 +101,8 @@ TYPED_TEST(Vector_Test, constructing_sequential_copies_works) {
 
   const auto range = local.unwrap().localRowRange();
   EXPECT_THAT(range, Pair(Eq(0), Eq(2)));
-  EXPECT_THAT(local(0), DoubleEq(value));
-  EXPECT_THAT(local(1), DoubleEq(value));
+  EXPECT_THAT(local(0), ScalarEq(value));
+  EXPECT_THAT(local(1), ScalarEq(value));
 }
 
 TYPED_TEST(Vector_Test, move_construction_works) {
@@ -106,7 +110,7 @@ TYPED_TEST(Vector_Test, move_construction_works) {
   auto copy(std::move(vec));
 
   EXPECT_THAT(copy.size(), Eq(1));
-  EXPECT_THAT(copy, AlmostEqIfLocal(0, 7.));
+  EXPECT_THAT(copy, ScalarEqIfLocal(0, 7.));
 }
 
 TYPED_TEST(Vector_Test, move_assignment_works) {
@@ -116,7 +120,7 @@ TYPED_TEST(Vector_Test, move_assignment_works) {
   copy = std::move(vec);
 
   EXPECT_THAT(copy.size(), Eq(1));
-  EXPECT_THAT(copy, AlmostEqIfLocal(0, 7.));
+  EXPECT_THAT(copy, ScalarEqIfLocal(0, 7.));
 }
 
 TYPED_TEST(Vector_Test, swapping_works) {
@@ -126,7 +130,7 @@ TYPED_TEST(Vector_Test, swapping_works) {
   std::swap(vec, copy);
 
   EXPECT_THAT(copy.size(), Eq(1));
-  EXPECT_THAT(copy, AlmostEqIfLocal(0, 7.));
+  EXPECT_THAT(copy, ScalarEqIfLocal(0, 7.));
 }
 
 TYPED_TEST(Vector_Test, create_vector_of_length_2) {
@@ -138,16 +142,16 @@ TYPED_TEST(Vector_Test, from_initializer_list) {
   const auto vec = TestFixture::vector_type::fromList({1, 2, 3});
 
   EXPECT_THAT(vec.size(), Eq(3));
-  EXPECT_THAT(vec, AlmostEqIfLocal(0, 1.));
-  EXPECT_THAT(vec, AlmostEqIfLocal(1, 2.));
-  EXPECT_THAT(vec, AlmostEqIfLocal(2, 3.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(0, 1.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(1, 2.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(2, 3.));
 }
 
 TYPED_TEST(Vector_Test, create_vector_7s_of_length_2) {
   typename TestFixture::vector_type vec(2, 7.);
 
-  EXPECT_THAT(vec, AlmostEqIfLocal(0, 7.));
-  EXPECT_THAT(vec, AlmostEqIfLocal(1, 7.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(0, 7.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(1, 7.));
 }
 
 TYPED_TEST(Vector_Test, value_addition_works) {
@@ -160,8 +164,8 @@ TYPED_TEST(Vector_Test, value_addition_works) {
     }
   }
 
-  EXPECT_THAT(vec, AlmostEqIfLocal(0, 4.));
-  EXPECT_THAT(vec, AlmostEqIfLocal(1, 5.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(0, 4.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(1, 5.));
 }
 
 TYPED_TEST(Vector_Test, value_addition_works_in_parallel) {
@@ -171,7 +175,7 @@ TYPED_TEST(Vector_Test, value_addition_works_in_parallel) {
 
   int size = 0;
   ASSERT_THAT(MPI_Comm_size(TypeParam::communicator(), &size), Eq(0));
-  EXPECT_THAT(vec, AlmostEqIfLocal(0, 3. + size));
+  EXPECT_THAT(vec, ScalarEqIfLocal(0, 3. + size));
 }
 
 TYPED_TEST(Vector_Test, insertion_works) {
@@ -179,8 +183,8 @@ TYPED_TEST(Vector_Test, insertion_works) {
 
   vec.replace().element(0, 3.).element(1, 4.);
 
-  EXPECT_THAT(vec, AlmostEqIfLocal(0, 3.));
-  EXPECT_THAT(vec, AlmostEqIfLocal(1, 4.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(0, 3.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(1, 4.));
 }
 
 TYPED_TEST(Vector_Test, inserter_offers_size) {
@@ -194,8 +198,8 @@ TYPED_TEST(Vector_Test, insertion_proxy_works) {
 
   vec.replace()(1) = 3.;
 
-  EXPECT_THAT(vec, AlmostEqIfLocal(0, 7.));
-  EXPECT_THAT(vec, AlmostEqIfLocal(1, 3.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(0, 7.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(1, 3.));
 }
 
 TYPED_TEST(Vector_Test, addition_proxy_works) {
@@ -208,8 +212,8 @@ TYPED_TEST(Vector_Test, addition_proxy_works) {
     }
   }
 
-  EXPECT_THAT(vec, AlmostEqIfLocal(0, 7.));
-  EXPECT_THAT(vec, AlmostEqIfLocal(1, 10.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(0, 7.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(1, 10.));
 }
 
 TYPED_TEST(Vector_Test, insertion_overwrites) {
@@ -217,8 +221,8 @@ TYPED_TEST(Vector_Test, insertion_overwrites) {
 
   vec.replace().element(0, 5.).element(1, 6.);
 
-  EXPECT_THAT(vec, AlmostEqIfLocal(0, 5.));
-  EXPECT_THAT(vec, AlmostEqIfLocal(1, 6.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(0, 5.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(1, 6.));
 }
 
 TYPED_TEST(Vector_Test, wrapping_vectors_works) {
@@ -230,7 +234,7 @@ TYPED_TEST(Vector_Test, wrapping_vectors_works) {
       UniqueEntity<Vec>(vec, [](Vec) {}));
   wrapped_vec.replace().element(0, .77);
 
-  EXPECT_THAT(wrapped_vec, AlmostEqIfLocal(0, .77));
+  EXPECT_THAT(wrapped_vec, ScalarEqIfLocal(0, .77));
   VecDestroy(&vec);
 }
 
@@ -239,8 +243,8 @@ TYPED_TEST(Vector_Test, filling_vector_works) {
 
   vec.fill(3.);
 
-  EXPECT_THAT(vec, AlmostEqIfLocal(0, 3.));
-  EXPECT_THAT(vec, AlmostEqIfLocal(1, 3.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(0, 3.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(1, 3.));
 }
 
 TYPED_TEST(Vector_Test, filling_vector_works_in_inserter) {
@@ -248,8 +252,8 @@ TYPED_TEST(Vector_Test, filling_vector_works_in_inserter) {
 
   vec.replace().fill(3.);
 
-  EXPECT_THAT(vec, AlmostEqIfLocal(0, 3.));
-  EXPECT_THAT(vec, AlmostEqIfLocal(1, 3.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(0, 3.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(1, 3.));
 }
 
 TYPED_TEST(Vector_Test, setting_values_to_zero_works) {
@@ -257,8 +261,8 @@ TYPED_TEST(Vector_Test, setting_values_to_zero_works) {
 
   vec.setZero();
 
-  EXPECT_THAT(vec, AlmostEqIfLocal(0, 0.));
-  EXPECT_THAT(vec, AlmostEqIfLocal(1, 0.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(0, 0.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(1, 0.));
 }
 
 TYPED_TEST(Vector_Test, setting_values_to_zero_works_in_inserter) {
@@ -266,8 +270,8 @@ TYPED_TEST(Vector_Test, setting_values_to_zero_works_in_inserter) {
 
   vec.replace().setZero();
 
-  EXPECT_THAT(vec, AlmostEqIfLocal(0, 0.));
-  EXPECT_THAT(vec, AlmostEqIfLocal(1, 0.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(0, 0.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(1, 0.));
 }
 
 TYPED_TEST(Vector_Test, duplicating_layout_works) {
@@ -276,8 +280,8 @@ TYPED_TEST(Vector_Test, duplicating_layout_works) {
   const auto newVector = TestFixture::vector_type::fromLayoutOf(vec);
 
   ASSERT_THAT(newVector.localRowRange(), Eq(vec.localRowRange()));
-  EXPECT_THAT(newVector, AlmostEqIfLocal(0, 0.));
-  EXPECT_THAT(newVector, AlmostEqIfLocal(1, 0.));
+  EXPECT_THAT(newVector, ScalarEqIfLocal(0, 0.));
+  EXPECT_THAT(newVector, ScalarEqIfLocal(1, 0.));
 }
 
 TYPED_TEST(Vector_Test, scaling_vector_works) {
@@ -286,8 +290,8 @@ TYPED_TEST(Vector_Test, scaling_vector_works) {
   const auto factor = 2.;
   vec.scale(factor);
 
-  EXPECT_THAT(vec, AlmostEqIfLocal(0, factor * 7.));
-  EXPECT_THAT(vec, AlmostEqIfLocal(1, factor * 8.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(0, factor * 7.));
+  EXPECT_THAT(vec, ScalarEqIfLocal(1, factor * 8.));
 }
 
 TYPED_TEST(Vector_Test, adding_alpha_x_works) {
@@ -297,8 +301,8 @@ TYPED_TEST(Vector_Test, adding_alpha_x_works) {
   vec_1.timesAlphaPlusBetaX(2., 3., vec_2);
 
   ASSERT_THAT(vec_1.size(), Eq(vec_2.size()));
-  EXPECT_THAT(vec_1, AlmostEqIfLocal(0, 20.));
-  EXPECT_THAT(vec_1, AlmostEqIfLocal(1, 25.));
+  EXPECT_THAT(vec_1, ScalarEqIfLocal(0, 20.));
+  EXPECT_THAT(vec_1, ScalarEqIfLocal(1, 25.));
 }
 
 TYPED_TEST(Vector_Test, adding_alpha_x_plus_beta_y_works) {
@@ -309,8 +313,8 @@ TYPED_TEST(Vector_Test, adding_alpha_x_plus_beta_y_works) {
   vec_1.timesAlphaPlusBetaXPlusGammaY(2., 3., vec_2, 4., vec_3);
 
   ASSERT_THAT(vec_1.size(), Eq(vec_2.size()));
-  EXPECT_THAT(vec_1, AlmostEqIfLocal(0, 16.));
-  EXPECT_THAT(vec_1, AlmostEqIfLocal(1, 13.));
+  EXPECT_THAT(vec_1, ScalarEqIfLocal(0, 16.));
+  EXPECT_THAT(vec_1, ScalarEqIfLocal(1, 13.));
 }
 
 TYPED_TEST(Vector_Test, adding_Ax_works) {
@@ -322,14 +326,44 @@ TYPED_TEST(Vector_Test, adding_Ax_works) {
   vec_1.addAx(mat, tag<DistributedTag>(std::move(vec_2)));
 
   ASSERT_THAT(vec_1.size(), Eq(2));
-  EXPECT_THAT(vec_1, AlmostEqIfLocal(0, 11.));
-  EXPECT_THAT(vec_1, AlmostEqIfLocal(1, 17.));
+  EXPECT_THAT(vec_1, ScalarEqIfLocal(0, 11.));
+  EXPECT_THAT(vec_1, ScalarEqIfLocal(1, 17.));
 }
 
 TYPED_TEST(Vector_Test, computing_norm_works) {
   const auto vec = TestFixture::vector_type::fromList({3., 4.});
 
   EXPECT_THAT(vec.norm(), DoubleEq(5.));
+}
+
+/**
+ * @brief Converts the parameter to a string using a stringstream and
+ * operator<<.
+ */
+template <class T> std::string toString(const T &t) {
+  std::stringstream stream;
+  stream << t;
+  return stream.str();
+}
+
+TYPED_TEST(Vector_Test, writing_to_stream_uses_square_brackets) {
+  const auto vec = TestFixture::vector_type::fromList({3., 4.});
+
+  const auto result = toString(vec);
+
+  EXPECT_THAT(result, StartsWith("["));
+  EXPECT_THAT(result, EndsWith("]"));
+}
+
+TYPED_TEST(Vector_Test, local_values_are_written_to_stream) {
+  const auto vec = TestFixture::vector_type::fromList({3., 4.});
+
+  const auto result = toString(vec);
+
+  const auto range = vec.localRowRange();
+  for (auto row = range.first; row < range.second; ++row) {
+    EXPECT_THAT(result, HasSubstr(toString(vec(row))));
+  }
 }
 } // namespace
 } // namespace cpppetsc

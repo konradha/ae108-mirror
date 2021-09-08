@@ -241,7 +241,8 @@ TEST_F(CoreElement_Hexa8_Test, computes_correct_energy_with_displacements_2) {
  * the dimension.
  */
 struct Model_Dof final
-    : materialmodels::MaterialModelBase<std::size_t, double, 1 /* dimension */,
+    : materialmodels::MaterialModelBase<std::size_t, double, double,
+                                        1 /* dimension */,
                                         2 /* degrees of freedom */> {
   template <class... Args> explicit Model_Dof(Args &&...) {}
 };

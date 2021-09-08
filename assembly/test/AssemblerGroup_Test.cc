@@ -38,11 +38,12 @@ DEFINE_CONST_ASSEMBLER_PLUGIN(AddOnePlugin, addOne, (double *const output)) {
 }
 
 struct AssemblerGroup_Test : Test {
-  using Element = StrictMock<test::Element>;
+  using Mesh = cpppetsc::Mesh<cpppetsc::SequentialComputePolicy>;
+
+  using Element = StrictMock<test::Element<typename Mesh::value_type>>;
   using AssemblerWithPlugin = Assembler<Element, FeaturePlugins<AddOnePlugin>>;
   using AssemblerWithoutPlugin = Assembler<Element>;
 
-  using Mesh = AssemblerWithoutPlugin::mesh_type;
   using Connectivity =
       std::array<std::array<AssemblerWithoutPlugin::size_type, 1>, 1>;
   Mesh mesh = Mesh::fromConnectivity<Connectivity>(3, {{{{0}}}}, 1, 0);
@@ -106,7 +107,7 @@ TEST_F(AssemblerGroup_Test, adds_one_twice) {
 
 DEFINE_CONST_ASSEMBLER_PLUGIN(AddEnergyPlugin, addEnergy,
                               (double *const output)) {
-  const auto displacements = test::Element::NodalDisplacements();
+  const auto displacements = typename element_type::NodalDisplacements();
   for (const auto &annotatedElement : this->assembler().meshElements()) {
     *output += annotatedElement.instance().computeEnergy(displacements, 0.);
   }

@@ -37,10 +37,11 @@ template <typename TestConfiguration> struct Element_Test : ::testing::Test {
   using NodalDisplacements = typename Element::NodalDisplacements;
 
   static_assert(
-      std::is_base_of<ElementBase<Element, typename Element::size_type,
-                                  typename Element::value_type, Element::size(),
-                                  Element::degrees_of_freedom()>,
-                      Element>::value,
+      std::is_base_of<
+          ElementBase<Element, typename Element::size_type,
+                      typename Element::value_type, typename Element::real_type,
+                      Element::size(), Element::degrees_of_freedom()>,
+          Element>::value,
       "The element must derive from ElementBase.");
 
   Element element = TestConfiguration::create_element();

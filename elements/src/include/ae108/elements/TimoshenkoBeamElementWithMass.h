@@ -51,10 +51,10 @@ template <std::size_t Dimension_, class ValueType_ = double,
 struct TimoshenkoBeamElementWithMass final
     : ElementBase<
           TimoshenkoBeamElementWithMass<Dimension_, ValueType_, RealType_>,
-                  std::size_t, ValueType_, RealType_, 2,
-                  (Dimension_ * (Dimension_ + 1)) / 2> {
+          std::size_t, ValueType_, RealType_, 2,
+          (Dimension_ * (Dimension_ + 1)) / 2> {
 public:
-  using Element = TimoshenkoBeamElement<Dimension_>;
+  using Element = TimoshenkoBeamElement<Dimension_, ValueType_, RealType_>;
   using StiffnessMatrix =
       typename TimoshenkoBeamElementWithMass::StiffnessMatrix;
   using MassMatrix = StiffnessMatrix;
@@ -76,26 +76,35 @@ public:
   const MassMatrix computeMassMatrix() const { return mass_matrix_; }
 
 private:
-  TimoshenkoBeamElement<Dimension_> element_;
+  Element element_;
   MassMatrix mass_matrix_;
 };
 
-template <std::size_t Dimension_>
-struct ComputeEnergyTrait<TimoshenkoBeamElementWithMass<Dimension_>>
-    : ComputeEnergyTrait<TimoshenkoBeamElement<Dimension_>> {};
+template <std::size_t Dimension_, class ValueType_, class RealType_>
+struct ComputeEnergyTrait<
+    TimoshenkoBeamElementWithMass<Dimension_, ValueType_, RealType_>>
+    : ComputeEnergyTrait<
+          TimoshenkoBeamElement<Dimension_, ValueType_, RealType_>> {};
 
-template <std::size_t Dimension_>
-struct ComputeForcesTrait<TimoshenkoBeamElementWithMass<Dimension_>>
+template <std::size_t Dimension_, class ValueType_, class RealType_>
+struct ComputeForcesTrait<
+    TimoshenkoBeamElementWithMass<Dimension_, ValueType_, RealType_>>
     : ComputeForcesTrait<TimoshenkoBeamElement<Dimension_>> {};
 
-template <std::size_t Dimension_>
-struct ComputeStiffnessMatrixTrait<TimoshenkoBeamElementWithMass<Dimension_>>
-    : ComputeStiffnessMatrixTrait<TimoshenkoBeamElement<Dimension_>> {};
+template <std::size_t Dimension_, class ValueType_, class RealType_>
+struct ComputeStiffnessMatrixTrait<
+    TimoshenkoBeamElementWithMass<Dimension_, ValueType_, RealType_>>
+    : ComputeStiffnessMatrixTrait<
+          TimoshenkoBeamElement<Dimension_, ValueType_, RealType_>> {};
 
-template <std::size_t Dimension_>
-struct ComputeMassMatrixTrait<TimoshenkoBeamElementWithMass<Dimension_>> {
-  typename TimoshenkoBeamElementWithMass<Dimension_>::MassMatrix operator()(
-      const TimoshenkoBeamElementWithMass<Dimension_> &element) const noexcept {
+template <std::size_t Dimension_, class ValueType_, class RealType_>
+struct ComputeMassMatrixTrait<
+    TimoshenkoBeamElementWithMass<Dimension_, ValueType_, RealType_>> {
+  typename TimoshenkoBeamElementWithMass<Dimension_, ValueType_,
+                                         RealType_>::MassMatrix
+  operator()(
+      const TimoshenkoBeamElementWithMass<Dimension_, ValueType_, RealType_>
+          &element) const noexcept {
     return element.mass_matrix();
   }
 };

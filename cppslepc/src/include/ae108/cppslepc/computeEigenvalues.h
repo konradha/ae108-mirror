@@ -55,19 +55,22 @@ template <class Policy>
 std::vector<
     std::complex<typename LinearEigenvalueProblemSolver<Policy>::real_type>>
 computeGeneralizedEigenvalues(const cpppetsc::Matrix<Policy> &A,
-                              const cpppetsc::Matrix<Policy> &B);
+                              const cpppetsc::Matrix<Policy> &B,
+                              const std::size_t number_of_eigenvalues);
 
 extern template std::vector<std::complex<typename LinearEigenvalueProblemSolver<
     cpppetsc::SequentialComputePolicy>::real_type>>
 computeGeneralizedEigenvalues(
     const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &,
-    const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &);
+    const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &,
+    const std::size_t number_of_eigenvalues);
 
 extern template std::vector<std::complex<typename LinearEigenvalueProblemSolver<
     cpppetsc::ParallelComputePolicy>::real_type>>
 computeGeneralizedEigenvalues(
     const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &,
-    const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &);
+    const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &,
+    const std::size_t number_of_eigenvalues);
 
 } // namespace cppslepc
 } // namespace ae108
@@ -139,9 +142,14 @@ template <class Policy>
 std::vector<
     std::complex<typename LinearEigenvalueProblemSolver<Policy>::real_type>>
 computeGeneralizedEigenvalues(const cpppetsc::Matrix<Policy> &A,
-                              const cpppetsc::Matrix<Policy> &B) {
+                              const cpppetsc::Matrix<Policy> &B,
+                              const std::size_t number_of_eigenvalues) {
   auto solver = LinearEigenvalueProblemSolver<Policy>{};
 
+  Policy::handleError(
+      EPSSetWhichEigenpairs(solver.data(), EPS_SMALLEST_MAGNITUDE));
+  Policy::handleError(EPSSetDimensions(solver.data(), number_of_eigenvalues,
+                                       PETSC_DECIDE, PETSC_DECIDE));
   Policy::handleError(EPSSetOperators(solver.data(), A.data(), B.data()));
   return detail::solve(solver);
 }

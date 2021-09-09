@@ -160,7 +160,34 @@ consistent_mass_matrix(
     const double length) noexcept;
 
 // refer to Felippa et al (2015), "Mass Matrix Templates: General Description
-// and 1D Examples", p.46, http://dx.doi.org/10.1007/s11831-014-9108-x
+// and 1D Examples", Eq. 154, http://dx.doi.org/10.1007/s11831-014-9108-x
+tensor::Tensor<double, 6> translational_inertia_terms(const double rho,
+                                                      const double A,
+                                                      const double L,
+                                                      const double phi) {
+  const auto C_T = rho * A * L / (1 + phi) / (1 + phi);
+  return {C_T * (13. / 35 + 7. / 10 * phi + 1. / 3 * phi * phi),
+          C_T * (11. / 210 + 11. / 120 * phi + 1. / 24 * phi * phi) * L,
+          C_T * (1. / 105 + 1. / 60 * phi + 1. / 120 * phi * phi) * L * L,
+          C_T * (9. / 70 + 3. / 10 * phi + 1. / 6 * phi * phi),
+          C_T * (13. / 420 + 3. / 40 * phi + 1. / 24 * phi * phi) * L,
+          C_T * (1. / 140 + 1. / 60 * phi + 1. / 120 * phi * phi) * L * L};
+}
+
+// refer to Felippa et al (2015), "Mass Matrix Templates: General Description
+// and 1D Examples", Eq. 154, http://dx.doi.org/10.1007/s11831-014-9108-x
+tensor::Tensor<double, 4> rotational_inertia_terms(const double rho,
+                                                   const double I,
+                                                   const double L,
+                                                   const double phi) {
+  const auto C_R = rho * I / (1 + phi) / (1 + phi) / L;
+  return {C_R * 6. / 5, C_R * (1. / 10 - 1. / 2 * phi) * L,
+          C_R * (2. / 15 + 1. / 6 * phi + 1. / 3 * phi * phi) * L * L,
+          C_R * (1. / 30 + 1. / 6 * phi - 1. / 6 * phi * phi) * L * L};
+}
+
+// refer to Felippa et al (2015), "Mass Matrix Templates: General Description
+// and 1D Examples", eq. 154, http://dx.doi.org/10.1007/s11831-014-9108-x
 template <>
 tensor::Tensor<double, 6, 6>
 consistent_mass_matrix<2>(const TimoshenkoBeamProperties<double, 2> &properties,
@@ -174,85 +201,29 @@ consistent_mass_matrix<2>(const TimoshenkoBeamProperties<double, 2> &properties,
   const auto k_y = properties.shear_correction_factor_y;
 
   const auto phi_y = 12. * E * I_z * k_y / A / G / L / L;
-  const auto _ = 0.;
 
-  const auto CT = [&](const double phi) {
-    return rho * A * L / (1 + phi) / (1 + phi);
-  };
-
-  const auto t1 = [&](const double phi) {
-    return CT(phi) * (13. / 35 + 7. / 10 * phi + 1. / 3 * phi * phi);
-  };
-
-  const auto t2 = [&](const double phi) {
-    return CT(phi) * (11. / 210 + 11. / 120 * phi + 1. / 24 * phi * phi) * L;
-  };
-
-  const auto t3 = [&](const double phi) {
-    return CT(phi) * (1. / 105 + 1. / 60 * phi + 1. / 120 * phi * phi) * L * L;
-  };
-
-  const auto t4 = [&](const double phi) {
-    return CT(phi) * (9. / 70 + 3. / 10 * phi + 1. / 6 * phi * phi);
-  };
-
-  const auto t5 = [&](const double phi) {
-    return CT(phi) * (13. / 420 + 3. / 40 * phi + 1. / 24 * phi * phi) * L;
-  };
-
-  const auto t6 = [&](const double phi) {
-    return CT(phi) * (1. / 140 + 1. / 60 * phi + 1. / 120 * phi * phi) * L * L;
-  };
-
-  const auto C_R = [&](const double I, const double phi) {
-    return rho * I / (1 + phi) / (1 + phi) / L;
-  };
-
-  const auto r1 = [&](const double I, const double phi) {
-    return C_R(I, phi) * 6. / 5;
-  };
-  const auto r2 = [&](const double I, const double phi) {
-    return C_R(I, phi) * (1. / 10 - 1. / 2 * phi) * L;
-  };
-  const auto r3 = [&](const double I, const double phi) {
-    return C_R(I, phi) * (2. / 15 + 1. / 6 * phi + 1. / 3 * phi * phi) * L * L;
-  };
-  const auto r4 = [&](const double I, const double phi) {
-    return C_R(I, phi) * (1. / 30 + 1. / 6 * phi - 1. / 6 * phi * phi) * L * L;
-  };
-
-  const auto TY1 = t1(phi_y);
-  const auto TY2 = t2(phi_y);
-  const auto TY3 = t3(phi_y);
-  const auto TY4 = t4(phi_y);
-  const auto TY5 = t5(phi_y);
-  const auto TY6 = t6(phi_y);
   const auto X = 1. / 3 * rho * A * L;
+  const auto TY = translational_inertia_terms(rho, A, L, phi_y);
+  const auto RY = rotational_inertia_terms(rho, I_z, L, phi_y);
+  const auto _ = 0.;
 
   // clang-format off
   tensor::Tensor<double, 6, 6> MT = {{
-                                      {{   X,    _,    _,  X/2,    _,    _}},
-                                      {{   _,  TY1,  TY2,    _,  TY4, -TY5}},
-                                      {{   _,    _,  TY3,    _,  TY5, -TY6}},
-                                      {{   _,    _,    _,    X,    _,    _}},
-                                      {{   _,    _,    _,    _,  TY1, -TY2}},
-                                      {{   _,    _,    _,    _,    _,  TY3}},
+                                      {{     X,     _,     _,   X/2,     _,     _}},
+                                      {{     _, TY[0], TY[1],     _, TY[3],-TY[4]}},
+                                      {{     _,     _, TY[2],     _, TY[4],-TY[5]}},
+                                      {{     _,     _,     _,     X,     _,     _}},
+                                      {{     _,     _,     _,     _, TY[0],-TY[1]}},
+                                      {{     _,     _,     _,     _,     _, TY[2]}},
                                     }};
-  // clang-format on
 
-  const auto RY1 = r1(I_z, phi_y);
-  const auto RY2 = r2(I_z, phi_y);
-  const auto RY3 = r3(I_z, phi_y);
-  const auto RY4 = r4(I_z, phi_y);
-
-  // clang-format off
   tensor::Tensor<double, 6, 6> MR = {{
-                                      {{   _,    _,    _,    _,    _,    _}},
-                                      {{   _,  RY1,  RY2,    _, -RY1,  RY2}},
-                                      {{   _,    _,  RY3,    _, -RY2, -RY4}},
-                                      {{   _,    _,    _,    _,    _,    _}},
-                                      {{   _,    _,    _,    _,  RY1, -RY2}},
-                                      {{   _,    _,    _,    _,    _,  RY3}},
+                                      {{     _,     _,     _,     _,     _,     _}},
+                                      {{     _, RY[0], RY[1],     _,-RY[0], RY[1]}},
+                                      {{     _,     _, RY[2],     _,-RY[1],-RY[3]}},
+                                      {{     _,     _,     _,     _,     _,     _}},
+                                      {{     _,     _,     _,     _, RY[0],-RY[1]}},
+                                      {{     _,     _,     _,     _,     _,  RY[2]}},
                                     }};
   // clang-format on
 
@@ -264,8 +235,6 @@ consistent_mass_matrix<2>(const TimoshenkoBeamProperties<double, 2> &properties,
   }();
 }
 
-// refer to Felippa et al (2015), "Mass Matrix Templates: General Description
-// and 1D Examples", p.46, http://dx.doi.org/10.1007/s11831-014-9108-x
 template <>
 tensor::Tensor<double, 12, 12>
 consistent_mass_matrix<3>(const TimoshenkoBeamProperties<double, 3> &properties,
@@ -281,71 +250,13 @@ consistent_mass_matrix<3>(const TimoshenkoBeamProperties<double, 3> &properties,
   const auto J_x = properties.polar_moment_x;
   const auto k_z = properties.shear_correction_factor_z;
 
-  const auto phi = [&](const double I, const double k) {
-    return 12. * E * I * k / A / G / L / L;
-  };
-  const auto phi_y = phi(I_z, k_y);
-  const auto phi_z = phi(I_y, k_z);
+  const auto phi_y = 12. * E * I_z * k_y / A / G / L / L;
+  const auto phi_z = 12. * E * I_y * k_z / A / G / L / L;
 
-  // translational inertia components
-  const auto CT = [&](const double phi) {
-    return rho * A * L / (1 + phi) / (1 + phi);
-  };
-
-  const auto t1 = [&](const double phi) {
-    return CT(phi) * (13. / 35 + 7. / 10 * phi + 1. / 3 * phi * phi);
-  };
-
-  const auto t2 = [&](const double phi) {
-    return CT(phi) * (11. / 210 + 11. / 120 * phi + 1. / 24 * phi * phi) * L;
-  };
-
-  const auto t3 = [&](const double phi) {
-    return CT(phi) * (1. / 105 + 1. / 60 * phi + 1. / 120 * phi * phi) * L * L;
-  };
-
-  const auto t4 = [&](const double phi) {
-    return CT(phi) * (9. / 70 + 3. / 10 * phi + 1. / 6 * phi * phi);
-  };
-
-  const auto t5 = [&](const double phi) {
-    return CT(phi) * (13. / 420 + 3. / 40 * phi + 1. / 24 * phi * phi) * L;
-  };
-
-  const auto t6 = [&](const double phi) {
-    return CT(phi) * (1. / 140 + 1. / 60 * phi + 1. / 120 * phi * phi) * L * L;
-  };
-
-  const auto C_R = [&](const double I, const double phi) {
-    return rho * I / (1 + phi) / (1 + phi) / L;
-  };
-
-  const auto r1 = [&](const double I, const double phi) {
-    return C_R(I, phi) * 6. / 5;
-  };
-  const auto r2 = [&](const double I, const double phi) {
-    return C_R(I, phi) * (1. / 10 - 1. / 2 * phi) * L;
-  };
-  const auto r3 = [&](const double I, const double phi) {
-    return C_R(I, phi) * (2. / 15 + 1. / 6 * phi + 1. / 3 * phi * phi) * L * L;
-  };
-  const auto r4 = [&](const double I, const double phi) {
-    return C_R(I, phi) * (1. / 30 + 1. / 6 * phi - 1. / 6 * phi * phi) * L * L;
-  };
-
-  const auto TY1 = t1(phi_y);
-  const auto TZ1 = t1(phi_z);
-  const auto TY2 = t2(phi_y);
-  const auto TZ2 = t2(phi_z);
-  const auto TY3 = t3(phi_y);
-  const auto TZ3 = t3(phi_z);
-  const auto TY4 = t4(phi_y);
-  const auto TZ4 = t4(phi_z);
-  const auto TY5 = t5(phi_y);
-  const auto TZ5 = t5(phi_z);
-  const auto TY6 = t6(phi_y);
-  const auto TZ6 = t6(phi_z);
-
+  const auto TY = translational_inertia_terms(rho, A, L, phi_y);
+  const auto TZ = translational_inertia_terms(rho, A, L, phi_z);
+  const auto RY = rotational_inertia_terms(rho, I_z, L, phi_y);
+  const auto RZ = rotational_inertia_terms(rho, I_y, L, phi_z);
   const auto X = 1. / 3. * rho * A * L;
   const auto S = J_x / 3. * rho * L;
   const auto _ = 0.;
@@ -353,47 +264,34 @@ consistent_mass_matrix<3>(const TimoshenkoBeamProperties<double, 3> &properties,
   // clang-format off
   tensor::Tensor<double, 12, 12> M_CT = 
   {{
-      {{  X,   _,   _,   _,   _,   _, X/2,   _,   _,   _,   _,   _}},
-      {{  _, TY1,   _,   _,   _, TY2,   _, TY4,   _,   _,   _,-TY5}},
-      {{  _,   _, TZ1,   _,-TZ2,   _,   _,   _, TZ4,   _, TZ5,   _}},
-      {{  _,   _,   _,   S,   _,   _,   _,   _,   _, S/2,   _,   _}},
-      {{  _,   _,   _,   _, TZ3,   _,   _,   _,-TZ5,   _,-TZ6,   _}},
-      {{  _,   _,   _,   _,   _, TY3,   _, TY5,   _,   _,   _,-TY6}},
-      {{  _,   _,   _,   _,   _,   _,   X,   _,   _,   _,   _,   _}},
-      {{  _,   _,   _,   _,   _,   _,   _, TY1,   _,   _,   _,-TY2}},
-      {{  _,   _,   _,   _,   _,   _,   _,   _, TZ1,   _, TZ2,   _}},
-      {{  _,   _,   _,   _,   _,   _,   _,   _,   _,   S,   _,   _}},
-      {{  _,   _,   _,   _,   _,   _,   _,   _,   _,   _, TZ3,   _}},
-      {{  _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _, TY3}},
+      {{    X,     _,     _,     _,     _,     _,   X/2,     _,     _,     _,     _,     _}},
+      {{    _, TY[0],     _,     _,     _, TY[1],     _, TY[3],     _,     _,     _,-TY[4]}},
+      {{    _,     _, TZ[0],     _,-TZ[1],     _,     _,     _, TZ[3],     _, TZ[4],     _}},
+      {{    _,     _,     _,     S,     _,     _,     _,     _,     _,   S/2,     _,     _}},
+      {{    _,     _,     _,     _, TZ[2],     _,     _,     _,-TZ[4],     _,-TZ[5],     _}},
+      {{    _,     _,     _,     _,     _, TY[2],     _, TY[4],     _,     _,     _,-TY[5]}},
+      {{    _,     _,     _,     _,     _,     _,     X,     _,     _,     _,     _,     _}},
+      {{    _,     _,     _,     _,     _,     _,     _, TY[0],     _,     _,     _,-TY[1]}},
+      {{    _,     _,     _,     _,     _,     _,     _,     _, TZ[0],     _, TZ[1],     _}},
+      {{    _,     _,     _,     _,     _,     _,     _,     _,     _,     S,     _,     _}},
+      {{    _,     _,     _,     _,     _,     _,     _,     _,     _,     _, TZ[2],     _}},
+      {{    _,     _,     _,     _,     _,     _,     _,     _,     _,     _,     _, TY[2]}},
   }};
-  // clang-format on
 
-  // translational inertia components
-
-  const auto RY1 = r1(I_z, phi_y);
-  const auto RZ1 = r1(I_y, phi_z);
-  const auto RY2 = r2(I_z, phi_y);
-  const auto RZ2 = r2(I_y, phi_z);
-  const auto RY3 = r3(I_z, phi_y);
-  const auto RZ3 = r3(I_y, phi_z);
-  const auto RY4 = r4(I_z, phi_y);
-  const auto RZ4 = r4(I_y, phi_z);
-
-  // clang-format off
   tensor::Tensor<double, 12, 12> M_CR =
   {{
-      {{  _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _}},
-      {{  _, RY1,   _,   _,   _, RY2,   _,-RY1,   _,   _,   _, RY2}},
-      {{  _,   _, RZ1,   _,-RZ2,   _,   _,   _,-RZ1,   _,-RZ2,   _}},
-      {{  _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _}},
-      {{  _,   _,   _,   _, RZ3,   _,   _,   _, RZ2,   _,-RZ4,   _}},
-      {{  _,   _,   _,   _,   _, RY3,   _,-RY2,   _,   _,   _,-RY4}},
-      {{  _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _}},
-      {{  _,   _,   _,   _,   _,   _,   _, RY1,   _,   _,   _,-RY2}},
-      {{  _,   _,   _,   _,   _,   _,   _,   _, RZ1,   _, RZ2,   _}},
-      {{  _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _}},
-      {{  _,   _,   _,   _,   _,   _,   _,   _,   _,   _, RZ3,   _}},
-      {{  _,   _,   _,   _,   _,   _,   _,   _,   _,   _,   _, RY3}},
+      {{    _,     _,     _,     _,     _,     _,     _,     _,     _,     _,     _,     _}},
+      {{    _, RY[0],     _,     _,     _, RY[1],     _,-RY[0],     _,     _,     _, RY[1]}},
+      {{    _,     _, RZ[0],     _,-RZ[1],     _,     _,     _,-RZ[0],     _,-RZ[1],     _}},
+      {{    _,     _,     _,     _,     _,     _,     _,     _,     _,     _,     _,     _}},
+      {{    _,     _,     _,     _, RZ[2],     _,     _,     _, RZ[1],     _,-RZ[3],     _}},
+      {{    _,     _,     _,     _,     _, RY[2],     _,-RY[1],     _,     _,     _,-RY[3]}},
+      {{    _,     _,     _,     _,     _,     _,     _,     _,     _,     _,     _,     _}},
+      {{    _,     _,     _,     _,     _,     _,     _, RY[0],     _,     _,     _,-RY[1]}},
+      {{    _,     _,     _,     _,     _,     _,     _,     _, RZ[0],     _, RZ[1],     _}},
+      {{    _,     _,     _,     _,     _,     _,     _,     _,     _,     _,     _,     _}},
+      {{    _,     _,     _,     _,     _,     _,     _,     _,     _,     _, RZ[2],     _}},
+      {{    _,     _,     _,     _,     _,     _,     _,     _,     _,     _,     _, RY[2]}},
   }};
   // clang-format on
 

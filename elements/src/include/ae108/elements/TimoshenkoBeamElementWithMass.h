@@ -89,7 +89,8 @@ struct ComputeEnergyTrait<
 template <std::size_t Dimension_, class ValueType_, class RealType_>
 struct ComputeForcesTrait<
     TimoshenkoBeamElementWithMass<Dimension_, ValueType_, RealType_>>
-    : ComputeForcesTrait<TimoshenkoBeamElement<Dimension_>> {};
+    : ComputeForcesTrait<
+          TimoshenkoBeamElement<Dimension_, ValueType_, RealType_>> {};
 
 template <std::size_t Dimension_, class ValueType_, class RealType_>
 struct ComputeStiffnessMatrixTrait<

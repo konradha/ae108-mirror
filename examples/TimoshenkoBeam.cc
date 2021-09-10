@@ -104,8 +104,8 @@ constexpr Mesh::real_type shear_correction_factor_y = 1.2;
 constexpr Mesh::real_type thickness = 1.;
 constexpr Mesh::real_type width = 0.1;
 constexpr Mesh::real_type area = width * thickness;
-constexpr Mesh::real_type density = 1.;
-constexpr Mesh::real_type area_moment_z = thickness * std::pow(width, 3) / 12.;
+constexpr Mesh::real_type area_moment_z =
+    thickness * width * width * width / 12.;
 
 // We will assemble e.g. energy using a collection of elements. This is done by
 // the assembler. (The list DefaultFeaturePlugins contain the features (e.g.
@@ -130,9 +130,8 @@ int main(int argc, char **argv) {
       number_of_vertices, dof_per_vertex, 0);
   auto assembler = Assembler();
 
-  Properties properties = {
-      young_modulus, shear_modulus, shear_correction_factor_y,
-      area,          density,       area_moment_z};
+  Properties properties = {young_modulus, shear_modulus,
+                           shear_correction_factor_y, area, area_moment_z};
 
   // Depending on whether we use MPI, our mesh may be distributed and not all
   // elements are present on this computational node.

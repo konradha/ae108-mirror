@@ -42,17 +42,21 @@ create_rotated_and_stretched_element_axis() noexcept {
 }
 
 template <std::size_t Dimension_>
-TimoshenkoBeamProperties<double, Dimension_>
+TimoshenkoBeamWithMassProperties<double, Dimension_>
 create_element_properties() noexcept;
 
 template <>
-TimoshenkoBeamProperties<double, 3> create_element_properties<3>() noexcept {
-  return {1.42, 1.64, 1.46, 1.22, 1.67, 1.98, 1.45, 1.12, 1.97};
+TimoshenkoBeamWithMassProperties<double, 3>
+create_element_properties<3>() noexcept {
+  return TimoshenkoBeamWithMassProperties<double, 3>{
+      {1.42, 1.64, 1.46, 1.22, 1.67, 1.98, 1.45, 1.12}, 1.97};
 }
 
 template <>
-TimoshenkoBeamProperties<double, 2> create_element_properties<2>() noexcept {
-  return {1.12, 1.75, 1.34, 1.78, 1.06, 1.23};
+TimoshenkoBeamWithMassProperties<double, 2>
+create_element_properties<2>() noexcept {
+  return TimoshenkoBeamWithMassProperties<double, 2>{
+      {1.12, 1.75, 1.34, 1.78, 1.06}, 1.23};
 }
 
 template <class Element_> struct ReferenceConfigurationLumped {

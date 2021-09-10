@@ -81,15 +81,15 @@ rotation_matrix<2>(const tensor::Tensor<double, 2> &orientation) noexcept {
  */
 template <std::size_t Dimension_>
 tensor::Tensor<double, Dimension_ *(Dimension_ + 1), 1> lumped_mass_matrix(
-    const TimoshenkoBeamProperties<double, Dimension_> &properties,
+    const TimoshenkoBeamWithMassProperties<double, Dimension_> &properties,
     const double length) noexcept;
 
 // refer to Felippa et al (2015), "Mass Matrix Templates: General Description
 // and 1D Examples", p.45, http://dx.doi.org/10.1007/s11831-014-9108-x
 template <>
-tensor::Tensor<double, 6, 1>
-lumped_mass_matrix<2>(const TimoshenkoBeamProperties<double, 2> &properties,
-                      const double length) noexcept {
+tensor::Tensor<double, 6, 1> lumped_mass_matrix<2>(
+    const TimoshenkoBeamWithMassProperties<double, 2> &properties,
+    const double length) noexcept {
   const auto mass = length * properties.area * properties.density;
   const auto alpha =
       1. / 24; // ad hoc, refer to Cook et. al (2002), "Concepts and
@@ -104,9 +104,9 @@ lumped_mass_matrix<2>(const TimoshenkoBeamProperties<double, 2> &properties,
 // refer to Felippa et al (2015), "Mass Matrix Templates: General Description
 // and 1D Examples", p.45, http://dx.doi.org/10.1007/s11831-014-9108-x
 template <>
-tensor::Tensor<double, 12, 1>
-lumped_mass_matrix<3>(const TimoshenkoBeamProperties<double, 3> &properties,
-                      const double length) noexcept {
+tensor::Tensor<double, 12, 1> lumped_mass_matrix<3>(
+    const TimoshenkoBeamWithMassProperties<double, 3> &properties,
+    const double length) noexcept {
   const auto mass = length * properties.area * properties.density;
   const auto alpha =
       1. / 24; // ad hoc, refer to Cook et. al (2002), "Concepts and
@@ -124,7 +124,8 @@ Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
               Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
 timoshenko_beam_lumped_mass_matrix(
     const tensor::Tensor<double, Dimension_> &axis,
-    const TimoshenkoBeamProperties<double, Dimension_> &properties) noexcept {
+    const TimoshenkoBeamWithMassProperties<double, Dimension_>
+        &properties) noexcept {
   const auto reference = lumped_mass_matrix<Dimension_>(
       properties, tensor::as_vector(&axis).norm());
   // reference only contains values in the diagonal of the matrix;
@@ -140,12 +141,12 @@ timoshenko_beam_lumped_mass_matrix(
 template Eigen::Matrix<double, 6, 6, Eigen::RowMajor>
 timoshenko_beam_lumped_mass_matrix(
     const tensor::Tensor<double, 2> &axis,
-    const TimoshenkoBeamProperties<double, 2> &properties) noexcept;
+    const TimoshenkoBeamWithMassProperties<double, 2> &properties) noexcept;
 
 template Eigen::Matrix<double, 12, 12, Eigen::RowMajor>
 timoshenko_beam_lumped_mass_matrix(
     const tensor::Tensor<double, 3> &axis,
-    const TimoshenkoBeamProperties<double, 3> &properties) noexcept;
+    const TimoshenkoBeamWithMassProperties<double, 3> &properties) noexcept;
 
 /**
  * @brief Computes the consistent mass matrix of a reference beam with the given
@@ -156,7 +157,7 @@ template <std::size_t Dimension_>
 tensor::Tensor<double, Dimension_ *(Dimension_ + 1),
                Dimension_ *(Dimension_ + 1)>
 consistent_mass_matrix(
-    const TimoshenkoBeamProperties<double, Dimension_> &properties,
+    const TimoshenkoBeamWithMassProperties<double, Dimension_> &properties,
     const double length) noexcept;
 
 // refer to Felippa et al (2015), "Mass Matrix Templates: General Description
@@ -189,9 +190,9 @@ tensor::Tensor<double, 4> rotational_inertia_terms(const double rho,
 // refer to Felippa et al (2015), "Mass Matrix Templates: General Description
 // and 1D Examples", eq. 154, http://dx.doi.org/10.1007/s11831-014-9108-x
 template <>
-tensor::Tensor<double, 6, 6>
-consistent_mass_matrix<2>(const TimoshenkoBeamProperties<double, 2> &properties,
-                          const double length) noexcept {
+tensor::Tensor<double, 6, 6> consistent_mass_matrix<2>(
+    const TimoshenkoBeamWithMassProperties<double, 2> &properties,
+    const double length) noexcept {
   const auto L = length;
   const auto A = properties.area;
   const auto rho = properties.density;
@@ -236,9 +237,9 @@ consistent_mass_matrix<2>(const TimoshenkoBeamProperties<double, 2> &properties,
 }
 
 template <>
-tensor::Tensor<double, 12, 12>
-consistent_mass_matrix<3>(const TimoshenkoBeamProperties<double, 3> &properties,
-                          const double length) noexcept {
+tensor::Tensor<double, 12, 12> consistent_mass_matrix<3>(
+    const TimoshenkoBeamWithMassProperties<double, 3> &properties,
+    const double length) noexcept {
   const auto L = length;
   const auto A = properties.area;
   const auto rho = properties.density;
@@ -308,7 +309,8 @@ Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
               Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
 timoshenko_beam_consistent_mass_matrix(
     const tensor::Tensor<double, Dimension_> &axis,
-    const TimoshenkoBeamProperties<double, Dimension_> &properties) noexcept {
+    const TimoshenkoBeamWithMassProperties<double, Dimension_>
+        &properties) noexcept {
   const auto reference = consistent_mass_matrix<Dimension_>(
       properties, tensor::as_vector(&axis).norm());
   // reference only contains values in the "upper" section of the matrix;
@@ -325,12 +327,12 @@ timoshenko_beam_consistent_mass_matrix(
 template Eigen::Matrix<double, 6, 6, Eigen::RowMajor>
 timoshenko_beam_consistent_mass_matrix(
     const tensor::Tensor<double, 2> &axis,
-    const TimoshenkoBeamProperties<double, 2> &properties) noexcept;
+    const TimoshenkoBeamWithMassProperties<double, 2> &properties) noexcept;
 
 template Eigen::Matrix<double, 12, 12, Eigen::RowMajor>
 timoshenko_beam_consistent_mass_matrix(
     const tensor::Tensor<double, 3> &axis,
-    const TimoshenkoBeamProperties<double, 3> &properties) noexcept;
+    const TimoshenkoBeamWithMassProperties<double, 3> &properties) noexcept;
 
 } // namespace elements
 } // namespace ae108

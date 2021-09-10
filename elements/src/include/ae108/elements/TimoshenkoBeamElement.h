@@ -36,7 +36,6 @@ template <class RealType_> struct TimoshenkoBeamProperties<RealType_, 3> {
   real_type shear_correction_factor_z;
 
   real_type area;
-  real_type density;
   real_type area_moment_z;
   real_type area_moment_y;
   real_type polar_moment_x;
@@ -51,7 +50,6 @@ template <class RealType_> struct TimoshenkoBeamProperties<RealType_, 2> {
   real_type shear_correction_factor_y;
 
   real_type area;
-  real_type density;
 
   real_type area_moment_z;
 };

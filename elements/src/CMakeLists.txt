@@ -98,7 +98,7 @@ target_include_directories(${PROJECT_NAME}-elements PUBLIC
 )
 
 target_compile_features(${PROJECT_NAME}-elements
-                        PUBLIC cxx_std_11
+                        PUBLIC cxx_std_17
 )
 
 find_package(Eigen3 3.3 CONFIG REQUIRED)

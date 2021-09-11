@@ -45,6 +45,7 @@ install(FILES
 
 install(FILES
         cmake/modules/FindAE108_PETSc.cmake
+        cmake/modules/FindAE108_SLEPc.cmake
         cmake/modules/AE108_PETSc.cc
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}/modules"
 )

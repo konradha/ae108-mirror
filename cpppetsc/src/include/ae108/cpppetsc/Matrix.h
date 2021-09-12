@@ -40,6 +40,7 @@ template <class Policy> class Matrix {
 public:
   using size_type = PetscInt;
   using value_type = PetscScalar;
+  using real_type = PetscReal;
 
   /**
    * @brief Allocates a matrix with global_rows rows and global_columns columns.
@@ -148,7 +149,7 @@ public:
   /**
    * @brief Computes the Frobenius norm of the matrix.
    */
-  value_type norm() const;
+  real_type norm() const;
 
   /**
    * @brief Print the matrix to world stdout.
@@ -258,8 +259,20 @@ private:
   std::shared_ptr<Matrix> _matrix;
 };
 
+/**
+ * @brief Writes the local rows of the matrix to the stream.
+ */
+template <class Policy>
+std::ostream &operator<<(std::ostream &stream, const Matrix<Policy> &matrix);
+
 extern template class Matrix<SequentialComputePolicy>;
 extern template class Matrix<ParallelComputePolicy>;
+
+extern template std::ostream &
+operator<<(std::ostream &, const Matrix<SequentialComputePolicy> &);
+extern template std::ostream &operator<<(std::ostream &,
+                                         const Matrix<ParallelComputePolicy> &);
+
 } // namespace cpppetsc
 } // namespace ae108
 
@@ -515,8 +528,8 @@ Matrix<Policy>::localRowRange() const {
 }
 
 template <class Policy>
-typename Matrix<Policy>::value_type Matrix<Policy>::norm() const {
-  auto result = value_type{};
+typename Matrix<Policy>::real_type Matrix<Policy>::norm() const {
+  auto result = real_type{};
   Policy::handleError(MatNorm(_mat.get(), NORM_FROBENIUS, &result));
   return result;
 }
@@ -580,5 +593,27 @@ template <class Policy> void Matrix<Policy>::finalize() {
 }
 
 template <class Policy> Mat Matrix<Policy>::data() const { return _mat.get(); }
+
+template <class Policy>
+std::ostream &operator<<(std::ostream &stream, const Matrix<Policy> &matrix) {
+  const auto range = matrix.localRowRange();
+  const auto size = matrix.size();
+
+  stream << "[";
+  for (auto row = range.first; row < range.second; ++row) {
+    if (row != range.first)
+      stream << ", ";
+    stream << "[";
+    for (auto col = decltype(size.second){0}; col < size.second; ++col) {
+      if (col != 0)
+        stream << ", ";
+      stream << matrix(row, col);
+    }
+    stream << "]";
+  }
+  stream << "]";
+  return stream;
+}
+
 } // namespace cpppetsc
 } // namespace ae108

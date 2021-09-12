@@ -21,7 +21,7 @@
 #include "ae108/cppptest/Matchers.h"
 #include <gmock/gmock.h>
 
-using ae108::cppptest::AlmostEqIfLocal;
+using ae108::cppptest::ScalarEqIfLocal;
 using testing::Test;
 using testing::Types;
 
@@ -43,6 +43,12 @@ template <class Policy> struct asTransformedMatrix_Test : Test {
   const matrix_type nonsquare_transform = matrix_type::fromList({
       {3., 4.},
   });
+#ifdef AE108_PETSC_COMPLEX
+  const matrix_type complex_transform = matrix_type::fromList({
+      {typename matrix_type::value_type{0, 3}, 0.},
+      {0., typename matrix_type::value_type{0, 4}},
+  });
+#endif
 };
 
 using Policies = Types<SequentialComputePolicy, ParallelComputePolicy>;
@@ -58,8 +64,8 @@ TYPED_TEST(asTransformedMatrix_Test,
   input.unwrap().replace()(0) = 1.;
   const auto result = multiply(matrix, input);
 
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(0, 3. * 3. + 8. * 4.));
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(1, 3. * 5. + 8. * 6.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, 3. * 3. + 8. * 4.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, 3. * 5. + 8. * 6.));
 }
 
 TYPED_TEST(asTransformedMatrix_Test,
@@ -71,8 +77,8 @@ TYPED_TEST(asTransformedMatrix_Test,
   input.unwrap().replace()(1) = 1.;
   const auto result = multiply(matrix, input);
 
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(0, 5. * 3. + 12. * 4.));
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(1, 5. * 5. + 12. * 6.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, 5. * 3. + 12. * 4.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, 5. * 5. + 12. * 6.));
 }
 
 TYPED_TEST(asTransformedMatrix_Test,
@@ -84,8 +90,35 @@ TYPED_TEST(asTransformedMatrix_Test,
   input.unwrap().replace()(0) = 1.;
   const auto result = multiply(matrix, input);
 
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(0, 3. * 3. + 8. * 4.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, 3. * 3. + 8. * 4.));
 }
+
+#ifdef AE108_PETSC_COMPLEX
+TYPED_TEST(asTransformedMatrix_Test,
+           first_column_correct_for_complex_transform) {
+  const auto matrix =
+      asTransformedMatrix(&this->matrix, &this->complex_transform);
+
+  auto input = createTransformInput(matrix);
+  input.unwrap().replace()(0) = 1.;
+  const auto result = multiply(matrix, input);
+
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, 9.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, 0.));
+}
+
+TYPED_TEST(asTransformedMatrix_Test, second) {
+  const auto matrix =
+      asTransformedMatrix(&this->matrix, &this->complex_transform);
+
+  auto input = createTransformInput(matrix);
+  input.unwrap().replace()(1) = 1.;
+  const auto result = multiply(matrix, input);
+
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, 0.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, 32.));
+}
+#endif
 
 } // namespace
 } // namespace cpppetsc

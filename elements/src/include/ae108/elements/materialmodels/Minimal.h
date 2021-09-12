@@ -30,7 +30,8 @@ namespace materialmodels {
  * defined.
  */
 template <std::size_t Dimension_>
-struct Minimal final : MaterialModelBase<std::size_t, double, Dimension_> {};
+struct Minimal final
+    : MaterialModelBase<std::size_t, double, double, Dimension_> {};
 
 /**
  * @brief Always returns 0.

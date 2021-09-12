@@ -71,7 +71,7 @@ constexpr auto connectivity = Connectivity{{
 // space.
 
 using VertexPositions =
-    std::array<std::array<Mesh::value_type, coordinate_dimension>,
+    std::array<std::array<Mesh::real_type, coordinate_dimension>,
                number_of_vertices>;
 constexpr auto vertex_positions = VertexPositions{{
     {{0., 0.}},
@@ -83,26 +83,28 @@ constexpr auto vertex_positions = VertexPositions{{
 
 // Now we are ready to select the Timoshenko beam element
 
-using Element = elements::TimoshenkoBeamElement<coordinate_dimension>;
+using Element =
+    elements::TimoshenkoBeamElement<coordinate_dimension, Vector::value_type,
+                                    Vector::real_type>;
 
 // The Timoshenko beam element comes with a number of geometrical and material
 // related properties. These are stored in the Properties struct
 
 using Properties =
-    elements::TimoshenkoBeamProperties<Mesh::value_type, coordinate_dimension>;
+    elements::TimoshenkoBeamProperties<Mesh::real_type, coordinate_dimension>;
 
 // Let us define some parameters the linear elastic beam of rectangular cross
 // section
 
-constexpr Mesh::value_type young_modulus = 1.;
-constexpr Mesh::value_type poisson_ratio = 0.3;
-constexpr Mesh::value_type shear_modulus =
+constexpr Mesh::real_type young_modulus = 1.;
+constexpr Mesh::real_type poisson_ratio = 0.3;
+constexpr Mesh::real_type shear_modulus =
     young_modulus / (2 * (1 + poisson_ratio));
-constexpr Mesh::value_type shear_correction_factor_y = 1.2;
-constexpr Mesh::value_type thickness = 1.;
-constexpr Mesh::value_type width = 0.1;
-constexpr Mesh::value_type area = width * thickness;
-constexpr Mesh::value_type area_moment_z = thickness * std::pow(width, 3) / 12.;
+constexpr Mesh::real_type shear_correction_factor_y = 1.2;
+constexpr Mesh::real_type thickness = 1.;
+constexpr Mesh::real_type width = 0.1;
+constexpr Mesh::real_type area = width * thickness;
+constexpr Mesh::real_type area_moment_z = thickness * std::pow(width, 3) / 12.;
 
 // We will assemble e.g. energy using a collection of elements. This is done by
 // the assembler. (The list DefaultFeaturePlugins contain the features (e.g.
@@ -136,7 +138,7 @@ int main(int argc, char **argv) {
   // Let's add those elements that are "local" to the assembler.
 
   for (const auto &element : mesh.localElements()) {
-    elements::tensor::Tensor<Mesh::value_type, coordinate_dimension>
+    elements::tensor::Tensor<Mesh::real_type, coordinate_dimension>
         element_axis;
     elements::tensor::as_vector(&element_axis) =
         elements::tensor::as_vector(

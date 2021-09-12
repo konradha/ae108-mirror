@@ -23,7 +23,7 @@ namespace cpppetsc {
 
 /**
  * @brief Returns a matrix that behaves like the transformed matrix
- * T * M * T^t.
+ * T * M * T^H, where ^H denotes the Hermitian transpose.
  *
  * Note that the matrix is not actually computed, but the return matrix
  * stores a reference to the given matrices to compute the result of
@@ -72,7 +72,7 @@ template <class Policy> struct Data {
 };
 
 /**
- * @brief Computes `transform * matrix * transform^t * in` using the
+ * @brief Computes `transform * matrix * transform^H * in` using the
  * matrices in the context.
  */
 template <class Policy> PetscErrorCode multiply(Mat mat, Vec in, Vec out) {
@@ -82,8 +82,8 @@ template <class Policy> PetscErrorCode multiply(Mat mat, Vec in, Vec out) {
     return context;
   }();
 
-  Policy::handleError(
-      MatMultTranspose(data->transform.data(), in, data->x.unwrap().data()));
+  Policy::handleError(MatMultHermitianTranspose(data->transform.data(), in,
+                                                data->x.unwrap().data()));
   Policy::handleError(MatMult(data->matrix.data(), data->x.unwrap().data(),
                               data->y.unwrap().data()));
   Policy::handleError(

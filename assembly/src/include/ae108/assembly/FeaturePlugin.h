@@ -38,6 +38,8 @@
         typename ::ae108::assembly::SizeTypeTrait<Assembler>::type;            \
     using value_type =                                                         \
         typename ::ae108::assembly::ValueTypeTrait<Assembler>::type;           \
+    using real_type =                                                          \
+        typename ::ae108::assembly::RealTypeTrait<Assembler>::type;            \
     using vector_type =                                                        \
         typename ::ae108::assembly::VectorTypeTrait<Assembler>::type;          \
                                                                                \

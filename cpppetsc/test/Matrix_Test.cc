@@ -19,12 +19,15 @@
 #include "ae108/cppptest/Matchers.h"
 #include <gmock/gmock.h>
 
-using ae108::cppptest::AlmostEqIfLocal;
+using ae108::cppptest::ScalarEqIfLocal;
 using testing::DoubleEq;
+using testing::EndsWith;
 using testing::Eq;
 using testing::Ge;
+using testing::HasSubstr;
 using testing::Le;
 using testing::Pair;
+using testing::StartsWith;
 using testing::Test;
 using testing::Types;
 
@@ -81,12 +84,12 @@ TYPED_TEST(Matrix_Test, list_initialization_works) {
 
   ASSERT_THAT(mat.size(), Pair(2, 3));
 
-  EXPECT_THAT(mat, AlmostEqIfLocal(0, 0, 7.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(0, 1, 8.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(0, 2, 9.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(1, 0, 10.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(1, 1, 11.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(1, 2, 12.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(0, 0, 7.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(0, 1, 8.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(0, 2, 9.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(1, 0, 10.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(1, 1, 11.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(1, 2, 12.));
 }
 
 TYPED_TEST(Matrix_Test, list_initialization_works_for_irregular_input) {
@@ -110,7 +113,7 @@ TYPED_TEST(Matrix_Test, adding_single_element_works) {
     }
   }
 
-  EXPECT_THAT(mat, AlmostEqIfLocal(1, 2, 12. + 7.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(1, 2, 12. + 7.));
 }
 
 TYPED_TEST(Matrix_Test, setting_values_works) {
@@ -123,12 +126,12 @@ TYPED_TEST(Matrix_Test, setting_values_works) {
     }
   }
 
-  EXPECT_THAT(mat, AlmostEqIfLocal(0, 0, 0.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(0, 1, 0.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(0, 2, 0.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(1, 0, 11.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(1, 1, 0.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(1, 2, 12.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(0, 0, 0.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(0, 1, 0.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(0, 2, 0.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(1, 0, 11.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(1, 1, 0.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(1, 2, 12.));
 }
 
 TYPED_TEST(Matrix_Test, inserter_offers_rows) {
@@ -151,8 +154,8 @@ TYPED_TEST(Matrix_Test, setting_values_via_proxy_works) {
     }
   }
 
-  EXPECT_THAT(mat, AlmostEqIfLocal(0, 0, 0.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(0, 1, 7.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(0, 0, 0.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(0, 1, 7.));
 }
 
 TYPED_TEST(Matrix_Test, adding_values_via_proxy_works) {
@@ -165,8 +168,8 @@ TYPED_TEST(Matrix_Test, adding_values_via_proxy_works) {
     }
   }
 
-  EXPECT_THAT(mat, AlmostEqIfLocal(0, 0, 7.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(0, 1, 10.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(0, 0, 7.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(0, 1, 10.));
 }
 
 TYPED_TEST(Matrix_Test, setting_values_via_allocating_view_works) {
@@ -180,10 +183,10 @@ TYPED_TEST(Matrix_Test, setting_values_via_allocating_view_works) {
     }
   }
 
-  EXPECT_THAT(mat, AlmostEqIfLocal(0, 0, 7.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(0, 1, 0.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(1, 0, 0.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(1, 1, 8.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(0, 0, 7.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(0, 1, 0.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(1, 0, 0.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(1, 1, 8.));
 }
 
 TYPED_TEST(Matrix_Test, wrapping_matrices_works) {
@@ -198,7 +201,7 @@ TYPED_TEST(Matrix_Test, wrapping_matrices_works) {
       UniqueEntity<Mat>(mat, [](Mat) {}));
   wrapped_mat.assemblyView().replace().element(0, 0, .77);
 
-  EXPECT_THAT(wrapped_mat, AlmostEqIfLocal(0, 0, .77));
+  EXPECT_THAT(wrapped_mat, ScalarEqIfLocal(0, 0, .77));
   MatDestroy(&mat);
 }
 
@@ -208,15 +211,15 @@ TYPED_TEST(Matrix_Test, zeroing_lines_works) {
 
   mat.replaceRowsByEye({0, 2});
 
-  EXPECT_THAT(mat, AlmostEqIfLocal(0, 0, 1.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(0, 1, 0.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(0, 2, 0.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(1, 0, 4.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(1, 1, 5.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(1, 2, 6.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(2, 0, 0.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(2, 1, 0.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(2, 2, 1.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(0, 0, 1.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(0, 1, 0.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(0, 2, 0.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(1, 0, 4.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(1, 1, 5.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(1, 2, 6.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(2, 0, 0.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(2, 1, 0.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(2, 2, 1.));
 }
 
 TYPED_TEST(Matrix_Test, zeroing_all_values_works) {
@@ -227,10 +230,10 @@ TYPED_TEST(Matrix_Test, zeroing_all_values_works) {
 
   mat.setZero();
 
-  EXPECT_THAT(mat, AlmostEqIfLocal(0, 0, 0.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(0, 1, 0.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(1, 0, 0.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(1, 1, 0.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(0, 0, 0.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(0, 1, 0.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(1, 0, 0.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(1, 1, 0.));
 }
 
 TYPED_TEST(Matrix_Test, zeroing_all_values_works_for_inserter) {
@@ -241,10 +244,10 @@ TYPED_TEST(Matrix_Test, zeroing_all_values_works_for_inserter) {
 
   mat.assemblyView().replace().setZero();
 
-  EXPECT_THAT(mat, AlmostEqIfLocal(0, 0, 0.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(0, 1, 0.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(1, 0, 0.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(1, 1, 0.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(0, 0, 0.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(0, 1, 0.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(1, 0, 0.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(1, 1, 0.));
 }
 
 TYPED_TEST(Matrix_Test, multadding_matrix_works) {
@@ -260,10 +263,10 @@ TYPED_TEST(Matrix_Test, multadding_matrix_works) {
 
   mat_1.addAlphaX(-2., mat_2);
 
-  EXPECT_THAT(mat_1, AlmostEqIfLocal(0, 0, -1.));
-  EXPECT_THAT(mat_1, AlmostEqIfLocal(0, 1, -4.));
-  EXPECT_THAT(mat_1, AlmostEqIfLocal(1, 0, -10.));
-  EXPECT_THAT(mat_1, AlmostEqIfLocal(1, 1, -13.));
+  EXPECT_THAT(mat_1, ScalarEqIfLocal(0, 0, -1.));
+  EXPECT_THAT(mat_1, ScalarEqIfLocal(0, 1, -4.));
+  EXPECT_THAT(mat_1, ScalarEqIfLocal(1, 0, -10.));
+  EXPECT_THAT(mat_1, ScalarEqIfLocal(1, 1, -13.));
 }
 
 TYPED_TEST(Matrix_Test, scaling_matrix_works) {
@@ -275,10 +278,10 @@ TYPED_TEST(Matrix_Test, scaling_matrix_works) {
   const auto factor = 2.;
   mat.scale(factor);
 
-  EXPECT_THAT(mat, AlmostEqIfLocal(0, 0, 2.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(0, 1, 4.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(1, 0, 8.));
-  EXPECT_THAT(mat, AlmostEqIfLocal(1, 1, 10.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(0, 0, 2.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(0, 1, 4.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(1, 0, 8.));
+  EXPECT_THAT(mat, ScalarEqIfLocal(1, 1, 10.));
 }
 
 TYPED_TEST(Matrix_Test, duplicating_layout_works) {
@@ -292,12 +295,12 @@ TYPED_TEST(Matrix_Test, duplicating_layout_works) {
   ASSERT_THAT(duplicate.size().first, Eq(mat.size().first));
   ASSERT_THAT(duplicate.size().second, Eq(mat.size().second));
 
-  EXPECT_THAT(duplicate, AlmostEqIfLocal(0, 0, 0.));
-  EXPECT_THAT(duplicate, AlmostEqIfLocal(0, 1, 0.));
-  EXPECT_THAT(duplicate, AlmostEqIfLocal(0, 2, 0.));
-  EXPECT_THAT(duplicate, AlmostEqIfLocal(1, 0, 0.));
-  EXPECT_THAT(duplicate, AlmostEqIfLocal(1, 1, 0.));
-  EXPECT_THAT(duplicate, AlmostEqIfLocal(1, 2, 0.));
+  EXPECT_THAT(duplicate, ScalarEqIfLocal(0, 0, 0.));
+  EXPECT_THAT(duplicate, ScalarEqIfLocal(0, 1, 0.));
+  EXPECT_THAT(duplicate, ScalarEqIfLocal(0, 2, 0.));
+  EXPECT_THAT(duplicate, ScalarEqIfLocal(1, 0, 0.));
+  EXPECT_THAT(duplicate, ScalarEqIfLocal(1, 1, 0.));
+  EXPECT_THAT(duplicate, ScalarEqIfLocal(1, 2, 0.));
 }
 
 TYPED_TEST(Matrix_Test, cloning_works) {
@@ -311,12 +314,12 @@ TYPED_TEST(Matrix_Test, cloning_works) {
   ASSERT_THAT(duplicate.size().first, Eq(mat.size().first));
   ASSERT_THAT(duplicate.size().second, Eq(mat.size().second));
 
-  EXPECT_THAT(duplicate, AlmostEqIfLocal(0, 0, 1.));
-  EXPECT_THAT(duplicate, AlmostEqIfLocal(0, 1, 2.));
-  EXPECT_THAT(duplicate, AlmostEqIfLocal(0, 2, 3.));
-  EXPECT_THAT(duplicate, AlmostEqIfLocal(1, 0, 4.));
-  EXPECT_THAT(duplicate, AlmostEqIfLocal(1, 1, 5.));
-  EXPECT_THAT(duplicate, AlmostEqIfLocal(1, 2, 6.));
+  EXPECT_THAT(duplicate, ScalarEqIfLocal(0, 0, 1.));
+  EXPECT_THAT(duplicate, ScalarEqIfLocal(0, 1, 2.));
+  EXPECT_THAT(duplicate, ScalarEqIfLocal(0, 2, 3.));
+  EXPECT_THAT(duplicate, ScalarEqIfLocal(1, 0, 4.));
+  EXPECT_THAT(duplicate, ScalarEqIfLocal(1, 1, 5.));
+  EXPECT_THAT(duplicate, ScalarEqIfLocal(1, 2, 6.));
 }
 
 TYPED_TEST(Matrix_Test, inverting_block_diagonal_works) {
@@ -332,10 +335,10 @@ TYPED_TEST(Matrix_Test, inverting_block_diagonal_works) {
   ASSERT_THAT(result.size().first, Eq(2));
   ASSERT_THAT(result.size().second, Eq(2));
 
-  EXPECT_THAT(result, AlmostEqIfLocal(0, 0, 1. / 3.));
-  EXPECT_THAT(result, AlmostEqIfLocal(0, 1, 0.));
-  EXPECT_THAT(result, AlmostEqIfLocal(1, 0, 0.));
-  EXPECT_THAT(result, AlmostEqIfLocal(1, 1, 1. / 5.));
+  EXPECT_THAT(result, ScalarEqIfLocal(0, 0, 1. / 3.));
+  EXPECT_THAT(result, ScalarEqIfLocal(0, 1, 0.));
+  EXPECT_THAT(result, ScalarEqIfLocal(1, 0, 0.));
+  EXPECT_THAT(result, ScalarEqIfLocal(1, 1, 1. / 5.));
 }
 
 TYPED_TEST(Matrix_Test, double_product_works) {
@@ -350,9 +353,9 @@ TYPED_TEST(Matrix_Test, double_product_works) {
   ASSERT_THAT(result.size().first, Eq(1));
   ASSERT_THAT(result.size().second, Eq(3));
 
-  EXPECT_THAT(result, AlmostEqIfLocal(0, 0, 4.));
-  EXPECT_THAT(result, AlmostEqIfLocal(0, 1, 5.));
-  EXPECT_THAT(result, AlmostEqIfLocal(0, 2, 6.));
+  EXPECT_THAT(result, ScalarEqIfLocal(0, 0, 4.));
+  EXPECT_THAT(result, ScalarEqIfLocal(0, 1, 5.));
+  EXPECT_THAT(result, ScalarEqIfLocal(0, 2, 6.));
 }
 
 TYPED_TEST(Matrix_Test, transpose_matrix_product_works) {
@@ -367,9 +370,9 @@ TYPED_TEST(Matrix_Test, transpose_matrix_product_works) {
   ASSERT_THAT(result.size().first, Eq(1));
   ASSERT_THAT(result.size().second, Eq(3));
 
-  EXPECT_THAT(result, AlmostEqIfLocal(0, 0, 4.));
-  EXPECT_THAT(result, AlmostEqIfLocal(0, 1, 5.));
-  EXPECT_THAT(result, AlmostEqIfLocal(0, 2, 6.));
+  EXPECT_THAT(result, ScalarEqIfLocal(0, 0, 4.));
+  EXPECT_THAT(result, ScalarEqIfLocal(0, 1, 5.));
+  EXPECT_THAT(result, ScalarEqIfLocal(0, 2, 6.));
 }
 
 TYPED_TEST(Matrix_Test, triple_product_works) {
@@ -385,7 +388,7 @@ TYPED_TEST(Matrix_Test, triple_product_works) {
   ASSERT_THAT(result.size().first, Eq(1));
   ASSERT_THAT(result.size().second, Eq(1));
 
-  EXPECT_THAT(result, AlmostEqIfLocal(0, 0, 4.));
+  EXPECT_THAT(result, ScalarEqIfLocal(0, 0, 4.));
 }
 
 TYPED_TEST(Matrix_Test, PtAP_works) {
@@ -400,7 +403,7 @@ TYPED_TEST(Matrix_Test, PtAP_works) {
   ASSERT_THAT(result.size().first, Eq(1));
   ASSERT_THAT(result.size().second, Eq(1));
 
-  EXPECT_THAT(result, AlmostEqIfLocal(0, 0, 5.));
+  EXPECT_THAT(result, ScalarEqIfLocal(0, 0, 5.));
 }
 
 TYPED_TEST(Matrix_Test, PAPt_works) {
@@ -415,7 +418,7 @@ TYPED_TEST(Matrix_Test, PAPt_works) {
   ASSERT_THAT(result.size().first, Eq(1));
   ASSERT_THAT(result.size().second, Eq(1));
 
-  EXPECT_THAT(result, AlmostEqIfLocal(0, 0, 5.));
+  EXPECT_THAT(result, ScalarEqIfLocal(0, 0, 5.));
 }
 
 TYPED_TEST(Matrix_Test, computing_the_norm_works) {
@@ -425,6 +428,45 @@ TYPED_TEST(Matrix_Test, computing_the_norm_works) {
   });
 
   EXPECT_THAT(mat.norm(), DoubleEq(5.));
+}
+
+/**
+ * @brief Converts the parameter to a string using a stringstream and
+ * operator<<.
+ */
+template <class T> std::string toString(const T &t) {
+  std::stringstream stream;
+  stream << t;
+  return stream.str();
+}
+
+TYPED_TEST(Matrix_Test, writing_to_stream_uses_square_brackets) {
+  const auto mat = TestFixture::matrix_type::fromList({
+      {3., 0.},
+      {0., 4.},
+  });
+
+  const auto result = toString(mat);
+
+  EXPECT_THAT(result, StartsWith("[["));
+  EXPECT_THAT(result, EndsWith("]]"));
+}
+
+TYPED_TEST(Matrix_Test, local_values_are_written_to_stream) {
+  const auto mat = TestFixture::matrix_type::fromList({
+      {3., 0.},
+      {0., 4.},
+  });
+
+  const auto result = toString(mat);
+
+  const auto range = mat.localRowRange();
+  const auto size = mat.size();
+  for (auto row = range.first; row < range.second; ++row) {
+    for (auto col = decltype(size.second){0}; col < size.second; ++col) {
+      EXPECT_THAT(result, HasSubstr(toString(mat(row, col))));
+    }
+  }
 }
 
 } // namespace

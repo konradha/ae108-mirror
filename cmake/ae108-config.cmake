@@ -24,6 +24,6 @@ find_dependency(AE108_PETSc MODULE 3.12)
 
 find_dependency(range-v3 0.10.0 CONFIG REQUIRED)
 
-foreach(AE108_LIBRARY elements cpppetsc assembly solve cmdline)
+foreach(AE108_LIBRARY elements cpppetsc cppslepc assembly solve cmdline)
     include("${CMAKE_CURRENT_LIST_DIR}/ae108-${AE108_LIBRARY}-export.cmake")
 endforeach()

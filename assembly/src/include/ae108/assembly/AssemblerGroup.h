@@ -114,6 +114,15 @@ struct ValueTypeTrait<AssemblerGroup<SingleElementAssemblers...>>
                                     SingleElementAssemblers...> {};
 
 /**
+ * @brief Specialization: Deduces the value type corresponding to an Assembler
+ * group.
+ */
+template <class... SingleElementAssemblers>
+struct RealTypeTrait<AssemblerGroup<SingleElementAssemblers...>>
+    : utilities::HasUniqueTypeTrait<ValueTypeTrait,
+                                    SingleElementAssemblers...> {};
+
+/**
  * @brief Specialization: Deduces the element type corresponding to an Assembler
  * group.
  */

@@ -22,11 +22,12 @@ namespace ae108 {
 namespace elements {
 namespace integrator {
 
-template <class SizeType_, class ValueType_, SizeType_ Size_,
+template <class SizeType_, class ValueType_, class RealType_, SizeType_ Size_,
           SizeType_ Dimension_>
 struct IntegratorBase {
   using size_type = SizeType_;
   using value_type = ValueType_;
+  using real_type = RealType_;
 
   /**
    * @brief Contains vectors of function evaluations at each selected point.

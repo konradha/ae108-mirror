@@ -26,7 +26,7 @@ namespace plugins {
 DEFINE_CONST_ASSEMBLER_PLUGIN(
     AssembleEnergyPlugin, assembleEnergy,
     (const cpppetsc::local<vector_type> &displacements, const double time,
-     value_type *const output)) {
+     real_type *const output)) {
   typename element_type::NodalDisplacements elementInput;
 
   for (const auto &meshElement : this->assembler().meshElements()) {

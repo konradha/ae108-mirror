@@ -75,6 +75,9 @@ def number_of_corners_to_type(
     """
     Returns a guess of the element type for the provided number of vertices.
 
+    Some element types (e.g. polylines) are described by two numbers:
+    the type and the number of vertices.
+
     >>> number_of_corners_to_type(1, 2)
     [1, 1]
     >>> number_of_corners_to_type(2, 2)
@@ -198,7 +201,7 @@ def coordinate_dimension_to_type(dimension: int) -> str:
         raise UnsupportedCoordinateDimension() from error
 
 
-def shape_to_xdmf_dimensions(shape: typing.Tuple[int, int]) -> str:
+def shape_to_xdmf_dimensions(shape: typing.Tuple[int, ...]) -> str:
     """
     Returns the dimension provided by shape
 
@@ -206,6 +209,56 @@ def shape_to_xdmf_dimensions(shape: typing.Tuple[int, int]) -> str:
     '2 3'
     """
     return " ".join(str(x) for x in shape)
+
+
+def add_sliced_hdf_dataitem(
+    parent: ET.Element,
+    hdf_file: h5py.File,
+    hdf_path: str,
+    sliced_dimensions: typing.Dict[int, int],
+) -> ET.Element:
+    """
+    Inserts a HyperSlab child with name that refers to the path `hdf_path`
+    in the file at `file_name`.
+
+    The `sliced_dimension` parameter permits to fix dimensions to a selected index.
+    Dimensions that are not present in the HDF5 datasets are ignored.
+    """
+    item = hdf_file[hdf_path]
+
+    if all((key < 0 or key >= item.ndim) for key in sliced_dimensions):
+        add_hdf_dataitem(parent, hdf_file, hdf_path)
+
+    hyperslab_shape = tuple(
+        item.shape[i] if i not in sliced_dimensions else 1 for i in range(item.ndim)
+    )
+
+    hyperslab = ET.SubElement(
+        parent,
+        "DataItem",
+        {
+            "ItemType": "HyperSlab",
+            "Dimensions": shape_to_xdmf_dimensions(hyperslab_shape),
+        },
+    )
+    dimensions = ET.SubElement(
+        hyperslab,
+        "DataItem",
+        {"Dimensions": shape_to_xdmf_dimensions((3, item.ndim)), "Format": "XML"},
+    )
+    dimensions.text = "{} {} {}".format(
+        shape_to_xdmf_dimensions(
+            tuple(sliced_dimensions.get(i, 0) for i in range(item.ndim))
+        ),
+        shape_to_xdmf_dimensions(tuple(1 for _ in range(item.ndim))),
+        shape_to_xdmf_dimensions(
+            tuple(
+                1 if i in sliced_dimensions else item.shape[i] for i in range(item.ndim)
+            )
+        ),
+    )
+    add_hdf_dataitem(hyperslab, hdf_file, hdf_path)
+    return hyperslab
 
 
 def add_hdf_dataitem(
@@ -320,11 +373,19 @@ def add_topology(parent: ET.Element, hdf_file: h5py.File) -> ET.Element:
     return topology
 
 
+def is_complex(hdf_file: h5py.File, hdf_path: str) -> bool:
+    """
+    Returns true if and only if the dataset specifies that it is complex.
+    """
+    return bool(hdf_file[hdf_path].attrs.get("complex", 0))
+
+
 def add_geometry(parent: ET.Element, hdf_file: h5py.File) -> ET.Element:
     """
     Adds the geometry element to the parent.
     """
-    if not "/geometry/vertices" in hdf_file:
+    hdf_path = "/geometry/vertices"
+    if not hdf_path in hdf_file:
         raise MeshInformationMissing()
 
     coordinate_dimension = read_coordinate_dimension(hdf_file)
@@ -333,29 +394,11 @@ def add_geometry(parent: ET.Element, hdf_file: h5py.File) -> ET.Element:
         "Geometry",
         {"GeometryType": coordinate_dimension_to_type(coordinate_dimension)},
     )
-    add_hdf_dataitem(geometry, hdf_file, "/geometry/vertices")
+    complex_values = is_complex(hdf_file, hdf_path)
+    assert hdf_file[hdf_path].ndim == (3 if complex_values else 2)
+
+    add_sliced_hdf_dataitem(geometry, hdf_file, hdf_path, sliced_dimensions={2: 0})
     return geometry
-
-
-def add_column_selector_dataitem(
-    parent: ET.Element, hdf_file: h5py.File, hdf_path: str, column: int
-) -> ET.Element:
-    """
-    Adds a dataitem describing selected columns of a two dimensional dataset.
-    """
-    ndim = hdf_file[hdf_path].ndim
-    assert ndim == 2
-    shape = hdf_file[hdf_path].shape
-    assert column >= 0
-    assert column < shape[1]
-
-    dataitem = ET.SubElement(
-        parent,
-        "DataItem",
-        {"Format": "XML", "Dimensions": "3 {}".format(ndim)},
-    )
-    dataitem.text = "0 {} 1 1 {} 1".format(column, shape[0])
-    return dataitem
 
 
 def add_field(
@@ -370,54 +413,57 @@ def add_field(
     """
     hdf_path = "/fields/{}".format(field_name)
 
-    ndim = hdf_file[hdf_path].ndim
-    shape = hdf_file[hdf_path].shape
-    assert ndim >= 1
-    assert ndim <= 2
+    item = hdf_file[hdf_path]
+    shape = item.shape
+    complex_values = is_complex(hdf_file, hdf_path)
 
-    if ndim == 1:
-        attribute = ET.SubElement(
-            parent,
-            "Attribute",
-            {
-                "Name": field_name,
-                "Center": center,
-                "AttributeType": "Scalar",
-            },
-        )
-        add_hdf_dataitem(attribute, hdf_file, hdf_path)
-        return
+    field_rank = item.ndim - 1 if complex_values else item.ndim
 
-    if ndim == 2 and shape[1] == 3:
-        attribute = ET.SubElement(
-            parent,
-            "Attribute",
-            {
-                "Name": field_name,
-                "Center": center,
-                "AttributeType": "Vector",
-            },
-        )
-        add_hdf_dataitem(attribute, hdf_file, hdf_path)
-        return
+    assert field_rank >= 1
+    assert field_rank <= 2
 
-    for column in range(0, shape[1]):
-        attribute = ET.SubElement(
-            parent,
-            "Attribute",
-            {
-                "Name": "{}[{}]".format(field_name, column),
-                "Center": center,
-                "AttributeType": "Scalar",
-            },
-        )
-        hyperslab = ET.SubElement(
-            attribute,
-            "DataItem",
-            {"ItemType": "HyperSlab", "Dimensions": "{} 1".format(shape[0])},
-        )
-        add_column_selector_dataitem(hyperslab, hdf_file, hdf_path, column)
-        add_hdf_dataitem(hyperslab, hdf_file, hdf_path)
+    loop_variables = [(".real", 0), (".imag", 1)] if complex_values else [("", 0)]
+
+    for postfix, index in loop_variables:
+        if field_rank == 1:
+            attribute = ET.SubElement(
+                parent,
+                "Attribute",
+                {
+                    "Name": field_name + postfix,
+                    "Center": center,
+                    "AttributeType": "Scalar",
+                },
+            )
+            add_sliced_hdf_dataitem(attribute, hdf_file, hdf_path, {1: index})
+            continue
+
+        if field_rank == 2 and shape[1] == 3:
+            attribute = ET.SubElement(
+                parent,
+                "Attribute",
+                {
+                    "Name": field_name + postfix,
+                    "Center": center,
+                    "AttributeType": "Vector",
+                },
+            )
+            add_sliced_hdf_dataitem(attribute, hdf_file, hdf_path, {2: index})
+            continue
+
+        for column in range(0, shape[1]):
+            attribute = ET.SubElement(
+                parent,
+                "Attribute",
+                {
+                    "Name": "{}[{}]{}".format(field_name, column, postfix),
+                    "Center": center,
+                    "AttributeType": "Scalar",
+                },
+            )
+            add_sliced_hdf_dataitem(
+                attribute, hdf_file, hdf_path, {1: column, 2: index}
+            )
 
 
 def add_vertex_fields(parent: ET.Element, hdf_file: h5py.File) -> None:

@@ -113,10 +113,13 @@ int main(int argc, char **argv) {
   cpppetsc::writeToViewer(coordinates, &viewer); // dimension 3
 
   // Note that Paraview supports both "point arrays" and "cell arrays"
-  cpppetsc::writeToViewer(
-      Mesh::vector_type::fromGlobalMesh(mesh.cloneWithDofs(1, 0)), &viewer);
-  cpppetsc::writeToViewer(
-      Mesh::vector_type::fromGlobalMesh(mesh.cloneWithDofs(0, 1)), &viewer);
+  auto point_array =
+      Mesh::vector_type::fromGlobalMesh(mesh.cloneWithDofs(1, 0));
+  cpppetsc::setName("point_array", &point_array);
+  cpppetsc::writeToViewer(point_array, &viewer);
+  auto cell_array = Mesh::vector_type::fromGlobalMesh(mesh.cloneWithDofs(0, 1));
+  cpppetsc::setName("cell_array", &cell_array);
+  cpppetsc::writeToViewer(cell_array, &viewer);
 
   fprintf(stderr, "The data has been written to the file \"output.ae108\".\n");
 }

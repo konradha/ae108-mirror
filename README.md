@@ -64,18 +64,17 @@ Of course, these libraries are covered by their own license terms. Since PETSc d
 Once you have installed these libraries, run CMake to build the project, choosing a location to install the library to by specifying ```CMAKE_INSTALL_PREFIX```; see the following example. Of course, depending on your setup, you might need to add a ```-DCMAKE_PREFIX_PATH='...'``` parameter to tell CMake the location of the third party library installations.
 
 ```bash
-mkdir build
-cd build
 cmake \
+    -S . \
+    -B build \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX='install/to/path' \
-    ..
+    -DCMAKE_INSTALL_PREFIX='install/to/path'
 ```
 
-Now run ```make``` to build and install:
+Now use ```cmake``` to build and install:
 
 ```bash
-make -j$(nproc) install
+cmake --build build --target install -- -j$(nproc)
 ```
 
 ## Usage

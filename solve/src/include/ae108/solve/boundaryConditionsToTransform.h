@@ -112,8 +112,22 @@ AffineTransform<Policy> boundaryConditionsToTransform(
   auto shift = cpppetsc::createTransformOutput(transform);
 
   {
+    const auto nonZeroesPerRow =
+        size_type{1} +
+        (boundaryConditions.empty()
+             ? size_type{0}
+             : static_cast<size_type>(
+                   std::max_element(boundaryConditions.begin(),
+                                    boundaryConditions.end(),
+                                    [](const BoundaryCondition &x,
+                                       const BoundaryCondition &y) {
+                                      return x.source.size() < y.source.size();
+                                    })
+                       ->source.size()));
+
     const auto localRange = matrix.localRowRange();
-    auto matrixReplacer = transform.assemblyView().replace();
+    auto matrixReplacer =
+        transform.preallocatedAssemblyView(nonZeroesPerRow).replace();
     for (auto row = localRange.first; row < localRange.second; ++row) {
       if (!eliminatedRows[row]) {
         const auto col = row;

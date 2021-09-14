@@ -134,8 +134,8 @@ public:
    *
    * @param nonZeroesPerRow The maximum number of nonzero values per row to
    * expect. If the matrix is of type MPIAIJ, then this parameter defines the
-   * number of nonzero values in the diagonal block. No space for
-   * values in the off-diagonal block is allocated in this case.
+   * number of nonzero values in the diagonal block. The same number of values
+   * is permitted in the off-diagonal block.
    *
    * @throw InvalidParametersException if matrix is not of type SEQAIJ or
    * MPIAIJ.
@@ -415,7 +415,8 @@ Matrix<Policy>::preallocatedAssemblyView(const size_type nonZeroesPerRow) {
   if (std::strcmp(type, MATSEQAIJ) == 0) {
     MatSeqAIJSetPreallocation(_mat.get(), nonZeroesPerRow, nullptr);
   } else if (std::strcmp(type, MATMPIAIJ) == 0) {
-    MatMPIAIJSetPreallocation(_mat.get(), nonZeroesPerRow, nullptr, 0, nullptr);
+    MatMPIAIJSetPreallocation(_mat.get(), nonZeroesPerRow, nullptr,
+                              nonZeroesPerRow, nullptr);
   } else {
     throw InvalidParametersException{};
   }

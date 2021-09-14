@@ -47,7 +47,7 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./asHermitianTransposedMatrix.cc
             ./asInverseMatrix.cc
             ./asSchurComplement.cc
-            ./asTransformedMatrix.cc
+            ./asThAT.cc
             ./asTransposedMatrix.cc
             ./clone.cc
             ./computeElementsOfMatrix.cc

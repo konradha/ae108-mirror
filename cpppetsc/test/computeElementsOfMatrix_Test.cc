@@ -17,7 +17,7 @@
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
 #include "ae108/cpppetsc/asInverseMatrix.h"
 #include "ae108/cpppetsc/asSchurComplement.h"
-#include "ae108/cpppetsc/asTransformedMatrix.h"
+#include "ae108/cpppetsc/asThAT.h"
 #include "ae108/cpppetsc/asTransposedMatrix.h"
 #include "ae108/cpppetsc/computeElementsOfMatrix.h"
 #include "ae108/cppptest/Matchers.h"
@@ -62,13 +62,13 @@ TYPED_TEST(computeElementsOfMatrix_Test,
 
 TYPED_TEST(computeElementsOfMatrix_Test,
            computing_the_elements_of_transformed_matrix_works) {
-  const auto result = computeElementsOfMatrix(
-      asTransformedMatrix(&this->matrix, &this->transform));
+  const auto result =
+      computeElementsOfMatrix(asThAT(&this->matrix, &this->transform));
 
-  EXPECT_THAT(result, ScalarEqIfLocal(0, 0, 7.));
-  EXPECT_THAT(result, ScalarEqIfLocal(0, 1, -18.));
-  EXPECT_THAT(result, ScalarEqIfLocal(1, 0, -15.));
-  EXPECT_THAT(result, ScalarEqIfLocal(1, 1, 36.));
+  EXPECT_THAT(result, ScalarEqIfLocal(0, 0, 1.));
+  EXPECT_THAT(result, ScalarEqIfLocal(0, 1, 4.));
+  EXPECT_THAT(result, ScalarEqIfLocal(1, 0, 7.));
+  EXPECT_THAT(result, ScalarEqIfLocal(1, 1, 10.));
 }
 
 TYPED_TEST(computeElementsOfMatrix_Test,

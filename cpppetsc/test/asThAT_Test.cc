@@ -15,7 +15,7 @@
 #include "ae108/cpppetsc/Matrix.h"
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
-#include "ae108/cpppetsc/asTransformedMatrix.h"
+#include "ae108/cpppetsc/asThAT.h"
 #include "ae108/cpppetsc/createTransformInput.h"
 #include "ae108/cpppetsc/multiply.h"
 #include "ae108/cppptest/Matchers.h"
@@ -29,7 +29,7 @@ namespace ae108 {
 namespace cpppetsc {
 namespace {
 
-template <class Policy> struct asTransformedMatrix_Test : Test {
+template <class Policy> struct asThAT_Test : Test {
   using matrix_type = Matrix<Policy>;
 
   const matrix_type matrix = matrix_type::fromList({
@@ -41,7 +41,8 @@ template <class Policy> struct asTransformedMatrix_Test : Test {
       {5., 6.},
   });
   const matrix_type nonsquare_transform = matrix_type::fromList({
-      {3., 4.},
+      {3.},
+      {4.},
   });
 #ifdef AE108_PETSC_COMPLEX
   const matrix_type complex_transform = matrix_type::fromList({
@@ -53,38 +54,32 @@ template <class Policy> struct asTransformedMatrix_Test : Test {
 
 using Policies = Types<SequentialComputePolicy, ParallelComputePolicy>;
 
-TYPED_TEST_CASE(asTransformedMatrix_Test, Policies);
+TYPED_TEST_CASE(asThAT_Test, Policies);
 
-TYPED_TEST(asTransformedMatrix_Test,
-           first_column_is_correct_for_square_transform) {
-  const auto matrix =
-      asTransformedMatrix(&this->matrix, &this->square_transform);
+TYPED_TEST(asThAT_Test, first_column_is_correct_for_square_transform) {
+  const auto matrix = asThAT(&this->matrix, &this->square_transform);
 
   auto input = createTransformInput(matrix);
   input.unwrap().replace()(0) = 1.;
   const auto result = multiply(matrix, input);
 
-  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, 3. * 3. + 8. * 4.));
-  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, 3. * 5. + 8. * 6.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, 3. * 3. + 10. * 5.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, 3. * 4. + 10. * 6.));
 }
 
-TYPED_TEST(asTransformedMatrix_Test,
-           second_column_is_correct_for_square_transform) {
-  const auto matrix =
-      asTransformedMatrix(&this->matrix, &this->square_transform);
+TYPED_TEST(asThAT_Test, second_column_is_correct_for_square_transform) {
+  const auto matrix = asThAT(&this->matrix, &this->square_transform);
 
   auto input = createTransformInput(matrix);
   input.unwrap().replace()(1) = 1.;
   const auto result = multiply(matrix, input);
 
-  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, 5. * 3. + 12. * 4.));
-  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, 5. * 5. + 12. * 6.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, 4. * 3. + 12. * 5.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, 4. * 4. + 12. * 6.));
 }
 
-TYPED_TEST(asTransformedMatrix_Test,
-           result_is_correct_for_nonsquare_transform) {
-  const auto matrix =
-      asTransformedMatrix(&this->matrix, &this->nonsquare_transform);
+TYPED_TEST(asThAT_Test, result_is_correct_for_nonsquare_transform) {
+  const auto matrix = asThAT(&this->matrix, &this->nonsquare_transform);
 
   auto input = createTransformInput(matrix);
   input.unwrap().replace()(0) = 1.;
@@ -94,10 +89,8 @@ TYPED_TEST(asTransformedMatrix_Test,
 }
 
 #ifdef AE108_PETSC_COMPLEX
-TYPED_TEST(asTransformedMatrix_Test,
-           first_column_correct_for_complex_transform) {
-  const auto matrix =
-      asTransformedMatrix(&this->matrix, &this->complex_transform);
+TYPED_TEST(asThAT_Test, first_column_correct_for_complex_transform) {
+  const auto matrix = asThAT(&this->matrix, &this->complex_transform);
 
   auto input = createTransformInput(matrix);
   input.unwrap().replace()(0) = 1.;
@@ -107,9 +100,8 @@ TYPED_TEST(asTransformedMatrix_Test,
   EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, 0.));
 }
 
-TYPED_TEST(asTransformedMatrix_Test, second) {
-  const auto matrix =
-      asTransformedMatrix(&this->matrix, &this->complex_transform);
+TYPED_TEST(asThAT_Test, second) {
+  const auto matrix = asThAT(&this->matrix, &this->complex_transform);
 
   auto input = createTransformInput(matrix);
   input.unwrap().replace()(1) = 1.;

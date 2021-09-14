@@ -31,7 +31,7 @@ add_executable(${PROJECT_NAME}-CppPetscTests
                ./asHermitianTransposedMatrix_Test.cc
                ./asInverseMatrix_Test.cc
                ./asSchurComplement_Test.cc
-               ./asTransformedMatrix_Test.cc
+               ./asThAT_Test.cc
                ./asTransposedMatrix_Test.cc
                ./clone_Test.cc
                ./computeElementsOfMatrix_Test.cc

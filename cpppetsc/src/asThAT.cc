@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "ae108/cpppetsc/asTransformedMatrix.h"
+#include "ae108/cpppetsc/asThAT.h"
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
 
@@ -20,12 +20,12 @@ namespace ae108 {
 namespace cpppetsc {
 
 template Matrix<SequentialComputePolicy>
-asTransformedMatrix(const Matrix<SequentialComputePolicy> *,
-                    const Matrix<SequentialComputePolicy> *);
+asThAT(const Matrix<SequentialComputePolicy> *,
+       const Matrix<SequentialComputePolicy> *);
 
 template Matrix<ParallelComputePolicy>
-asTransformedMatrix(const Matrix<ParallelComputePolicy> *,
-                    const Matrix<ParallelComputePolicy> *);
+asThAT(const Matrix<ParallelComputePolicy> *,
+       const Matrix<ParallelComputePolicy> *);
 
 } // namespace cpppetsc
 } // namespace ae108

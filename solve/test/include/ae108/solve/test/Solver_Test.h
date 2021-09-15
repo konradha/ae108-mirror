@@ -76,8 +76,8 @@ template <class Policy> struct Assembler_Mock {
       const auto x = displacements(0);
       const auto y = displacements(1);
 
-      replacer(0) = 2. * std::real(x - 1.);
-      replacer(1) = 2. * std::real(y - 2.);
+      replacer(0) = 2. * (x - 1);
+      replacer(1) = 2. * (y - 2.);
     }
   }
 

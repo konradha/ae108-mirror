@@ -22,7 +22,7 @@ namespace ae108 {
 namespace cpppetsc {
 
 /**
- * @brief Returns a matrix that behaves like the transpose.
+ * @brief Returns a matrix that behaves like the Hermitian transpose.
  *
  * Note that the matrix is not actually computed, but the returned matrix
  * stores a reference to the given matrix to compute the result of
@@ -31,13 +31,13 @@ namespace cpppetsc {
  * @param matrix Valid nonzero pointer.
  */
 template <class Policy>
-Matrix<Policy> asTransposedMatrix(const Matrix<Policy> *matrix);
+Matrix<Policy> asHermitianTransposedMatrix(const Matrix<Policy> *matrix);
 
 extern template Matrix<SequentialComputePolicy>
-asTransposedMatrix(const Matrix<SequentialComputePolicy> *matrix);
+asHermitianTransposedMatrix(const Matrix<SequentialComputePolicy> *matrix);
 
 extern template Matrix<ParallelComputePolicy>
-asTransposedMatrix(const Matrix<ParallelComputePolicy> *matrix);
+asHermitianTransposedMatrix(const Matrix<ParallelComputePolicy> *matrix);
 
 } // namespace cpppetsc
 } // namespace ae108
@@ -49,11 +49,11 @@ namespace ae108 {
 namespace cpppetsc {
 
 template <class Policy>
-Matrix<Policy> asTransposedMatrix(const Matrix<Policy> *matrix) {
+Matrix<Policy> asHermitianTransposedMatrix(const Matrix<Policy> *matrix) {
   assert(matrix);
 
   auto mat = Mat{};
-  Policy::handleError(MatCreateTranspose(matrix->data(), &mat));
+  Policy::handleError(MatCreateHermitianTranspose(matrix->data(), &mat));
   return Matrix<Policy>(makeUniqueEntity<Policy>(mat));
 }
 

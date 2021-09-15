@@ -15,7 +15,7 @@
 #include "ae108/cpppetsc/Matrix.h"
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
-#include "ae108/cpppetsc/asTransposedMatrix.h"
+#include "ae108/cpppetsc/asHermitianTransposedMatrix.h"
 #include "ae108/cpppetsc/createTransformOutput.h"
 #include "ae108/cpppetsc/multiply.h"
 #include "ae108/cppptest/Matchers.h"
@@ -29,7 +29,7 @@ namespace ae108 {
 namespace cpppetsc {
 namespace {
 
-template <class Policy> struct asTransposedMatrix_Test : Test {
+template <class Policy> struct asHermitianTransposedMatrix_Test : Test {
   using matrix_type = Matrix<Policy>;
 
   const matrix_type matrix = matrix_type::fromList({
@@ -52,10 +52,10 @@ template <class Policy> struct asTransposedMatrix_Test : Test {
 
 using Policies = Types<SequentialComputePolicy, ParallelComputePolicy>;
 
-TYPED_TEST_CASE(asTransposedMatrix_Test, Policies);
+TYPED_TEST_CASE(asHermitianTransposedMatrix_Test, Policies);
 
-TYPED_TEST(asTransposedMatrix_Test, first_column_is_correct) {
-  const auto matrix = asTransposedMatrix(&this->matrix);
+TYPED_TEST(asHermitianTransposedMatrix_Test, first_column_is_correct) {
+  const auto matrix = asHermitianTransposedMatrix(&this->matrix);
 
   auto input = createTransformOutput(matrix);
   input.unwrap().replace()(0) = 1.;
@@ -65,8 +65,8 @@ TYPED_TEST(asTransposedMatrix_Test, first_column_is_correct) {
   EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, 2.));
 }
 
-TYPED_TEST(asTransposedMatrix_Test, second_column_is_correct) {
-  const auto matrix = asTransposedMatrix(&this->matrix);
+TYPED_TEST(asHermitianTransposedMatrix_Test, second_column_is_correct) {
+  const auto matrix = asHermitianTransposedMatrix(&this->matrix);
 
   auto input = createTransformOutput(matrix);
   input.unwrap().replace()(1) = 1.;
@@ -77,28 +77,30 @@ TYPED_TEST(asTransposedMatrix_Test, second_column_is_correct) {
 }
 
 #ifdef AE108_PETSC_COMPLEX
-TYPED_TEST(asTransposedMatrix_Test, first_column_is_nonhermitian_transpose) {
+TYPED_TEST(asHermitianTransposedMatrix_Test,
+           first_column_is_hermitian_transpose) {
   using value_type = typename TestFixture::matrix_type::value_type;
-  const auto matrix = asTransposedMatrix(&this->complex_matrix);
+  const auto matrix = asHermitianTransposedMatrix(&this->complex_matrix);
 
   auto input = createTransformOutput(matrix);
   input.unwrap().replace()(0) = 1.;
   const auto result = multiply(matrix, input);
 
-  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, value_type{0, 1.}));
-  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, value_type{0, 2.}));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, value_type{0, -1.}));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, value_type{0, -2.}));
 }
 
-TYPED_TEST(asTransposedMatrix_Test, second_column_is_nonhermitian_transpose) {
+TYPED_TEST(asHermitianTransposedMatrix_Test,
+           second_column_is_hermitian_transpose) {
   using value_type = typename TestFixture::matrix_type::value_type;
-  const auto matrix = asTransposedMatrix(&this->complex_matrix);
+  const auto matrix = asHermitianTransposedMatrix(&this->complex_matrix);
 
   auto input = createTransformOutput(matrix);
   input.unwrap().replace()(1) = 1.;
   const auto result = multiply(matrix, input);
 
-  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, value_type{0, 3.}));
-  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, value_type{0, 4.}));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, value_type{0, -3.}));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, value_type{0, -4.}));
 }
 #endif
 

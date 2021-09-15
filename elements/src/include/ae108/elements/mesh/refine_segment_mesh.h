@@ -57,7 +57,8 @@ Mesh<Point> refine_segment_mesh(const Mesh<Point> &unrefined_mesh,
   typename Mesh::Positions positions;
   typename Mesh::Connectivity connectivity;
 
-  for (std::size_t i = 0; i < unrefined_mesh.number_of_positions(); i++)
+  const auto number_of_positions = unrefined_mesh.number_of_positions();
+  for (auto i = decltype(number_of_positions){0}; i < number_of_positions; i++)
     positions.push_back(unrefined_mesh.position_of_vertex(i));
 
   for (const auto &segment : unrefined_mesh.connectivity()) {
@@ -71,7 +72,7 @@ Mesh<Point> refine_segment_mesh(const Mesh<Point> &unrefined_mesh,
     const auto divisions =
         std::ceil((target - source).norm() / max_segment_length);
 
-    std::size_t source_id = segment[0];
+    auto source_id = segment[0];
     for (std::size_t increment = 1; increment < divisions; increment++) {
       connectivity.push_back({source_id, positions.size()});
       positions.push_back([&]() {

@@ -20,11 +20,11 @@ namespace mesh {
 
 template Mesh<tensor::Tensor<double, 2>>
 refine_segment_mesh(const Mesh<tensor::Tensor<double, 2>> &unrefined_mesh,
-                    const double &max_segment_length) noexcept;
+                    const double max_segment_length) noexcept;
 
 template Mesh<tensor::Tensor<double, 3>>
 refine_segment_mesh(const Mesh<tensor::Tensor<double, 3>> &unrefined_mesh,
-                    const double &max_segment_length) noexcept;
+                    const double max_segment_length) noexcept;
 
 } // namespace mesh
 } // namespace elements

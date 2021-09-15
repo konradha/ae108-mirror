@@ -32,15 +32,15 @@ namespace mesh {
  */
 template <class Point>
 Mesh<Point> refine_segment_mesh(const Mesh<Point> &unrefined_mesh,
-                                const double &max_segment_length) noexcept;
+                                const double max_segment_length) noexcept;
 
 extern template Mesh<tensor::Tensor<double, 2>>
 refine_segment_mesh(const Mesh<tensor::Tensor<double, 2>> &unrefined_mesh,
-                    const double &max_segment_length) noexcept;
+                    const double max_segment_length) noexcept;
 
 extern template Mesh<tensor::Tensor<double, 3>>
 refine_segment_mesh(const Mesh<tensor::Tensor<double, 3>> &unrefined_mesh,
-                    const double &max_segment_length) noexcept;
+                    const double max_segment_length) noexcept;
 
 } // namespace mesh
 } // namespace elements
@@ -52,7 +52,7 @@ namespace mesh {
 
 template <class Point>
 Mesh<Point> refine_segment_mesh(const Mesh<Point> &unrefined_mesh,
-                                const double &max_segment_length) noexcept {
+                                const double max_segment_length) noexcept {
   using Mesh = Mesh<Point>;
   typename Mesh::Positions positions;
   typename Mesh::Connectivity connectivity;

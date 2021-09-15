@@ -65,9 +65,6 @@ Mesh<Point> refine_segment_mesh(const Mesh<Point> &unrefined_mesh,
     positions.push_back(unrefined_mesh.position_of_vertex(i));
 
   for (const auto &segment : unrefined_mesh.connectivity()) {
-
-    const auto &source =
-  for (const auto &segment : unrefined_mesh.connectivity()) {
     assert(segment.size() == 2u && "A segment connects two vertices.");
 
     const auto &source =

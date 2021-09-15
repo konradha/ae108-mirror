@@ -23,36 +23,36 @@
 namespace ae108 {
 namespace elements {
 
-template <class ValueType_, std::size_t Dimension_>
+template <class RealType_, std::size_t Dimension_>
 struct TimoshenkoBeamProperties;
 
-template <class ValueType_> struct TimoshenkoBeamProperties<ValueType_, 3> {
-  using value_type = ValueType_;
+template <class RealType_> struct TimoshenkoBeamProperties<RealType_, 3> {
+  using real_type = RealType_;
 
-  value_type young_modulus;
-  value_type shear_modulus;
+  real_type young_modulus;
+  real_type shear_modulus;
 
-  value_type shear_correction_factor_y;
-  value_type shear_correction_factor_z;
+  real_type shear_correction_factor_y;
+  real_type shear_correction_factor_z;
 
-  value_type area;
+  real_type area;
 
-  value_type area_moment_z;
-  value_type area_moment_y;
-  value_type polar_moment_x;
+  real_type area_moment_z;
+  real_type area_moment_y;
+  real_type polar_moment_x;
 };
 
-template <class ValueType_> struct TimoshenkoBeamProperties<ValueType_, 2> {
-  using value_type = ValueType_;
+template <class RealType_> struct TimoshenkoBeamProperties<RealType_, 2> {
+  using real_type = RealType_;
 
-  value_type young_modulus;
-  value_type shear_modulus;
+  real_type young_modulus;
+  real_type shear_modulus;
 
-  value_type shear_correction_factor_y;
+  real_type shear_correction_factor_y;
 
-  value_type area;
+  real_type area;
 
-  value_type area_moment_z;
+  real_type area_moment_z;
 };
 
 /**
@@ -73,9 +73,11 @@ timoshenko_beam_stiffness_matrix(
  * in Cook et. al (2002), "Concepts and applications of Finite Element
  * Analysis", 4th ed., pp.24-32
  */
-template <std::size_t Dimension_>
+template <std::size_t Dimension_, class ValueType_ = double,
+          class RealType_ = double>
 struct TimoshenkoBeamElement final
-    : ElementBase<TimoshenkoBeamElement<Dimension_>, std::size_t, double, 2,
+    : ElementBase<TimoshenkoBeamElement<Dimension_, ValueType_, RealType_>,
+                  std::size_t, ValueType_, RealType_, 2,
                   (Dimension_ * (Dimension_ + 1)) / 2> {
 public:
   explicit TimoshenkoBeamElement(
@@ -98,8 +100,9 @@ private:
   typename TimoshenkoBeamElement::StiffnessMatrix stiffness_matrix_;
 };
 
-template <std::size_t Dimension_>
-struct ComputeEnergyTrait<TimoshenkoBeamElement<Dimension_>> {
+template <std::size_t Dimension_, class ValueType_, class RealType_>
+struct ComputeEnergyTrait<
+    TimoshenkoBeamElement<Dimension_, ValueType_, RealType_>> {
   template <class Element>
   typename Element::Energy
   operator()(const Element &element,
@@ -111,8 +114,9 @@ struct ComputeEnergyTrait<TimoshenkoBeamElement<Dimension_>> {
   }
 };
 
-template <std::size_t Dimension_>
-struct ComputeForcesTrait<TimoshenkoBeamElement<Dimension_>> {
+template <std::size_t Dimension_, class ValueType_, class RealType_>
+struct ComputeForcesTrait<
+    TimoshenkoBeamElement<Dimension_, ValueType_, RealType_>> {
   template <class Element>
   typename Element::Forces
   operator()(const Element &element,
@@ -125,8 +129,9 @@ struct ComputeForcesTrait<TimoshenkoBeamElement<Dimension_>> {
   }
 };
 
-template <std::size_t Dimension_>
-struct ComputeStiffnessMatrixTrait<TimoshenkoBeamElement<Dimension_>> {
+template <std::size_t Dimension_, class ValueType_, class RealType_>
+struct ComputeStiffnessMatrixTrait<
+    TimoshenkoBeamElement<Dimension_, ValueType_, RealType_>> {
   template <class Element>
   typename Element::StiffnessMatrix
   operator()(const Element &element,

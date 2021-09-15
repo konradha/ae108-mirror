@@ -70,7 +70,7 @@ constexpr auto connectivity = Connectivity{{
 // space.
 
 using VertexPositions =
-    std::array<std::array<Mesh::value_type, dimension>, number_of_vertices>;
+    std::array<std::array<Mesh::real_type, dimension>, number_of_vertices>;
 constexpr auto vertex_positions = VertexPositions{{
     {{0., 0.}},
     {{1., 0.}},
@@ -84,7 +84,8 @@ constexpr auto vertex_positions = VertexPositions{{
 
 // First, we select a Hookean (linear elastic) material model in 2D.
 
-using MaterialModel = materialmodels::Hookean<dimension>;
+using MaterialModel =
+    materialmodels::Hookean<dimension, Vector::value_type, Vector::real_type>;
 
 // We'll choose the Quad4 shape functions (4 shape functions) that are defined
 // in 2D reference space.
@@ -104,11 +105,14 @@ using Quadrature = quadrature::Quadrature<quadrature::QuadratureType::Cube,
 // on the selected quadrature rule and the embedding. In the case of the
 // isoparametric embedding, this embedding is specified by the "Shape".
 
-using Integrator = integrator::IsoparametricIntegrator<Shape, Quadrature>;
+using Integrator =
+    integrator::IsoparametricIntegrator<Shape, Quadrature, Vector::value_type,
+                                        Vector::real_type>;
 
 // Now we are ready to select our element type.
 
-using Element = elements::CoreElement<MaterialModel, Integrator>;
+using Element = elements::CoreElement<MaterialModel, Integrator,
+                                      Vector::value_type, Vector::real_type>;
 
 // We will assemble e.g. energy using a collection of elements. This is done by
 // the assembler. (The list DefaultFeaturePlugins contain the features (e.g.

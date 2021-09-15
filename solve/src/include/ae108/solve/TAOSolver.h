@@ -15,6 +15,8 @@
 
 #pragma once
 
+#ifndef AE108_PETSC_COMPLEX
+
 #include "ae108/assembly/AssemblerTypeTraits.h"
 #include "ae108/cpppetsc/MeshBoundaryCondition.h"
 #include "ae108/cpppetsc/TAOSolver.h"
@@ -34,6 +36,7 @@ public:
   using mesh_type = typename assembly::MeshTypeTrait<Assembler>::type;
   using size_type = typename mesh_type::size_type;
   using value_type = typename mesh_type::value_type;
+  using real_type = typename mesh_type::real_type;
   using vector_type = typename mesh_type::vector_type;
   using matrix_type = typename mesh_type::matrix_type;
 
@@ -61,7 +64,7 @@ public:
                   const double time, const Assembler *const assembler) const;
 
   using LocalEnergyAssembler = std::function<void(
-      const cpppetsc::local<vector_type> &, double, value_type *)>;
+      const cpppetsc::local<vector_type> &, double, real_type *)>;
 
   using LocalForceVectorAssembler =
       std::function<void(const cpppetsc::local<vector_type> &, double,
@@ -92,7 +95,7 @@ public:
                   LocalStiffnessMatrixAssembler assemblerStiffnessMatrix) const;
 
   using DistributedEnergyAssembler = std::function<void(
-      const cpppetsc::distributed<vector_type> &, double, value_type *)>;
+      const cpppetsc::distributed<vector_type> &, double, real_type *)>;
 
   using DistributedForceVectorAssembler =
       std::function<void(const cpppetsc::distributed<vector_type> &, double,
@@ -150,7 +153,7 @@ TAOSolver<Assembler>::computeSolution(
       boundaryConditions, std::move(initialGuess), time,
       LocalEnergyAssembler(
           [assembler](const cpppetsc::local<vector_type> &localDisplacements,
-                      const double time, value_type *const localEnergy) {
+                      const double time, real_type *const localEnergy) {
             assembler->assembleEnergy(localDisplacements, time, localEnergy);
           }),
       LocalForceVectorAssembler(
@@ -188,14 +191,14 @@ TAOSolver<Assembler>::computeSolution(
   const auto distributedEnergyAssembler =
       [&assembleEnergy, &mesh,
        &localDisplacements](const cpppetsc::distributed<vector_type> &input,
-                            const double time, value_type *const output) {
+                            const double time, real_type *const output) {
         mesh.copyToLocalVector(input, &localDisplacements);
 
-        *output = value_type{};
+        *output = real_type{};
         assembleEnergy(localDisplacements, time, output);
 
         policy_type::handleError(MPI_Allreduce(MPI_IN_PLACE, output, 1,
-                                               MPIU_SCALAR, MPIU_SUM,
+                                               MPIU_REAL, MPIU_SUM,
                                                policy_type::communicator()));
       };
 
@@ -274,7 +277,7 @@ TAOSolver<Assembler>::computeSolution(
   return solver.solve(
       [time, &assembleEnergy](const cpppetsc::distributed<vector_type> &input,
                               double *const output) {
-        *output = value_type{};
+        *output = real_type{};
         assembleEnergy(input, time, output);
       },
       [time,
@@ -294,3 +297,5 @@ TAOSolver<Assembler>::computeSolution(
 
 } // namespace solve
 } // namespace ae108
+
+#endif

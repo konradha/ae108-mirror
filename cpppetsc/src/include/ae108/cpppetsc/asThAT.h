@@ -23,7 +23,7 @@ namespace cpppetsc {
 
 /**
  * @brief Returns a matrix that behaves like the transformed matrix
- * T * M * T^t.
+ * T^H * A * T, where ^H denotes the Hermitian transpose.
  *
  * Note that the matrix is not actually computed, but the return matrix
  * stores a reference to the given matrices to compute the result of
@@ -33,15 +33,15 @@ namespace cpppetsc {
  * @param transform Valid nonzero pointer.
  */
 template <class Policy>
-Matrix<Policy> asTransformedMatrix(const Matrix<Policy> *matrix,
-                                   const Matrix<Policy> *transform);
+Matrix<Policy> asThAT(const Matrix<Policy> *matrix,
+                      const Matrix<Policy> *transform);
 
 extern template Matrix<SequentialComputePolicy>
-asTransformedMatrix(const Matrix<SequentialComputePolicy> *,
-                    const Matrix<SequentialComputePolicy> *);
+asThAT(const Matrix<SequentialComputePolicy> *,
+       const Matrix<SequentialComputePolicy> *);
 extern template Matrix<ParallelComputePolicy>
-asTransformedMatrix(const Matrix<ParallelComputePolicy> *,
-                    const Matrix<ParallelComputePolicy> *);
+asThAT(const Matrix<ParallelComputePolicy> *,
+       const Matrix<ParallelComputePolicy> *);
 
 } // namespace cpppetsc
 } // namespace ae108
@@ -56,7 +56,7 @@ namespace ae108 {
 namespace cpppetsc {
 
 namespace detail {
-namespace asTransformedMatrix {
+namespace asThAT {
 
 /**
  * @brief Stores the data needed to compute the matrix by vector
@@ -72,7 +72,7 @@ template <class Policy> struct Data {
 };
 
 /**
- * @brief Computes `transform * matrix * transform^t * in` using the
+ * @brief Computes `transform^H * matrix * transform * in` using the
  * matrices in the context.
  */
 template <class Policy> PetscErrorCode multiply(Mat mat, Vec in, Vec out) {
@@ -83,11 +83,11 @@ template <class Policy> PetscErrorCode multiply(Mat mat, Vec in, Vec out) {
   }();
 
   Policy::handleError(
-      MatMultTranspose(data->transform.data(), in, data->x.unwrap().data()));
+      MatMult(data->transform.data(), in, data->x.unwrap().data()));
   Policy::handleError(MatMult(data->matrix.data(), data->x.unwrap().data(),
                               data->y.unwrap().data()));
-  Policy::handleError(
-      MatMult(data->transform.data(), data->y.unwrap().data(), out));
+  Policy::handleError(MatMultHermitianTranspose(data->transform.data(),
+                                                data->y.unwrap().data(), out));
 
   return PetscErrorCode{};
 }
@@ -118,12 +118,12 @@ Matrix<Policy> shallowCopy(const Matrix<Policy> *matrix) {
   return Matrix<Policy>(makeUniqueEntity<Policy>(matrix->data()));
 }
 
-} // namespace asTransformedMatrix
+} // namespace asThAT
 } // namespace detail
 
 template <class Policy>
-Matrix<Policy> asTransformedMatrix(const Matrix<Policy> *matrix,
-                                   const Matrix<Policy> *transform) {
+Matrix<Policy> asThAT(const Matrix<Policy> *matrix,
+                      const Matrix<Policy> *transform) {
   assert(matrix);
   assert(transform);
 
@@ -138,29 +138,29 @@ Matrix<Policy> asTransformedMatrix(const Matrix<Policy> *matrix,
 
   auto shell = [&]() {
     auto mat = Mat{};
-    auto data = std::unique_ptr<detail::asTransformedMatrix::Data<Policy>>(
-        new detail::asTransformedMatrix::Data<Policy>{
-            detail::asTransformedMatrix::shallowCopy<Policy>(matrix),
-            detail::asTransformedMatrix::shallowCopy<Policy>(transform),
+    auto data = std::unique_ptr<detail::asThAT::Data<Policy>>(
+        new detail::asThAT::Data<Policy>{
+            detail::asThAT::shallowCopy<Policy>(matrix),
+            detail::asThAT::shallowCopy<Policy>(transform),
             createTransformInput(*matrix), createTransformOutput(*matrix)});
 
-    Policy::handleError(MatCreateShell(Policy::communicator(), localSize.first,
-                                       localSize.first, PETSC_DETERMINE,
+    Policy::handleError(MatCreateShell(Policy::communicator(), localSize.second,
+                                       localSize.second, PETSC_DETERMINE,
                                        PETSC_DETERMINE, data.get(), &mat));
 
     auto result = Matrix<Policy>(makeUniqueEntity<Policy>(mat));
 
-    Policy::handleError(MatShellSetOperation(
-        result.data(), MATOP_DESTROY,
-        (void (*)(void))detail::asTransformedMatrix::destroy<Policy>));
+    Policy::handleError(
+        MatShellSetOperation(result.data(), MATOP_DESTROY,
+                             (void (*)(void))detail::asThAT::destroy<Policy>));
     data.release();
 
     return result;
   }();
 
-  Policy::handleError(MatShellSetOperation(
-      shell.data(), MATOP_MULT,
-      (void (*)(void))detail::asTransformedMatrix::multiply<Policy>));
+  Policy::handleError(
+      MatShellSetOperation(shell.data(), MATOP_MULT,
+                           (void (*)(void))detail::asThAT::multiply<Policy>));
 
   return shell;
 }

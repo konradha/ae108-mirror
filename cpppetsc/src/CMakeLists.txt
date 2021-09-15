@@ -44,14 +44,17 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./Vector.cc
             ./Vector_fwd.cc
             ./Viewer.cc
+            ./asHermitianTransposedMatrix.cc
             ./asInverseMatrix.cc
             ./asSchurComplement.cc
-            ./asTransformedMatrix.cc
+            ./asThAT.cc
+            ./asTransposedMatrix.cc
             ./clone.cc
+            ./computeElementsOfMatrix.cc
             ./computeSchurComplement.cc
             ./copy.cc
-            ./createRhsTransform.cc
             ./createLhsTransform.cc
+            ./createRhsTransform.cc
             ./createTransformInput.cc
             ./createTransformOutput.cc
             ./createVectorFromSource.cc

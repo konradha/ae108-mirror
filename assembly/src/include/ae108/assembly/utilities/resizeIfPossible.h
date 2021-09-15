@@ -60,8 +60,9 @@ void resizeIfPossible(std::vector<T> *const container,
 }
 
 template <class T, std::size_t Size>
-void resizeIfPossible(std::array<T, Size> *const container,
-                      const typename std::array<T, Size>::size_type size) {
+void resizeIfPossible(std::array<T, Size> *const container [[maybe_unused]],
+                      const typename std::array<T, Size>::size_type size
+                      [[maybe_unused]]) {
   assert(container);
   assert(Size == size);
 }

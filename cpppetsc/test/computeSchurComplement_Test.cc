@@ -20,7 +20,7 @@
 #include "ae108/cppptest/Matchers.h"
 #include <gmock/gmock.h>
 
-using ae108::cppptest::AlmostEqIfLocal;
+using ae108::cppptest::ScalarEqIfLocal;
 using testing::Test;
 using testing::Types;
 
@@ -65,10 +65,10 @@ TYPED_TEST(computeSchurComplement_Test,
   const auto matrix = computeSchurComplement(asSchurComplement(
       &this->mat_00, &this->mat_01, &this->mat_10, &this->mat_11));
 
-  EXPECT_THAT(matrix, AlmostEqIfLocal(0, 0, 7. - 3. * 5. / 1.));
-  EXPECT_THAT(matrix, AlmostEqIfLocal(1, 0, 0.));
-  EXPECT_THAT(matrix, AlmostEqIfLocal(0, 1, 0.));
-  EXPECT_THAT(matrix, AlmostEqIfLocal(1, 1, 8. - 4. * 6. / 2.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(0, 0, 7. - 3. * 5. / 1.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(1, 0, 0.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(0, 1, 0.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(1, 1, 8. - 4. * 6. / 2.));
 }
 
 TYPED_TEST(computeSchurComplement_Test,
@@ -76,10 +76,10 @@ TYPED_TEST(computeSchurComplement_Test,
   const auto matrix =
       computeSchurComplement(asSchurComplement(&this->mat, {2, 3}));
 
-  EXPECT_THAT(matrix, AlmostEqIfLocal(0, 0, 7. - 3. * 5. / 1.));
-  EXPECT_THAT(matrix, AlmostEqIfLocal(1, 0, 0.));
-  EXPECT_THAT(matrix, AlmostEqIfLocal(0, 1, 0.));
-  EXPECT_THAT(matrix, AlmostEqIfLocal(1, 1, 8. - 4. * 6. / 2.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(0, 0, 7. - 3. * 5. / 1.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(1, 0, 0.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(0, 1, 0.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(1, 1, 8. - 4. * 6. / 2.));
 }
 
 } // namespace

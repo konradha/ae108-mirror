@@ -21,7 +21,7 @@
 #include "ae108/cppptest/Matchers.h"
 #include <gmock/gmock.h>
 
-using ae108::cppptest::AlmostEqIfLocal;
+using ae108::cppptest::ScalarEqIfLocal;
 using testing::Test;
 using testing::Types;
 
@@ -49,8 +49,8 @@ TYPED_TEST(asInverseMatrix_Test, first_column_is_correct) {
   input.unwrap().replace()(0) = 1.;
   const auto result = multiply(matrix, input);
 
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(0, 1.));
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(1, 0.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, 1.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, 0.));
 }
 
 TYPED_TEST(asInverseMatrix_Test, second_column_is_correct) {
@@ -60,8 +60,8 @@ TYPED_TEST(asInverseMatrix_Test, second_column_is_correct) {
   input.unwrap().replace()(1) = 1.;
   const auto result = multiply(matrix, input);
 
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(0, 0.));
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(1, .5));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, 0.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, .5));
 }
 
 } // namespace

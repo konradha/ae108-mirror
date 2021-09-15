@@ -43,6 +43,7 @@ template <class Policy> class Vector {
 public:
   using size_type = PetscInt;
   using value_type = PetscScalar;
+  using real_type = PetscReal;
   using matrix_type = Matrix<Policy>;
 
   /**
@@ -148,7 +149,7 @@ public:
   /**
    * @brief Computes the 2-norm of the vector.
    */
-  value_type norm() const;
+  real_type norm() const;
 
   /**
    * @brief Print the vector to world stdout.
@@ -228,8 +229,20 @@ private:
   UniqueEntity<Vec> _vec;
 };
 
+/**
+ * @brief Writes the local rows of the vector to the stream.
+ */
+template <class Policy>
+std::ostream &operator<<(std::ostream &stream, const Vector<Policy> &matrix);
+
 extern template class Vector<SequentialComputePolicy>;
 extern template class Vector<ParallelComputePolicy>;
+
+extern template std::ostream &
+operator<<(std::ostream &, const Vector<SequentialComputePolicy> &);
+extern template std::ostream &operator<<(std::ostream &,
+                                         const Vector<ParallelComputePolicy> &);
+
 } // namespace cpppetsc
 } // namespace ae108
 
@@ -402,8 +415,8 @@ Vector<Policy>::fromList(const std::initializer_list<value_type> list) {
 }
 
 template <class Policy>
-typename Vector<Policy>::value_type Vector<Policy>::norm() const {
-  auto result = value_type{};
+typename Vector<Policy>::real_type Vector<Policy>::norm() const {
+  auto result = real_type{};
   Policy::handleError(VecNorm(_vec.get(), NORM_2, &result));
   return result;
 }
@@ -487,5 +500,20 @@ void Vector<Policy>::addAx(const matrix_type &A, const distributed<Vector> &x) {
   Policy::handleError(
       MatMultAdd(A.data(), x.unwrap().data(), _vec.get(), _vec.get()));
 }
+
+template <class Policy>
+std::ostream &operator<<(std::ostream &stream, const Vector<Policy> &vector) {
+  const auto range = vector.localRowRange();
+
+  stream << "[";
+  for (auto row = range.first; row < range.second; ++row) {
+    if (row != range.first)
+      stream << ", ";
+    stream << vector(row);
+  }
+  stream << "]";
+  return stream;
+}
+
 } // namespace cpppetsc
 } // namespace ae108

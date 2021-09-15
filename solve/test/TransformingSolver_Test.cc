@@ -19,11 +19,12 @@
 #include "ae108/cpppetsc/createRhsTransform.h"
 #include "ae108/cpppetsc/createTransformInput.h"
 #include "ae108/cpppetsc/createTransformOutput.h"
+#include "ae108/cppptest/Matchers.h"
 #include "ae108/solve/TransformingSolver.h"
 #include "ae108/solve/test/Solver_Test.h"
 #include <gmock/gmock.h>
 
-using testing::DoubleNear;
+using ae108::cppptest::ScalarNear;
 using testing::SizeIs;
 using testing::Types;
 
@@ -67,8 +68,8 @@ TYPED_TEST(TransformingSolver_Test, no_bc_solve_works) {
 
   auto fullSolution = vector_type::fromDistributed(apply(transform, solution));
   ;
-  EXPECT_THAT(fullSolution(0), DoubleNear(1., 1e-6));
-  EXPECT_THAT(fullSolution(1), DoubleNear(2., 1e-6));
+  EXPECT_THAT(fullSolution(0), ScalarNear(1., 1e-6));
+  EXPECT_THAT(fullSolution(1), ScalarNear(2., 1e-6));
 }
 
 TYPED_TEST(TransformingSolver_Test, bc_solve_works) {
@@ -98,8 +99,8 @@ TYPED_TEST(TransformingSolver_Test, bc_solve_works) {
   auto fullSolution = vector_type::fromDistributed(apply(transform, solution));
 
   ASSERT_THAT(fullSolution.unwrap(), SizeIs(2));
-  EXPECT_THAT(fullSolution(0), DoubleNear(-6., 1e-6));
-  EXPECT_THAT(fullSolution(1), DoubleNear(1., 1e-6));
+  EXPECT_THAT(fullSolution(0), ScalarNear(-6., 1e-6));
+  EXPECT_THAT(fullSolution(1), ScalarNear(2., 1e-6));
 }
 
 } // namespace

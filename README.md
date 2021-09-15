@@ -58,8 +58,9 @@ The project uses [CMake](https://cmake.org) as its build system generator. The f
 - [MPI](https://cmake.org/cmake/help/latest/module/FindMPI.html): version 3.1
 - [PETSc](https://www.mcs.anl.gov/petsc/): version 3.12
 - [Range-v3](https://github.com/ericniebler/range-v3): version 0.10
+- [SLEPc](https://slepc.upv.es/): version 3.12
 
-Of course, these libraries are covered by their own license terms. Since PETSc does not provide a CMake configuration file, PETSc is found using the provided find module in ```cmake/modules/```, which in turn is based on ```pkg-config```.
+Of course, these libraries are covered by their own license terms. Since PETSc and SLEPc do not provide a CMake configuration file, these libraries are found using the provided find modules in ```cmake/modules/```, which in turn are based on ```pkg-config```.
 
 Once you have installed these libraries, run CMake to build the project, choosing a location to install the library to by specifying ```CMAKE_INSTALL_PREFIX```; see the following example. Of course, depending on your setup, you might need to add a ```-DCMAKE_PREFIX_PATH='...'``` parameter to tell CMake the location of the third party library installations.
 

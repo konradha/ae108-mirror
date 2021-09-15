@@ -16,6 +16,8 @@
 ARG BASE_IMAGE=ubuntu:focal
 FROM $BASE_IMAGE
 
+ARG PETSC_SCALAR_TYPE=real
+
 RUN apt-get update && \
         DEBIAN_FRONTEND="noninteractive" \
         TZ="Europe/Zurich" \
@@ -29,7 +31,6 @@ RUN apt-get update && \
         libeigen3-dev \
         librange-v3-dev \
         ninja-build \
-        petsc-dev \
         python3 python3-pip \
         python3-h5py \
         gdb
@@ -40,3 +41,9 @@ RUN pip3 install \
         pylint==2.6.0 \
         sympy==1.7.1 \
         gcovr
+
+RUN apt-get update && \
+        DEBIAN_FRONTEND="noninteractive" \
+        apt-get install -y \
+        libpetsc-${PETSC_SCALAR_TYPE}-dev \
+        libslepc-${PETSC_SCALAR_TYPE}3.12-dev

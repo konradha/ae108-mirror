@@ -20,7 +20,7 @@
 #include "ae108/cppptest/Matchers.h"
 #include <gmock/gmock.h>
 
-using ae108::cppptest::AlmostEqIfLocal;
+using ae108::cppptest::ScalarEqIfLocal;
 using testing::Test;
 using testing::Types;
 
@@ -43,8 +43,8 @@ TYPED_TEST(copy_Test, copies_values) {
 
   copy(from, &to);
 
-  EXPECT_THAT(to.unwrap(), AlmostEqIfLocal(0, 3.));
-  EXPECT_THAT(to.unwrap(), AlmostEqIfLocal(1, 7.));
+  EXPECT_THAT(to.unwrap(), ScalarEqIfLocal(0, 3.));
+  EXPECT_THAT(to.unwrap(), ScalarEqIfLocal(1, 7.));
 }
 
 } // namespace cpppetsc

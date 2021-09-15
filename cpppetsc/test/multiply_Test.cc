@@ -20,7 +20,7 @@
 #include "ae108/cppptest/Matchers.h"
 #include <gmock/gmock.h>
 
-using ae108::cppptest::AlmostEqIfLocal;
+using ae108::cppptest::ScalarEqIfLocal;
 using testing::Test;
 using testing::Types;
 
@@ -50,8 +50,8 @@ TYPED_TEST(multiply_Test, multiplies_matrix_with_vector_correctly) {
   }
   const auto result = multiply(matrix, input);
 
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(0, -3.));
-  EXPECT_THAT(result.unwrap(), AlmostEqIfLocal(1, -5.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(0, -3.));
+  EXPECT_THAT(result.unwrap(), ScalarEqIfLocal(1, -5.));
 }
 
 } // namespace

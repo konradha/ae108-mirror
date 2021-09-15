@@ -23,7 +23,7 @@
 #include <array>
 #include <gmock/gmock.h>
 
-using ae108::cppptest::AlmostEqIfLocal;
+using ae108::cppptest::ScalarEqIfLocal;
 using testing::DoubleEq;
 using testing::Test;
 
@@ -64,7 +64,7 @@ TYPED_TEST(boundaryConditionsToTransform_Test,
 
   for (size_type i = 0; i < this->numberOfVertices * this->dofPerVertex; ++i)
     for (size_type j = 0; j < this->numberOfVertices * this->dofPerVertex; ++j)
-      EXPECT_THAT(result.matrix, AlmostEqIfLocal(i, j, i == j ? 1. : 0.));
+      EXPECT_THAT(result.matrix, ScalarEqIfLocal(i, j, i == j ? 1. : 0.));
 
   EXPECT_THAT(result.vector.unwrap().norm(), DoubleEq(0.));
 }
@@ -83,7 +83,7 @@ TYPED_TEST(boundaryConditionsToTransform_Test, dof_can_be_set_to_fixed_value) {
       apply(result, createTransformInput(result.matrix)));
 
   EXPECT_THAT(image.unwrap(),
-              AlmostEqIfLocal(vertex * this->dofPerVertex + dof, value));
+              ScalarEqIfLocal(vertex * this->dofPerVertex + dof, value));
 }
 
 TYPED_TEST(boundaryConditionsToTransform_Test,
@@ -108,9 +108,9 @@ TYPED_TEST(boundaryConditionsToTransform_Test,
       apply(result, createTransformInput(result.matrix)));
 
   EXPECT_THAT(image.unwrap(),
-              AlmostEqIfLocal(vertex_1 * this->dofPerVertex + dof_1, value_1));
+              ScalarEqIfLocal(vertex_1 * this->dofPerVertex + dof_1, value_1));
   EXPECT_THAT(image.unwrap(),
-              AlmostEqIfLocal(vertex_2 * this->dofPerVertex + dof_2, value_2));
+              ScalarEqIfLocal(vertex_2 * this->dofPerVertex + dof_2, value_2));
 }
 
 TYPED_TEST(boundaryConditionsToTransform_Test,
@@ -141,9 +141,9 @@ TYPED_TEST(boundaryConditionsToTransform_Test,
 
   EXPECT_THAT(
       image.unwrap(),
-      AlmostEqIfLocal(sourceVertex * this->dofPerVertex + sourceDof, value));
+      ScalarEqIfLocal(sourceVertex * this->dofPerVertex + sourceDof, value));
   EXPECT_THAT(image.unwrap(),
-              AlmostEqIfLocal(targetVertex * this->dofPerVertex + targetDof,
+              ScalarEqIfLocal(targetVertex * this->dofPerVertex + targetDof,
                               factor * value));
 }
 
@@ -181,13 +181,13 @@ TYPED_TEST(boundaryConditionsToTransform_Test,
   }()));
 
   EXPECT_THAT(image.unwrap(),
-              AlmostEqIfLocal(sourceVertex_1 * this->dofPerVertex + sourceDof_1,
+              ScalarEqIfLocal(sourceVertex_1 * this->dofPerVertex + sourceDof_1,
                               value));
   EXPECT_THAT(image.unwrap(),
-              AlmostEqIfLocal(sourceVertex_2 * this->dofPerVertex + sourceDof_2,
+              ScalarEqIfLocal(sourceVertex_2 * this->dofPerVertex + sourceDof_2,
                               value));
   EXPECT_THAT(image.unwrap(),
-              AlmostEqIfLocal(targetVertex * this->dofPerVertex + targetDof,
+              ScalarEqIfLocal(targetVertex * this->dofPerVertex + targetDof,
                               factor_1 * value + factor_2 * value + offset));
 }
 

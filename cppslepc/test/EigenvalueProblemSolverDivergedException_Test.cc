@@ -12,20 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "ae108/cpppetsc/asTransformedMatrix.h"
-#include "ae108/cpppetsc/ParallelComputePolicy.h"
-#include "ae108/cpppetsc/SequentialComputePolicy.h"
+#include "ae108/cppslepc/EigenvalueProblemSolverDivergedException.h"
+#include <gmock/gmock.h>
+
+using testing::StrEq;
+using testing::Test;
 
 namespace ae108 {
-namespace cpppetsc {
+namespace cppslepc {
+namespace {
 
-template Matrix<SequentialComputePolicy>
-asTransformedMatrix(const Matrix<SequentialComputePolicy> *,
-                    const Matrix<SequentialComputePolicy> *);
+struct EigenvalueProblemSolverDivergedException_Test : Test {
+  EigenvalueProblemSolverDivergedException exception;
+};
 
-template Matrix<ParallelComputePolicy>
-asTransformedMatrix(const Matrix<ParallelComputePolicy> *,
-                    const Matrix<ParallelComputePolicy> *);
+TEST_F(EigenvalueProblemSolverDivergedException_Test,
+       what_describes_exception) {
+  EXPECT_THAT(exception.what(),
+              StrEq("The eigenvalue solver failed to find a solution."));
+}
 
-} // namespace cpppetsc
+} // namespace
+} // namespace cppslepc
 } // namespace ae108

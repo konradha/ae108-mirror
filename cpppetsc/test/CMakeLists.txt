@@ -28,17 +28,20 @@ add_executable(${PROJECT_NAME}-CppPetscTests
                ./TAOSolver_Test.cc
                ./TaggedEntity_Test.cc
                ./Vector_Test.cc
+               ./asHermitianTransposedMatrix_Test.cc
                ./asInverseMatrix_Test.cc
                ./asSchurComplement_Test.cc
-               ./asTransformedMatrix_Test.cc
+               ./asThAT_Test.cc
+               ./asTransposedMatrix_Test.cc
                ./clone_Test.cc
+               ./computeElementsOfMatrix_Test.cc
+               ./computeSchurComplement_Test.cc
                ./copy_Test.cc
-               ./createRhsTransform_Test.cc
                ./createLhsTransform_Test.cc
+               ./createRhsTransform_Test.cc
                ./createTransformInput_Test.cc
                ./createTransformOutput_Test.cc
                ./createVectorFromSource_Test.cc
-               ./computeSchurComplement_Test.cc
                ./multiply_Test.cc
                ./setName_Test.cc
                ./vertexDataOffsets_Test.cc

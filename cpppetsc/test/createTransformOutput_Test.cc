@@ -17,8 +17,10 @@
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
 #include "ae108/cpppetsc/createTransformInput.h"
 #include "ae108/cpppetsc/createTransformOutput.h"
+#include "ae108/cppptest/Matchers.h"
 #include <gmock/gmock.h>
 
+using ae108::cppptest::ScalarEq;
 using testing::DoubleEq;
 using testing::SizeIs;
 using testing::Test;
@@ -77,7 +79,7 @@ TYPED_TEST(createTransformOutput_Test, multiplication_works) {
   out.unwrap().setZero();
 
   out.unwrap().addAx(matrix, in);
-  EXPECT_THAT(out.unwrap().norm(), DoubleEq(value_type{0.}));
+  EXPECT_THAT(out.unwrap().norm(), ScalarEq(value_type{0.}));
 }
 
 } // namespace cpppetsc

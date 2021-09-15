@@ -20,6 +20,7 @@
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
 #include "ae108/cpppetsc/TaggedVector.h"
+#include "ae108/cppptest/Matchers.h"
 #include <array>
 #include <gmock/gmock.h>
 
@@ -37,14 +38,15 @@ template <class Policy> struct Assembler_Mock {
   using matrix_type = typename mesh_type::matrix_type;
   using size_type = typename mesh_type::size_type;
   using value_type = typename mesh_type::value_type;
+  using real_type = typename mesh_type::real_type;
 
   /**
-   * @brief Computes (x^4 + y^4) / 4 - x * y + x - 7. * y
+   * @brief Computes |x - 1|^2 * |y - 2|^2 + 1
    * @remark Expects to be called with the time constant.
    * @remark Expects two degrees of freedom.
    */
   void assembleEnergy(const cpppetsc::local<vector_type> &displacements,
-                      const double time, value_type *const energy) const {
+                      const double time, real_type *const energy) const {
     assert(energy);
 
     EXPECT_THAT(time, ::testing::DoubleEq(constantTime));
@@ -53,7 +55,7 @@ template <class Policy> struct Assembler_Mock {
       const auto x = displacements(0);
       const auto y = displacements(1);
 
-      *energy = (std::pow(x, 4.) + std::pow(y, 4.)) / 4. - x * y + x - 7. * y;
+      *energy = std::norm(x - 1) + std::norm(y - 2) + 1.;
     }
   }
 
@@ -74,8 +76,8 @@ template <class Policy> struct Assembler_Mock {
       const auto x = displacements(0);
       const auto y = displacements(1);
 
-      replacer(0) = std::pow(x, 3) - y + 1.;
-      replacer(1) = std::pow(y, 3) - x - 7.;
+      replacer(0) = 2. * (x - 1);
+      replacer(1) = 2. * (y - 2.);
     }
   }
 
@@ -93,13 +95,10 @@ template <class Policy> struct Assembler_Mock {
 
     const auto replacer = matrix->assemblyView().replace();
     if (displacements.unwrap().size() > 0) {
-      const auto x = displacements(0);
-      const auto y = displacements(1);
-
-      replacer(0, 0) = 3. * std::pow(x, 2.);
-      replacer(0, 1) = -1.;
-      replacer(1, 0) = -1.;
-      replacer(1, 1) = 3. * std::pow(y, 2.);
+      replacer(0, 0) = 2.;
+      replacer(0, 1) = 0.;
+      replacer(1, 0) = 0.;
+      replacer(1, 1) = 2.;
     }
   }
 };
@@ -133,6 +132,7 @@ template <class TestConfiguration> struct Solver_Test : ::testing::Test {
   using assembler_type = Assembler_Mock<policy_type>;
   using mesh_type = typename assembler_type::mesh_type;
   using value_type = typename assembler_type::value_type;
+  using real_type = typename assembler_type::real_type;
   using vector_type = typename assembler_type::vector_type;
   using matrix_type = typename assembler_type::matrix_type;
   using solver_type =
@@ -158,8 +158,8 @@ TYPED_TEST_P(Solver_Test, no_bc_solve_works) {
 
   const auto fullSolution = TestFixture::vector_type::fromDistributed(solution);
   EXPECT_THAT(fullSolution.unwrap(), ::testing::SizeIs(2));
-  EXPECT_THAT(fullSolution(0), ::testing::DoubleNear(1., 1e-6));
-  EXPECT_THAT(fullSolution(1), ::testing::DoubleNear(2., 1e-6));
+  EXPECT_THAT(fullSolution(0), ::ae108::cppptest::ScalarNear(1., 1e-6));
+  EXPECT_THAT(fullSolution(1), ::ae108::cppptest::ScalarNear(2., 1e-6));
 }
 
 TYPED_TEST_P(Solver_Test, bc_solve_works) {
@@ -179,8 +179,8 @@ TYPED_TEST_P(Solver_Test, bc_solve_works) {
       &this->assembler);
   const auto fullSolution = TestFixture::vector_type::fromDistributed(solution);
   EXPECT_THAT(fullSolution.unwrap(), ::testing::SizeIs(2));
-  EXPECT_THAT(fullSolution(0), ::testing::DoubleNear(-6., 1e-6));
-  EXPECT_THAT(fullSolution(1), ::testing::DoubleNear(1., 1e-6));
+  EXPECT_THAT(fullSolution(0), ::ae108::cppptest::ScalarNear(-6., 1e-6));
+  EXPECT_THAT(fullSolution(1), ::ae108::cppptest::ScalarNear(2., 1e-6));
 }
 
 TYPED_TEST_P(Solver_Test, full_bc_solve_works) {
@@ -203,8 +203,8 @@ TYPED_TEST_P(Solver_Test, full_bc_solve_works) {
       &this->assembler);
   const auto fullSolution = TestFixture::vector_type::fromDistributed(solution);
   EXPECT_THAT(fullSolution.unwrap(), ::testing::SizeIs(2));
-  EXPECT_THAT(fullSolution(0), ::testing::DoubleNear(7., 1e-6));
-  EXPECT_THAT(fullSolution(1), ::testing::DoubleNear(77., 1e-6));
+  EXPECT_THAT(fullSolution(0), ::ae108::cppptest::ScalarNear(7., 1e-6));
+  EXPECT_THAT(fullSolution(1), ::ae108::cppptest::ScalarNear(77., 1e-6));
 }
 
 REGISTER_TYPED_TEST_CASE_P(Solver_Test, bc_solve_works, no_bc_solve_works,

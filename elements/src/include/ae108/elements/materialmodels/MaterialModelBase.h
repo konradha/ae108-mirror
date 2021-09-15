@@ -21,11 +21,12 @@ namespace ae108 {
 namespace elements {
 namespace materialmodels {
 
-template <class SizeType_, class ValueType_, SizeType_ Dimension_,
-          SizeType_ DegreesOfFreedom_ = Dimension_>
+template <class SizeType_, class ValueType_, class RealType_,
+          SizeType_ Dimension_, SizeType_ DegreesOfFreedom_ = Dimension_>
 struct MaterialModelBase {
   using size_type = SizeType_;
   using value_type = ValueType_;
+  using real_type = RealType_;
 
   using Energy = value_type;
   using Time = value_type;

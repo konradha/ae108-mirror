@@ -77,7 +77,7 @@ TEST_F(refine_segment_mesh_Test,
 
   using Point = tensor::Tensor<double, 3>;
   const elements::mesh::Mesh<Point> unrefined_mesh{{{0, 1}},
-                                                   {{0., 0.}, {1., 0.}}};
+                                                   {{0., 0., 0.}, {1., 0., 0.}}};
 
   const auto refined_mesh = refine_segment_mesh(unrefined_mesh, 2);
 
@@ -183,7 +183,7 @@ TEST_F(refine_segment_mesh_Test,
 
   using Point = tensor::Tensor<double, 3>;
   const elements::mesh::Mesh<Point> unrefined_mesh{{{0, 1}},
-                                                   {{0., 0.}, {1., 0.}}};
+                                                   {{0., 0., 0.}, {1., 0., 0.}}};
 
   const auto refined_mesh = refine_segment_mesh(unrefined_mesh, 0.6);
 

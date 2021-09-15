@@ -57,6 +57,9 @@ Mesh<Point> refine_segment_mesh(const Mesh<Point> &unrefined_mesh,
   typename Mesh::Positions positions;
   typename Mesh::Connectivity connectivity;
 
+  positions.reserve(unrefined_mesh.number_of_positions());
+  connectivity.reserve(unrefined_mesh.connectivity().size());
+
   const auto number_of_positions = unrefined_mesh.number_of_positions();
   for (auto i = decltype(number_of_positions){0}; i < number_of_positions; i++)
     positions.push_back(unrefined_mesh.position_of_vertex(i));

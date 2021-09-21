@@ -1,0 +1,11 @@
+{
+	"executable": [
+		"examples",
+		"ae108-examples-DynamicSolver"
+	],
+	"compare_stdout": "numeric",
+	"mpi_processes": [
+		1,
+		3
+	]
+}

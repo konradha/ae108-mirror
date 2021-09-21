@@ -65,7 +65,7 @@ build-image-docu:
 
 check-code-format:
     stage: analyze
-    image: $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_REF_SLUG
+    image: $CI_REGISTRY_IMAGE/dev-real:$CI_COMMIT_REF_SLUG
     script:
         - >
             find . \
@@ -77,7 +77,7 @@ check-code-format:
 
 check-license-header:
     stage: analyze
-    image: $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_REF_SLUG
+    image: $CI_REGISTRY_IMAGE/dev-real:$CI_COMMIT_REF_SLUG
     script:
         - >
             ! grep \
@@ -90,7 +90,7 @@ check-license-header:
 
 check-script:
     stage: analyze
-    image: $CI_REGISTRY_IMAGE/dev:$CI_COMMIT_REF_SLUG
+    image: $CI_REGISTRY_IMAGE/dev-real:$CI_COMMIT_REF_SLUG
     script:
         - find . -name "*.py" -print0 | xargs -0 python3 -m black --check
         - find . -name "*.py" -print0 | xargs -0 python3 -m pylint

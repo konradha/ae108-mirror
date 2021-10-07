@@ -77,10 +77,10 @@ struct ComputeEnergyTrait<Hookean<Dimension_, ValueType_, RealType_>> {
              const typename MaterialModel::Time time) noexcept {
     const auto strain = compute_strain(model, id, gradient, time);
     const auto stress = compute_stress(model, id, gradient, time);
-    return typename MaterialModel::real_type{0.5} *
-           tensor::as_matrix_of_rows(&strain)
-               .cwiseProduct(tensor::as_matrix_of_rows(&stress))
-               .sum();
+    return std::real(typename MaterialModel::real_type{0.5} *
+                     tensor::as_matrix_of_rows(&strain)
+                         .cwiseProduct(tensor::as_matrix_of_rows(&stress))
+                         .sum());
   }
 };
 
@@ -96,7 +96,7 @@ struct ComputeStrainTrait<Hookean<Dimension_, ValueType_, RealType_>> {
     typename MaterialModel::Strain result;
     tensor::as_matrix_of_rows(&result) =
         typename MaterialModel::real_type{.5} *
-        (gradient_matrix + gradient_matrix.transpose());
+        (gradient_matrix + gradient_matrix.adjoint());
     return result;
   }
 };

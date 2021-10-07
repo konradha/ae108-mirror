@@ -18,7 +18,7 @@
 #include "ae108/cpppetsc/ParallelComputePolicy_fwd.h"
 #include "ae108/cpppetsc/SequentialComputePolicy_fwd.h"
 #include "ae108/cpppetsc/UniqueEntity.h"
-#include <slepc/slepceps.h>
+#include <slepceps.h>
 
 namespace ae108 {
 namespace cppslepc {

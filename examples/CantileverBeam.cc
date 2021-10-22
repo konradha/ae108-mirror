@@ -49,9 +49,8 @@ constexpr auto dof_per_element = Mesh::size_type{0};
 // The connectivity specifies the vertex indices per Element.
 
 using Connectivity =
-    std::array<std::array<Mesh::size_type, number_of_vertices_per_element>,
-               number_of_elements>;
-constexpr auto connectivity = Connectivity{{
+    std::array<std::vector<Mesh::size_type>, number_of_elements>;
+const auto connectivity = Connectivity{{
     {{0, 1}}, // vertices of element A
     {{1}},    // vertex of tip load B
 }};
@@ -169,7 +168,6 @@ int main(int argc, char **argv) {
   // zero.
 
   const auto solver = Solver(&mesh);
-  PetscOptionsSetValue(NULL, "-snes_max_it", "100");
   const auto time = Element::Time{0.};
 
   // Before we can produce meaningful results, we need to specify boundary

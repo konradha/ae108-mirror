@@ -32,11 +32,9 @@ using Vector = cpppetsc::Vector<Policy>;
 using BoundaryCondition = cpppetsc::MeshBoundaryCondition<Mesh>;
 
 // In this example we will calculate the tip displacement of a cantilver beam
-// 'A' with a force 'B' on the free end.
+// with a force on the free end.
 
-//        B ^
-//          |
-//  0---A---1
+//  0---A---1/B
 
 // Let's specify the parameters of this mesh.
 
@@ -171,6 +169,7 @@ int main(int argc, char **argv) {
   // zero.
 
   const auto solver = Solver(&mesh);
+  PetscOptionsSetValue(NULL, "-snes_max_it", "100");
   const auto time = Element::Time{0.};
 
   // Before we can produce meaningful results, we need to specify boundary
@@ -218,6 +217,4 @@ int main(int argc, char **argv) {
 
   if (Policy::isPrimaryRank())
     global_result.unwrap().print();
-
-  PetscPrin
 }

@@ -20,6 +20,7 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./Exception.cc
             ./GeneralizedMeshBoundaryConditition.cc
             ./InvalidParametersException.cc
+            ./LeastSquaresSolver.cc
             ./LinearSolver.cc
             ./LinearSolverDivergedException.cc
             ./LocalVertexView.cc

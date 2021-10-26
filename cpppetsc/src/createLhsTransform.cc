@@ -20,11 +20,20 @@ namespace ae108 {
 namespace cpppetsc {
 
 template Matrix<SequentialComputePolicy>
-createLhsTransform(const Matrix<SequentialComputePolicy> &matrix,
+createLhsTransform(const Matrix<SequentialComputePolicy> &,
                    typename Matrix<SequentialComputePolicy>::size_type);
 template Matrix<ParallelComputePolicy>
-createLhsTransform(const Matrix<ParallelComputePolicy> &matrix,
+createLhsTransform(const Matrix<ParallelComputePolicy> &,
                    typename Matrix<ParallelComputePolicy>::size_type);
+
+template Matrix<SequentialComputePolicy>
+createLhsTransform(const Matrix<SequentialComputePolicy> &,
+                   const typename Matrix<SequentialComputePolicy>::LocalRows,
+                   const typename Matrix<SequentialComputePolicy>::GlobalRows);
+template Matrix<ParallelComputePolicy>
+createLhsTransform(const Matrix<ParallelComputePolicy> &,
+                   const typename Matrix<ParallelComputePolicy>::LocalRows,
+                   const typename Matrix<ParallelComputePolicy>::GlobalRows);
 
 } // namespace cpppetsc
 } // namespace ae108

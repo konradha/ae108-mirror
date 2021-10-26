@@ -447,9 +447,15 @@ TYPED_TEST(Matrix_Test, writing_to_stream_uses_square_brackets) {
   });
 
   const auto result = toString(mat);
+  const auto hasRows =
+      bool{mat.localRowRange().second - mat.localRowRange().first > 0};
 
-  EXPECT_THAT(result, StartsWith("[["));
-  EXPECT_THAT(result, EndsWith("]]"));
+  if (hasRows) {
+    EXPECT_THAT(result, StartsWith("[["));
+    EXPECT_THAT(result, EndsWith("]]"));
+  } else {
+    EXPECT_THAT(result, StrEq("[]"));
+  }
 }
 
 TYPED_TEST(Matrix_Test, local_values_are_written_to_stream) {

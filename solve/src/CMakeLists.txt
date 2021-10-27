@@ -26,6 +26,7 @@ add_library(${PROJECT_NAME}-solve
             ./NonlinearSolver.cc
             ./TAOSolver.cc
             ./TransformingSolver.cc
+            ./boundaryConditionsToEquations.cc
             ./boundaryConditionsToTransform.cc
 )
 

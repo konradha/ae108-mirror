@@ -23,6 +23,7 @@ add_executable(${PROJECT_NAME}-SolveTests
                ./NonlinearSolver_Test.cc
                ./TAOSolver_Test.cc
                ./TransformingSolver_Test.cc
+               ./boundaryConditionsToEquations_Test.cc
                ./boundaryConditionsToTransform_Test.cc
 )
 

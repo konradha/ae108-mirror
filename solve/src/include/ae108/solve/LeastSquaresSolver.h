@@ -232,8 +232,6 @@ LeastSquaresSolver<Assembler>::computeSolution(
     fullForces.unwrap().setZero();
     assembleForceVector(input, time, &fullForces);
     apply(transform, input, &residual);
-    fullForces.unwrap().print();
-    residual.unwrap().print();
   };
 
   auto fullStiffnessMatrix = matrix_type::fromMesh(*_mesh);

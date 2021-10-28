@@ -20,6 +20,7 @@ add_executable(${PROJECT_NAME}-SolveTests
                ./DynamicSolver_Test.cc
                ./InconsistentBoundaryConditionsException_Test.cc
                ./InvalidVertexException_Test.cc
+               ./LeastSquaresSolver_Test.cc
                ./NonlinearSolver_Test.cc
                ./TAOSolver_Test.cc
                ./TransformingSolver_Test.cc

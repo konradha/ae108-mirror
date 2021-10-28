@@ -67,7 +67,7 @@ TYPED_TEST(TransformingSolver_Test, no_bc_solve_works) {
       &this->assembler);
 
   auto fullSolution = vector_type::fromDistributed(apply(transform, solution));
-  ;
+
   EXPECT_THAT(fullSolution(0), ScalarNear(1., 1e-6));
   EXPECT_THAT(fullSolution(1), ScalarNear(2., 1e-6));
 }

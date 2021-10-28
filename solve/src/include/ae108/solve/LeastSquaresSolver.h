@@ -15,6 +15,8 @@
 
 #pragma once
 
+#ifndef AE108_PETSC_COMPLEX
+
 #include "ae108/assembly/AssemblerTypeTraits.h"
 #include "ae108/cpppetsc/LeastSquaresSolver.h"
 #include "ae108/cpppetsc/MeshBoundaryCondition.h"
@@ -260,3 +262,5 @@ LeastSquaresSolver<Assembler>::computeSolution(
 
 } // namespace solve
 } // namespace ae108
+
+#endif

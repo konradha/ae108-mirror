@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef AE108_PETSC_COMPLEX
+
 #include "ae108/cpppetsc/LeastSquaresSolver.h"
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
@@ -86,3 +88,5 @@ TYPED_TEST(LeastSquaresSolver_Test,
 } // namespace
 } // namespace cpppetsc
 } // namespace ae108
+
+#endif

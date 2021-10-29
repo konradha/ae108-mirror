@@ -44,6 +44,7 @@ add_executable(${PROJECT_NAME}-CppPetscTests
                ./createTransformOutput_Test.cc
                ./createVectorFromSource_Test.cc
                ./multiply_Test.cc
+               ./nestVectors_Test.cc
                ./setName_Test.cc
                ./vertexDataOffsets_Test.cc
 )

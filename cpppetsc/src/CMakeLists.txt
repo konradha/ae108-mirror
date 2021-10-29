@@ -61,6 +61,7 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./createVectorFromSource.cc
             ./getName.cc
             ./multiply.cc
+            ./nestVectors.cc
             ./readFromViewer.cc
             ./setName.cc
             ./vertexDataOffsets.cc

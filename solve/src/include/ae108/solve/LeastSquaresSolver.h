@@ -19,13 +19,10 @@
 
 #include "ae108/assembly/AssemblerTypeTraits.h"
 #include "ae108/cpppetsc/LeastSquaresSolver.h"
-#include "ae108/cpppetsc/MeshBoundaryCondition.h"
 #include "ae108/cpppetsc/TaggedVector.h"
 #include "ae108/cpppetsc/clone.h"
-#include "ae108/solve/AffineTransform.h"
 #include <cassert>
 #include <functional>
-#include <vector>
 
 namespace ae108 {
 namespace solve {
@@ -44,21 +41,17 @@ public:
    */
   explicit LeastSquaresSolver(const mesh_type *mesh);
 
-  using BoundaryConditionContainer = AffineTransform<policy_type>;
-
   /**
    * @brief Calls computeSolution with the default assembler calls (ie. calls
    * assembleForceVector or assembleStiffnessMatrix). Passes on the rest of the
    * arguments.
    *
-   * @param transform The system of linear equations.
    * @param initialGuess The global vector to start iterating at.
    * @param time This will be used to configure the assembler.
    * @para assembler Valid nonzero pointer.
    */
   cpppetsc::distributed<vector_type>
-  computeSolution(const BoundaryConditionContainer &transform,
-                  cpppetsc::distributed<vector_type> initialGuess,
+  computeSolution(cpppetsc::distributed<vector_type> initialGuess,
                   const double time, const Assembler *const assembler) const;
 
   using LocalForceVectorAssembler =
@@ -72,7 +65,6 @@ public:
    * @brief Calls computeSolution wrapping up the local assembler calls into
    * distributed assembler calls. Passes on the rest of the arguments.
    *
-   * @param transform The system of linear equations.
    * @param initialGuess The global vector to start iterating at.
    * @param time This will be used to configure the assembler.
    * @param assembleForceVector A valid callable. It will be called to assemble
@@ -81,8 +73,7 @@ public:
    * assemble the stiffness matrix.
    */
   cpppetsc::distributed<vector_type>
-  computeSolution(const BoundaryConditionContainer &transform,
-                  cpppetsc::distributed<vector_type> initialGuess,
+  computeSolution(cpppetsc::distributed<vector_type> initialGuess,
                   const double time,
                   LocalForceVectorAssembler assembleForceVector,
                   LocalStiffnessMatrixAssembler assemblerStiffnessMatrix) const;
@@ -96,14 +87,8 @@ public:
 
   /**
    * @brief The goal of this function is to find the minimizer x of
-   * E(x) -> min, where the domain is defined by boundary conditions
-   * specified by linear equations.
+   * E(x) -> min. More precisely, this function minimizes |F(x)|^2.
    *
-   * More precisely, this function solves the equation E' = F = 0. Denote the
-   * system of linear equations that corresponds to the boundary conditions by
-   * Ax + b = 0. Then this solver minimizes |F(x)|^2 + |Ax + b|^2.
-   *
-   * @param transform The system of linear equations.
    * @param initialGuess The global vector to start iterating at.
    * @param time This will be used to configure the assembler.
    * @param assembleForceVector A valid callable. It will be called to assemble
@@ -112,7 +97,6 @@ public:
    * assemble the stiffness matrix.
    */
   cpppetsc::distributed<vector_type> computeSolution(
-      const BoundaryConditionContainer &transform,
       cpppetsc::distributed<vector_type> initialGuess, const double time,
       DistributedForceVectorAssembler assembleForceVector,
       DistributedStiffnessMatrixAssembler assemblerStiffnessMatrix) const;
@@ -128,8 +112,6 @@ private:
  *  implementations
  *******************************************************************/
 
-#include "ae108/cpppetsc/createTransformInput.h"
-
 namespace ae108 {
 namespace solve {
 
@@ -140,12 +122,11 @@ LeastSquaresSolver<Assembler>::LeastSquaresSolver(const mesh_type *mesh)
 template <class Assembler>
 cpppetsc::distributed<typename LeastSquaresSolver<Assembler>::vector_type>
 LeastSquaresSolver<Assembler>::computeSolution(
-    const BoundaryConditionContainer &transform,
     cpppetsc::distributed<vector_type> initialGuess, const double time,
     const Assembler *const assembler) const {
   assert(assembler);
   return computeSolution(
-      transform, std::move(initialGuess), time,
+      std::move(initialGuess), time,
       LocalForceVectorAssembler(
           [assembler](const cpppetsc::local<vector_type> &localDisplacements,
                       const double time,
@@ -164,7 +145,6 @@ LeastSquaresSolver<Assembler>::computeSolution(
 template <class Assembler>
 cpppetsc::distributed<typename LeastSquaresSolver<Assembler>::vector_type>
 LeastSquaresSolver<Assembler>::computeSolution(
-    const BoundaryConditionContainer &transform,
     cpppetsc::distributed<vector_type> initialGuess, const double time,
     LocalForceVectorAssembler assembleForceVector,
     LocalStiffnessMatrixAssembler assembleStiffnessMatrix) const {
@@ -198,7 +178,7 @@ LeastSquaresSolver<Assembler>::computeSolution(
         output->finalize();
       };
 
-  return computeSolution(transform, std::move(initialGuess), time,
+  return computeSolution(std::move(initialGuess), time,
                          distributedForceVectorAssembler,
                          distributedStiffnessMatrixAssembler);
 }
@@ -206,53 +186,28 @@ LeastSquaresSolver<Assembler>::computeSolution(
 template <class Assembler>
 cpppetsc::distributed<typename LeastSquaresSolver<Assembler>::vector_type>
 LeastSquaresSolver<Assembler>::computeSolution(
-    const BoundaryConditionContainer &transform,
     cpppetsc::distributed<vector_type> initialGuess, const double time,
     DistributedForceVectorAssembler assembleForceVector,
     DistributedStiffnessMatrixAssembler assembleStiffnessMatrix) const {
   assert(assembleForceVector);
   assert(assembleStiffnessMatrix);
 
-  auto residual = clone(transform.vector);
-
-  auto fullForces = vector_type::fromGlobalMesh(*_mesh);
-  auto nestedVector = [&]() {
-    auto nestedVector = Vec{};
-    auto vectors = std::array<Vec, 2>{
-        {fullForces.unwrap().data(), residual.unwrap().data()}};
-    policy_type::handleError(VecCreateNest(policy_type::communicator(), 2,
-                                           nullptr, vectors.data(),
-                                           &nestedVector));
-    return cpppetsc::distributed<vector_type>(
-        cpppetsc::makeUniqueEntity<policy_type>(nestedVector));
-  }();
-
   auto function = [&](const cpppetsc::distributed<vector_type> &input,
-                      cpppetsc::distributed<vector_type> *const) {
-    fullForces.unwrap().setZero();
-    assembleForceVector(input, time, &fullForces);
-    apply(transform, input, &residual);
+                      cpppetsc::distributed<vector_type> *const out) {
+    assert(out);
+    out->unwrap().setZero();
+    assembleForceVector(input, time, out);
   };
 
-  auto fullStiffnessMatrix = matrix_type::fromMesh(*_mesh);
-  auto nestedMatrix = [&]() {
-    auto nestedMatrix = Mat{};
-    const auto matrices = std::array<Mat, 2>{
-        {fullStiffnessMatrix.data(), transform.matrix.data()}};
-    policy_type::handleError(MatCreateNest(policy_type::communicator(), 2,
-                                           nullptr, 1, nullptr, matrices.data(),
-                                           &nestedMatrix));
-    return matrix_type(cpppetsc::makeUniqueEntity<policy_type>(nestedMatrix));
-  }();
-
   auto jacobian = [&](const cpppetsc::distributed<vector_type> &input,
-                      matrix_type *const) {
-    fullStiffnessMatrix.setZero();
-    assembleStiffnessMatrix(input, time, &fullStiffnessMatrix);
+                      matrix_type *const out) {
+    assert(out);
+    out->setZero();
+    assembleStiffnessMatrix(input, time, out);
   };
 
   const cpppetsc::LeastSquaresSolver<policy_type> solver{
-      std::move(nestedMatrix), std::move(nestedVector)};
+      matrix_type::fromMesh(*_mesh), vector_type::fromGlobalMesh(*_mesh)};
 
   return solver.solve(std::move(function), std::move(jacobian),
                       std::move(initialGuess));

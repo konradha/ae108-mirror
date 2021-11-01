@@ -102,6 +102,11 @@ public:
    * Optimization", Cambridge University Press, 2019, pp. 531-534. PETSc's
    * nonlinear solver is used to solve the adapted system.
    *
+   * This method is also widely known as Lagrange Multiplier Method; 
+   * see Cook, R. D., Malkus, D. S., Plesha, M. E. & Witt, 
+   * R. J. Concepts and Applications of Finite Element Analysis, 
+   * 4th Edition. (Wiley, 2001).
+   *
    * @param boundaryConditions The generalized boundary conditions.
    * @param initialGuess The global vector to start iterating at.
    * @param time This will be used to configure the assembler.

@@ -65,11 +65,13 @@ TYPED_TEST(GeneralizedNonlinearSolver_Test,
   using vector_type = typename TestFixture::vector_type;
 
   const auto solution = this->solver.computeSolution(
-      {{{0, 0},
-        {
-            {1., {1, 0}},
-        },
-        -.5}},
+      {
+          {{0, 0},
+           {
+               {1., {1, 0}},
+           },
+           -.5},
+      },
       vector_type::fromGlobalMesh(this->mesh), assembler_type::constantTime,
       &this->assembler);
 
@@ -78,6 +80,58 @@ TYPED_TEST(GeneralizedNonlinearSolver_Test,
   ASSERT_THAT(fullSolution.unwrap(), SizeIs(2));
   EXPECT_THAT(fullSolution(0), ScalarNear(1. + .5 / 2., 1e-6));
   EXPECT_THAT(fullSolution(1), ScalarNear(2. - .5 / 2., 1e-6));
+}
+
+TYPED_TEST(GeneralizedNonlinearSolver_Test,
+           solve_ignores_duplicate_boundary_conditions) {
+  using assembler_type = typename TestFixture::assembler_type;
+  using vector_type = typename TestFixture::vector_type;
+
+  const auto solution = this->solver.computeSolution(
+      {
+          {{0, 0},
+           {
+               {1., {1, 0}},
+           },
+           -.5},
+          {{0, 0},
+           {
+               {1., {1, 0}},
+           },
+           -.5},
+      },
+      vector_type::fromGlobalMesh(this->mesh), assembler_type::constantTime,
+      &this->assembler);
+
+  const auto fullSolution = vector_type::fromDistributed(solution);
+
+  ASSERT_THAT(fullSolution.unwrap(), SizeIs(2));
+  EXPECT_THAT(fullSolution(0), ScalarNear(1. + .5 / 2., 1e-6));
+  EXPECT_THAT(fullSolution(1), ScalarNear(2. - .5 / 2., 1e-6));
+}
+
+TYPED_TEST(GeneralizedNonlinearSolver_Test,
+           solve_combines_two_boundary_conditions) {
+  using assembler_type = typename TestFixture::assembler_type;
+  using vector_type = typename TestFixture::vector_type;
+
+  const auto solution = this->solver.computeSolution(
+      {
+          {{0, 0},
+           {
+               {1., {1, 0}},
+           },
+           -.5},
+          {{0, 0}, {}, 1.},
+      },
+      vector_type::fromGlobalMesh(this->mesh), assembler_type::constantTime,
+      &this->assembler);
+
+  const auto fullSolution = vector_type::fromDistributed(solution);
+
+  ASSERT_THAT(fullSolution.unwrap(), SizeIs(2));
+  EXPECT_THAT(fullSolution(0), ScalarNear(1., 1e-6));
+  EXPECT_THAT(fullSolution(1), ScalarNear(2. - .5, 1e-6));
 }
 
 } // namespace

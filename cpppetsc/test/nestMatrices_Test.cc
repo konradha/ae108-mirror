@@ -78,6 +78,26 @@ TYPED_TEST(nestMatrices_Test, result_has_sum_of_cols) {
   EXPECT_THAT(nested.size(), Pair(2, 4));
 }
 
+TYPED_TEST(nestMatrices_Test, throws_if_inconsistent_rows) {
+  using matrix_type = typename TestFixture::matrix_type;
+
+  auto u = matrix_type::fromList({
+      {1.},
+  });
+  auto v = matrix_type::fromList({
+      {2.},
+  });
+  auto w = matrix_type::fromList({
+      {3.},
+  });
+
+  EXPECT_THROW(nestMatrices<TypeParam>({
+                   {&u, &v},
+                   {&w},
+               }),
+               InvalidParametersException);
+}
+
 TYPED_TEST(nestMatrices_Test, result_has_correct_first_column) {
   using matrix_type = typename TestFixture::matrix_type;
   using vector_type = typename TestFixture::vector_type;

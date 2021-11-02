@@ -232,19 +232,19 @@ GeneralizedNonlinearSolver<Assembler>::computeSolution(
 
   auto fullForces = vector_type::fromGlobalMesh(*_mesh);
   auto dual = createTransformInput(transposed);
-  auto function = [&](const cpppetsc::distributed<vector_type> &input,
+  auto function = [&](const cpppetsc::distributed<vector_type> &,
                       cpppetsc::distributed<vector_type> *const) {
     fullForces.unwrap().setZero();
-    assembleForceVector(input, time, &fullForces);
+    assembleForceVector(initialGuess, time, &fullForces);
 
     apply(transform, initialGuess, &dual);
   };
 
   auto fullStiffnessMatrix = matrix_type::fromMesh(*_mesh);
-  auto jacobian = [&](const cpppetsc::distributed<vector_type> &input,
+  auto jacobian = [&](const cpppetsc::distributed<vector_type> &,
                       matrix_type *const) {
     fullStiffnessMatrix.setZero();
-    assembleStiffnessMatrix(input, time, &fullStiffnessMatrix);
+    assembleStiffnessMatrix(initialGuess, time, &fullStiffnessMatrix);
   };
 
   auto zeroes = matrix_type(

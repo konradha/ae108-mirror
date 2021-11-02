@@ -25,18 +25,39 @@ namespace cpppetsc {
 /**
  * @brief Creates a matrix P that can be multiplied from the left hand side
  * with the provided Matrix A, i.e. P * A is well-formed.
+ *
+ * @param rows Global number of rows of the created matrix.
  */
 template <class Policy>
 Matrix<Policy>
 createLhsTransform(const Matrix<Policy> &matrix,
                    const typename Matrix<Policy>::size_type rows);
 
+/**
+ * @brief Creates a matrix P that can be multiplied from the left hand side
+ * with the provided Matrix A, i.e. P * A is well-formed.
+ */
+template <class Policy>
+Matrix<Policy>
+createLhsTransform(const Matrix<Policy> &matrix,
+                   const typename Matrix<Policy>::LocalRows localRows,
+                   const typename Matrix<Policy>::GlobalRows globalRows);
+
 extern template Matrix<SequentialComputePolicy>
-createLhsTransform(const Matrix<SequentialComputePolicy> &matrix,
+createLhsTransform(const Matrix<SequentialComputePolicy> &,
                    typename Matrix<SequentialComputePolicy>::size_type);
 extern template Matrix<ParallelComputePolicy>
-createLhsTransform(const Matrix<ParallelComputePolicy> &matrix,
+createLhsTransform(const Matrix<ParallelComputePolicy> &,
                    typename Matrix<ParallelComputePolicy>::size_type);
+
+extern template Matrix<SequentialComputePolicy>
+createLhsTransform(const Matrix<SequentialComputePolicy> &,
+                   const typename Matrix<SequentialComputePolicy>::LocalRows,
+                   const typename Matrix<SequentialComputePolicy>::GlobalRows);
+extern template Matrix<ParallelComputePolicy>
+createLhsTransform(const Matrix<ParallelComputePolicy> &,
+                   const typename Matrix<ParallelComputePolicy>::LocalRows,
+                   const typename Matrix<ParallelComputePolicy>::GlobalRows);
 
 } // namespace cpppetsc
 } // namespace ae108
@@ -48,29 +69,19 @@ template <class Policy>
 Matrix<Policy>
 createLhsTransform(const Matrix<Policy> &matrix,
                    const typename Matrix<Policy>::size_type rows) {
-  using size_type = typename Matrix<Policy>::size_type;
+  return createLhsTransform(matrix,
+                            typename Matrix<Policy>::LocalRows{PETSC_DECIDE},
+                            typename Matrix<Policy>::GlobalRows{rows});
+}
 
-  auto result = []() {
-    auto mat = Mat{};
-    Policy::handleError(MatCreate(Policy::communicator(), &mat));
-    return Matrix<Policy>(makeUniqueEntity<Policy>(mat));
-  }();
-
-  const auto localCols = [&]() {
-    auto rows = size_type{};
-    auto cols = size_type{};
-    Policy::handleError(MatGetLocalSize(matrix.data(), &rows, &cols));
-    return rows;
-  }();
-
-  const auto columns = matrix.size().first;
-
-  Policy::handleError(
-      MatSetSizes(result.data(), PETSC_DECIDE, localCols, rows, columns));
-  Policy::handleError(MatSetFromOptions(result.data()));
-  Policy::handleError(MatSetUp(result.data()));
-  result.finalize();
-  return result;
+template <class Policy>
+Matrix<Policy>
+createLhsTransform(const Matrix<Policy> &matrix,
+                   const typename Matrix<Policy>::LocalRows localRows,
+                   const typename Matrix<Policy>::GlobalRows globalRows) {
+  return Matrix<Policy>(
+      localRows, typename Matrix<Policy>::LocalCols{matrix.localSize().first},
+      globalRows, typename Matrix<Policy>::GlobalCols{matrix.size().first});
 }
 
 } // namespace cpppetsc

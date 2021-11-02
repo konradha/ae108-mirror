@@ -36,7 +36,7 @@ using Policies = Types<SequentialComputePolicy, ParallelComputePolicy>;
 
 TYPED_TEST_CASE(createLhsTransform_Test, Policies);
 
-TYPED_TEST(createLhsTransform_Test, has_correct_size) {
+TYPED_TEST(createLhsTransform_Test, has_correct_global_size) {
   using matrix_type = typename TestFixture::matrix_type;
   using size_type = typename TestFixture::size_type;
 
@@ -46,6 +46,20 @@ TYPED_TEST(createLhsTransform_Test, has_correct_size) {
   const auto result = createLhsTransform(matrix, rows);
 
   EXPECT_THAT(result.size(), Pair(Eq(rows), Eq(matrix.size().first)));
+}
+
+TYPED_TEST(createLhsTransform_Test, has_correct_local_size) {
+  using matrix_type = typename TestFixture::matrix_type;
+  using size_type = typename TestFixture::size_type;
+
+  const auto matrix = matrix_type(2, 3);
+
+  const auto rows = size_type{7};
+  const auto result =
+      createLhsTransform(matrix, typename matrix_type::LocalRows{rows},
+                         typename matrix_type::GlobalRows{PETSC_DETERMINE});
+
+  EXPECT_THAT(result.localSize(), Pair(Eq(rows), Eq(matrix.localSize().first)));
 }
 
 TYPED_TEST(createLhsTransform_Test, can_be_multiplied) {

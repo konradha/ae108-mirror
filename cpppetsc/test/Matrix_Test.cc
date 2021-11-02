@@ -28,6 +28,7 @@ using testing::HasSubstr;
 using testing::Le;
 using testing::Pair;
 using testing::StartsWith;
+using testing::StrEq;
 using testing::Test;
 using testing::Types;
 
@@ -46,6 +47,28 @@ TYPED_TEST(Matrix_Test, size_is_correct) {
   typename TestFixture::matrix_type mat(2, 3);
   EXPECT_THAT(mat.size().first, Eq(2));
   EXPECT_THAT(mat.size().second, Eq(3));
+}
+
+TYPED_TEST(Matrix_Test, local_size_is_correct) {
+  using matrix_type = typename TestFixture::matrix_type;
+
+  const matrix_type mat(typename matrix_type::LocalRows{2},
+                        typename matrix_type::LocalCols{3},
+                        typename matrix_type::GlobalRows{PETSC_DETERMINE},
+                        typename matrix_type::GlobalCols{PETSC_DETERMINE});
+
+  EXPECT_THAT(mat.localSize(), Pair(2, 3));
+}
+
+TYPED_TEST(Matrix_Test, global_size_is_greater_eq_than_local_size) {
+  using matrix_type = typename TestFixture::matrix_type;
+
+  const matrix_type mat(typename matrix_type::LocalRows{2},
+                        typename matrix_type::LocalCols{3},
+                        typename matrix_type::GlobalRows{PETSC_DETERMINE},
+                        typename matrix_type::GlobalCols{PETSC_DETERMINE});
+
+  EXPECT_THAT(mat.size(), Pair(Ge(2), Ge(3)));
 }
 
 TYPED_TEST(Matrix_Test, default_block_size_is_1) {
@@ -447,9 +470,15 @@ TYPED_TEST(Matrix_Test, writing_to_stream_uses_square_brackets) {
   });
 
   const auto result = toString(mat);
+  const auto hasRows =
+      bool{mat.localRowRange().second - mat.localRowRange().first > 0};
 
-  EXPECT_THAT(result, StartsWith("[["));
-  EXPECT_THAT(result, EndsWith("]]"));
+  if (hasRows) {
+    EXPECT_THAT(result, StartsWith("[["));
+    EXPECT_THAT(result, EndsWith("]]"));
+  } else {
+    EXPECT_THAT(result, StrEq("[]"));
+  }
 }
 
 TYPED_TEST(Matrix_Test, local_values_are_written_to_stream) {

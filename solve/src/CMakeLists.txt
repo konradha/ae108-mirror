@@ -20,12 +20,15 @@ add_library(${PROJECT_NAME}-solve
             ./DampingParameters.cc
             ./DynamicSolver.cc
             ./DynamicState.cc
+            ./GeneralizedNonlinearSolver.cc
             ./InconsistentBoundaryConditionsException.cc
             ./InvalidVertexException.cc
+            ./LeastSquaresSolver.cc
             ./NewmarkParameters.cc
             ./NonlinearSolver.cc
             ./TAOSolver.cc
             ./TransformingSolver.cc
+            ./boundaryConditionsToEquations.cc
             ./boundaryConditionsToTransform.cc
 )
 

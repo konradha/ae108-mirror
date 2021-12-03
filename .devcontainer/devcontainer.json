@@ -1,0 +1,17 @@
+{
+  "name": "ae108-dev-real",
+  "settings": {
+    "cmake.sourceDirectory": "${workspaceFolder}",
+    "cmake.buildDirectory": "${workspaceFolder}/build"
+  },
+  "extensions": [
+    "ms-vscode.cpptools",
+    "ms-vscode.cmake-tools",
+    "ms-python.vscode-pylance",
+    "ms-azuretools.vscode-docker",
+    "gitlab.gitlab-workflow"
+  ],
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "dev-real",
+  "workspaceFolder": "/mnt/io"
+}

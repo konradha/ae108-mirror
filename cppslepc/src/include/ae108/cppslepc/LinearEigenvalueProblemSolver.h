@@ -56,7 +56,7 @@ public:
   /**
    * @brief Get nth eigenpair.
    */
-  void getEigenpair(const size_type n, EigenPair<Policy> &out) const;
+  void getEigenpair(const size_type n, EigenPair<Policy> *out) const;
 
   /**
    * @brief Get nth eigenvalue.
@@ -134,15 +134,15 @@ LinearEigenvalueProblemSolver<Policy>::solve() const {
 
 template <class Policy>
 void LinearEigenvalueProblemSolver<Policy>::getEigenpair(
-    const size_type n, EigenPair<Policy> &out) const {
+    const size_type n, EigenPair<Policy> *out) const {
 
 #ifdef AE108_PETSC_COMPLEX
-  EPSGetEigenpair(this->data(), n, &out.value, NULL, out.vector.unwrap().data(),
+  EPSGetEigenpair(this->data(), n, &out->value, NULL, out->vector.unwrap().data(),
                   NULL);
 #else
-  EPSGetEigenpair(this->data(), n, &out.value_real, &out.value_imag,
-                  out.vector_real.unwrap().data(),
-                  out.vector_imag.unwrap().data());
+  EPSGetEigenpair(this->data(), n, &out->value_real, &out->value_imag,
+                  out->vector_real.unwrap().data(),
+                  out->vector_imag.unwrap().data());
 #endif
 }
 

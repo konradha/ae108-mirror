@@ -19,6 +19,7 @@ add_library(${PROJECT_NAME}-cppslepc
     EigenvalueSolverDivergedException.cc
     LinearEigenvalueProblemSolver.cc
     computeEigenvalues.cc
+    EigenPair.cc
 )
 
 target_include_directories(${PROJECT_NAME}-cppslepc PUBLIC

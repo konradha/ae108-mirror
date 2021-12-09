@@ -49,7 +49,8 @@ public:
   void setOperators(const matrix_type *A, const matrix_type *B);
 
   /**
-   * @brief Solve linear eigenvalue problem and returns the number of converged eigenpairs.
+   * @brief Solve linear eigenvalue problem and returns the number of converged
+   * eigenpairs.
    */
   size_type solve() const;
 
@@ -94,16 +95,14 @@ LinearEigenvalueProblemSolver<Policy>::LinearEigenvalueProblemSolver()
 
 template <class Policy>
 void LinearEigenvalueProblemSolver<Policy>::setOperators(
-    const typename LinearEigenvalueProblemSolver<Policy>::matrix_type *A)
-     {
+    const typename LinearEigenvalueProblemSolver<Policy>::matrix_type *A) {
   Policy::handleError(EPSSetOperators(this->data(), A->data(), NULL));
 }
 
 template <class Policy>
 void LinearEigenvalueProblemSolver<Policy>::setOperators(
     const typename LinearEigenvalueProblemSolver<Policy>::matrix_type *A,
-    const typename LinearEigenvalueProblemSolver<Policy>::matrix_type *B)
-     {
+    const typename LinearEigenvalueProblemSolver<Policy>::matrix_type *B) {
   Policy::handleError(EPSSetOperators(this->data(), A->data(), B->data()));
 }
 
@@ -137,8 +136,8 @@ void LinearEigenvalueProblemSolver<Policy>::getEigenpair(
     const size_type n, EigenPair<Policy> *out) const {
 
 #ifdef AE108_PETSC_COMPLEX
-  EPSGetEigenpair(this->data(), n, &out->value, NULL, out->vector.unwrap().data(),
-                  NULL);
+  EPSGetEigenpair(this->data(), n, &out->value, NULL,
+                  out->vector.unwrap().data(), NULL);
 #else
   EPSGetEigenpair(this->data(), n, &out->value_real, &out->value_imag,
                   out->vector_real.unwrap().data(),

@@ -18,6 +18,7 @@ add_executable(${PROJECT_NAME}-CppSlepcTests
         EigenvalueProblemSolverDivergedException_Test.cc
         computeEigenvalues_Test.cc
         main.cc
+        LinearEigenvalueProblemSolver_Test.cc
 )
 
 add_test(NAME ${PROJECT_NAME}-CppSlepcTests
@@ -27,4 +28,5 @@ find_package(AE108_GTest MODULE REQUIRED)
 target_link_libraries(${PROJECT_NAME}-CppSlepcTests
                       PRIVATE ${PROJECT_NAME}::cppslepc
                       PRIVATE GTest::gmock
+                      PRIVATE ${PROJECT_NAME}::cppptest
 )

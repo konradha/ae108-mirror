@@ -97,8 +97,8 @@ TYPED_TEST(
       {0., 1.},
   });
 
-  EXPECT_THAT(computeGeneralizedEigenvalues(A, B, 2),
-              ElementsAre(ComplexNear(1., 1e-7), ComplexNear(2., 1e-7)));
+  EXPECT_THAT(computeGeneralizedEigenvalues(A, B),
+              ElementsAre(ComplexNear(2., 1e-7), ComplexNear(1., 1e-7)));
 }
 
 TYPED_TEST(
@@ -121,9 +121,8 @@ TYPED_TEST(
 
   EXPECT_THAT(computeGeneralizedEigenvalues(
                   cpppetsc::asThAT(&A, &T),
-                  cpppetsc::computeElementsOfMatrix(cpppetsc::asThAT(&B, &T)),
-                  2),
-              ElementsAre(ComplexNear(1., 1e-7), ComplexNear(2., 1e-7)));
+                  cpppetsc::computeElementsOfMatrix(cpppetsc::asThAT(&B, &T))),
+              ElementsAre(ComplexNear(2., 1e-7), ComplexNear(1., 1e-7)));
 }
 
 TYPED_TEST(
@@ -141,8 +140,8 @@ TYPED_TEST(
   });
 
   EXPECT_THAT(
-      computeGeneralizedEigenvalues(A, B, 2),
-      ElementsAre(ComplexNear(1. / 2., 1e-7), ComplexNear(2. / 2., 1e-7)));
+      computeGeneralizedEigenvalues(A, B),
+      ElementsAre(ComplexNear(2. / 2., 1e-7), ComplexNear(1. / 2., 1e-7)));
 }
 
 } // namespace

@@ -49,7 +49,7 @@ public:
   void setOperators(const matrix_type *A, const matrix_type *B);
 
   /**
-   * @brief Solve linear eigenvalue problem.
+   * @brief Solve linear eigenvalue problem and returns the number of converged eigenpairs.
    */
   size_type solve() const;
 

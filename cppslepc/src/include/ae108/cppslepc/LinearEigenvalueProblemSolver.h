@@ -40,13 +40,13 @@ public:
   /**
    * @brief Sets the matrices associated with a standard eigenvalue problem.
    */
-  void setOperators(const matrix_type &A) const;
+  void setOperators(const matrix_type &A);
 
   /**
    * @brief Sets the matrices associated with a generalized eigenvalue
    * problem.
    */
-  void setOperators(const matrix_type &A, const matrix_type &B) const;
+  void setOperators(const matrix_type &A, const matrix_type &B);
 
   /**
    * @brief Solve linear eigenvalue problem.
@@ -95,7 +95,7 @@ LinearEigenvalueProblemSolver<Policy>::LinearEigenvalueProblemSolver()
 template <class Policy>
 void LinearEigenvalueProblemSolver<Policy>::setOperators(
     const typename LinearEigenvalueProblemSolver<Policy>::matrix_type &A)
-    const {
+     {
   Policy::handleError(EPSSetOperators(this->data(), A.data(), NULL));
 }
 
@@ -103,7 +103,7 @@ template <class Policy>
 void LinearEigenvalueProblemSolver<Policy>::setOperators(
     const typename LinearEigenvalueProblemSolver<Policy>::matrix_type &A,
     const typename LinearEigenvalueProblemSolver<Policy>::matrix_type &B)
-    const {
+     {
   Policy::handleError(EPSSetOperators(this->data(), A.data(), B.data()));
 }
 

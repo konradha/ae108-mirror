@@ -106,7 +106,7 @@ std::vector<
 computeEigenvalues(const cpppetsc::Matrix<Policy> &A) {
   auto solver = LinearEigenvalueProblemSolver<Policy>{};
 
-  solver.setOperators(A);
+  solver.setOperators(&A);
 
   return detail::solve(solver);
 }
@@ -118,7 +118,7 @@ computeGeneralizedEigenvalues(const cpppetsc::Matrix<Policy> &A,
                               const cpppetsc::Matrix<Policy> &B) {
   auto solver = LinearEigenvalueProblemSolver<Policy>{};
 
-  solver.setOperators(A, B);
+  solver.setOperators(&A, &B);
 
   return detail::solve(solver);
 }

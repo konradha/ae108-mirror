@@ -155,8 +155,10 @@ LinearEigenvalueProblemSolver<Policy>::getEigenvalue(const size_type n) const {
 #ifdef AE108_PETSC_COMPLEX
   Policy::handleError(EPSGetEigenvalue(this->data(), n, &eigenvalue, NULL));
 #else
-  Policy::handleError(
-      EPSGetEigenvalue(this->data(), n, &eigenvalue.first, &eigenvalue.second));
+  value_type real, imag;
+  Policy::handleError(EPSGetEigenvalue(this->data(), n, &real, &imag));
+  eigenvalue.real(real);
+  eigenvalue.imag(imag);
 #endif
 
   return eigenvalue;

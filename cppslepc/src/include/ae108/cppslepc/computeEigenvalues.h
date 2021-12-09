@@ -92,8 +92,9 @@ solve(const LinearEigenvalueProblemSolver<Policy> &solver) {
   using size_type = typename solver_type::size_type;
 
   namespace rv = ranges::cpp20::views;
-  return rv::iota(0, solver.solve()) | rv::transform([&](const size_type index) {
-      return solver.getEigenvalue(index);
+  return rv::iota(0, solver.solve()) |
+         rv::transform([&](const size_type index) {
+           return solver.getEigenvalue(index);
          }) |
          ranges::to<std::vector>();
 }
@@ -118,7 +119,7 @@ computeGeneralizedEigenvalues(const cpppetsc::Matrix<Policy> &A,
   auto solver = LinearEigenvalueProblemSolver<Policy>{};
 
   solver.setOperators(A, B);
-                                       
+
   return detail::solve(solver);
 }
 

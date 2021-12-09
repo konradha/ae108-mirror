@@ -38,13 +38,14 @@ public:
   explicit LinearEigenvalueProblemSolver();
 
   /**
-   * @brief Sets the matrices associated with a standard eigenvalue problem.
+   * @brief Sets the matrices associated with a standard eigenvalue problem,
+   * i.e. Ax = lambda * x.
    */
   void setOperators(const matrix_type *A);
 
   /**
    * @brief Sets the matrices associated with a generalized eigenvalue
-   * problem.
+   * problem, i.e. Ax = lambda * Bx.
    */
   void setOperators(const matrix_type *A, const matrix_type *B);
 

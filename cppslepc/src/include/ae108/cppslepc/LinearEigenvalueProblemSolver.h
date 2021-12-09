@@ -18,7 +18,10 @@
 #include "ae108/cpppetsc/ParallelComputePolicy_fwd.h"
 #include "ae108/cpppetsc/SequentialComputePolicy_fwd.h"
 #include "ae108/cpppetsc/UniqueEntity.h"
-#include <slepceps.h>
+#include "ae108/cpppetsc/Vector.h"
+#include "ae108/cppslepc/EigenPair.h"
+#include "ae108/cppslepc/EigenvalueProblemSolverDivergedException.h"
+#include <slepc/slepceps.h>
 
 namespace ae108 {
 namespace cppslepc {
@@ -28,8 +31,37 @@ public:
   using size_type = PetscInt;
   using value_type = PetscScalar;
   using real_type = PetscReal;
+  using complex_type = PetscComplex;
+  using vector_type = cpppetsc::distributed<cpppetsc::Vector<Policy>>;
+  using matrix_type = cpppetsc::Matrix<Policy>;
 
   explicit LinearEigenvalueProblemSolver();
+
+  /**
+   * @brief Sets the matrices associated with a standard eigenvalue problem.
+   */
+  void setOperators(const matrix_type &A) const;
+
+  /**
+   * @brief Sets the matrices associated with a generalized eigenvalue
+   * problem.
+   */
+  void setOperators(const matrix_type &A, const matrix_type &B) const;
+
+  /**
+   * @brief Solve linear eigenvalue problem.
+   */
+  size_type solve() const;
+
+  /**
+   * @brief Get nth eigenpair.
+   */
+  void getEigenpair(const size_type n, EigenPair<Policy> &out) const;
+
+  /**
+   * @brief Get nth eigenvalue.
+   */
+  complex_type getEigenvalue(const size_type n) const;
 
   /**
    * @brief Returns the internal solver.
@@ -58,8 +90,76 @@ LinearEigenvalueProblemSolver<Policy>::LinearEigenvalueProblemSolver()
         Policy::handleError(EPSCreate(Policy::communicator(), &solver));
         return cpppetsc::UniqueEntity<EPS>(
             solver, [](EPS eps) { Policy::handleError(EPSDestroy(&eps)); });
-      }()) {
-  Policy::handleError(EPSSetFromOptions(eps_.get()));
+      }()) {}
+
+template <class Policy>
+void LinearEigenvalueProblemSolver<Policy>::setOperators(
+    const typename LinearEigenvalueProblemSolver<Policy>::matrix_type &A)
+    const {
+  Policy::handleError(EPSSetOperators(this->data(), A.data(), NULL));
+}
+
+template <class Policy>
+void LinearEigenvalueProblemSolver<Policy>::setOperators(
+    const typename LinearEigenvalueProblemSolver<Policy>::matrix_type &A,
+    const typename LinearEigenvalueProblemSolver<Policy>::matrix_type &B)
+    const {
+  Policy::handleError(EPSSetOperators(this->data(), A.data(), B.data()));
+}
+
+template <class Policy>
+typename LinearEigenvalueProblemSolver<Policy>::size_type
+LinearEigenvalueProblemSolver<Policy>::solve() const {
+
+  Policy::handleError(EPSSetFromOptions(this->data()));
+
+  Policy::handleError(EPSSolve(this->data()));
+
+  const auto hasError = [&]() {
+    auto reason = EPSConvergedReason{};
+    Policy::handleError(EPSGetConvergedReason(this->data(), &reason));
+    return reason < 0;
+  }();
+
+  if (hasError) {
+    throw EigenvalueProblemSolverDivergedException{};
+  }
+
+  return [&]() {
+    auto size = size_type{};
+    Policy::handleError(EPSGetConverged(this->data(), &size));
+    return size;
+  }();
+}
+
+template <class Policy>
+void LinearEigenvalueProblemSolver<Policy>::getEigenpair(
+    const size_type n, EigenPair<Policy> &out) const {
+
+#ifdef AE108_PETSC_COMPLEX
+  EPSGetEigenpair(this->data(), n, &out.value, NULL, out.vector.unwrap().data(),
+                  NULL);
+#else
+  EPSGetEigenpair(this->data(), n, &out.value_real, &out.value_imag,
+                  out.vector_real.unwrap().data(),
+                  out.vector_imag.unwrap().data());
+#endif
+}
+
+template <class Policy>
+typename LinearEigenvalueProblemSolver<Policy>::complex_type
+LinearEigenvalueProblemSolver<Policy>::getEigenvalue(const size_type n) const {
+
+  auto eigenvalue = complex_type();
+
+#ifdef AE108_PETSC_COMPLEX
+  Policy::handleError(EPSGetEigenvalue(this->data(), n, &eigenvalue, NULL));
+#else
+  Policy::handleError(
+      EPSGetEigenvalue(this->data(), n, &eigenvalue.first, &eigenvalue.second));
+#endif
+
+  return eigenvalue;
 }
 
 template <class Policy>

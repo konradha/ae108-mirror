@@ -27,8 +27,7 @@ template <class Policy> struct EigenPair {
   value_type value;
   vector_type vector;
 #else
-  value_type value_real;
-  value_type value_imag;
+  std::complex<value_type> value;
   vector_type vector_real;
   vector_type vector_imag;
 #endif

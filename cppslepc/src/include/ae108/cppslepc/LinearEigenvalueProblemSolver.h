@@ -139,9 +139,12 @@ void LinearEigenvalueProblemSolver<Policy>::getEigenpair(
   EPSGetEigenpair(this->data(), n, &out->value, NULL,
                   out->vector.unwrap().data(), NULL);
 #else
-  EPSGetEigenpair(this->data(), n, &out->value_real, &out->value_imag,
+  value_type real, imag;
+  EPSGetEigenpair(this->data(), n, &real, &imag,
                   out->vector_real.unwrap().data(),
                   out->vector_imag.unwrap().data());
+  out->value.real(real);
+  out->value.imag(imag);
 #endif
 }
 

@@ -51,13 +51,15 @@ using Policies =
     Types<cpppetsc::SequentialComputePolicy, cpppetsc::ParallelComputePolicy>;
 TYPED_TEST_CASE(LinearEigenvalueProblemSolver_Test, Policies);
 
-TYPED_TEST(LinearEigenvalueProblemSolver_Test, eigen_pair_is_correct) {
+TYPED_TEST(LinearEigenvalueProblemSolver_Test,
+           hermetian_evp_eigen_pair_is_correct) {
   using solver_type = typename TestFixture::solver_type;
   using vector_type = typename TestFixture::vector_type;
   using matrix_type = typename TestFixture::matrix_type;
   using eigenpair_type = typename TestFixture::eigenpair_type;
 
   auto solver = solver_type{};
+  EPSSetProblemType(solver.data(), EPS_HEP);
 
   const auto A = matrix_type::fromList({
       {1., 0.},
@@ -75,33 +77,84 @@ TYPED_TEST(LinearEigenvalueProblemSolver_Test, eigen_pair_is_correct) {
 #endif
 
   solver.getEigenpair(0, &eigenpair);
-  eigenpair.vector_real.unwrap().scale(-1. /
-                                       eigenpair.vector_real.unwrap().norm());
-  EXPECT_THAT(eigenpair.value, ComplexNear(2., 1e-7));
+  EXPECT_THAT(eigenpair.value, ComplexNear(2, 1e-7));
 #ifdef AE108_PETSC_COMPLEX
-  EXPECT_THAT(eigenpair.vector(0), cppptest::ComplexNear(0., 1e-7));
-  EXPECT_THAT(eigenpair.vector(1), cppptest::ComplexNear(1., 1e-7));
+  EXPECT_THAT(eigenpair.vector(0) * 1. + eigenpair.vector(1) * 0,
+              cppptest::ScalarNear(0., 1e-7));
 #else
-  EXPECT_THAT(eigenpair.vector_real(0), cppptest::ScalarNear(0., 1e-7));
-  EXPECT_THAT(eigenpair.vector_real(1), cppptest::ScalarNear(1., 1e-7));
-  EXPECT_THAT(eigenpair.vector_imag(0), cppptest::ScalarNear(0., 1e-7));
-  EXPECT_THAT(eigenpair.vector_imag(1), cppptest::ScalarNear(0., 1e-7));
+  EXPECT_THAT(eigenpair.vector_real(0) * 1. + eigenpair.vector_real(1) * 0,
+              cppptest::ScalarNear(0., 1e-7));
+  EXPECT_THAT(eigenpair.vector_imag(0) * 0. + eigenpair.vector_imag(1) * 0,
+              cppptest::ScalarNear(0., 1e-7));
 #endif
 
   solver.getEigenpair(1, &eigenpair);
-  eigenpair.vector_real.unwrap().scale(1. /
-                                       eigenpair.vector_real.unwrap().norm());
-  EXPECT_THAT(eigenpair.value, ComplexNear(1., 1e-7));
+
+  EXPECT_THAT(eigenpair.value, ComplexNear(1, 1e-7));
 #ifdef AE108_PETSC_COMPLEX
-  EXPECT_THAT(eigenpair.vector(0), cppptest::ComplexNear(1., 1e-7));
-  EXPECT_THAT(eigenpair.vector(1), cppptest::ComplexNear(0., 1e-7));
+  EXPECT_THAT(eigenpair.vector(0) * 0. + eigenpair.vector(1) * 1,
+              cppptest::ScalarNear(0., 1e-7));
 #else
-  EXPECT_THAT(eigenpair.vector_real(0), cppptest::ScalarNear(1., 1e-7));
-  EXPECT_THAT(eigenpair.vector_real(1), cppptest::ScalarNear(0., 1e-7));
-  EXPECT_THAT(eigenpair.vector_imag(0), cppptest::ScalarNear(0., 1e-7));
-  EXPECT_THAT(eigenpair.vector_imag(1), cppptest::ScalarNear(0., 1e-7));
+  EXPECT_THAT(eigenpair.vector_real(0) * 0. + eigenpair.vector_real(1) * 1,
+              cppptest::ScalarNear(0., 1e-7));
+  EXPECT_THAT(eigenpair.vector_imag(0) * 0. + eigenpair.vector_imag(1) * 0,
+              cppptest::ScalarNear(0., 1e-7));
 #endif
 }
+
+TYPED_TEST(LinearEigenvalueProblemSolver_Test,
+           non_hermetian_evp_eigen_pair_is_correct) {
+  using solver_type = typename TestFixture::solver_type;
+  using vector_type = typename TestFixture::vector_type;
+  using matrix_type = typename TestFixture::matrix_type;
+  using eigenpair_type = typename TestFixture::eigenpair_type;
+
+  auto solver = solver_type{};
+  EPSSetProblemType(solver.data(), EPS_NHEP);
+
+  const auto A = matrix_type::fromList({
+      {1., -1.},
+      {1., 1.},
+  });
+
+  solver.setOperators(&A);
+
+  solver.solve();
+
+#ifdef AE108_PETSC_COMPLEX
+  auto eigenpair = eigenpair_type{{0, 0}, vector_type(2)};
+#else
+  auto eigenpair = eigenpair_type{{0, 0}, vector_type(2), vector_type(2)};
+#endif
+
+  solver.getEigenpair(0, &eigenpair);
+  EXPECT_THAT(eigenpair.value, ComplexNear(std::complex<double>{1, 1}, 1e-7));
+#ifdef AE108_PETSC_COMPLEX
+  EXPECT_THAT((eigenpair.vector(0) * std::complex<double>{1, 0} +
+               eigenpair.vector(1) * std::complex<double>{0, 1}),
+              ComplexNear(0., 1e-7));
+#else
+  EXPECT_THAT(eigenpair.vector_real(0) * 1. + eigenpair.vector_real(1) * 0,
+              cppptest::ScalarNear(0., 1e-7));
+  EXPECT_THAT(eigenpair.vector_imag(0) * 0. + eigenpair.vector_imag(1) * 1.,
+              cppptest::ScalarNear(0., 1e-7));
+#endif
+
+  solver.getEigenpair(1, &eigenpair);
+
+  EXPECT_THAT(eigenpair.value, ComplexNear(std::complex<double>{1, -1}, 1e-7));
+#ifdef AE108_PETSC_COMPLEX
+  EXPECT_THAT((eigenpair.vector(0) * std::complex<double>{1, 0} +
+               eigenpair.vector(1) * std::complex<double>{0, -1}),
+              ComplexNear(0., 1e-7));
+#else
+  EXPECT_THAT(eigenpair.vector_real(0) * 1. + eigenpair.vector_real(1) * 0.,
+              cppptest::ScalarNear(0., 1e-7));
+  EXPECT_THAT(eigenpair.vector_imag(0) * 0. + eigenpair.vector_imag(1) * -1.,
+              cppptest::ScalarNear(0., 1e-7));
+#endif
+}
+
 } // namespace
 } // namespace cppslepc
 } // namespace ae108

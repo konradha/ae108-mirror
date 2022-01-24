@@ -673,7 +673,7 @@ Mesh<Policy>::fromCanonicalOrder(const distributed<vector_type> &vector) const {
 
 template <class Policy>
 void Mesh<Policy>::assertCorrectBaseMesh(const vector_type &vector) const {
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !defined(AE108_CPPPETSC_DISABLE_BASE_MESH_CHECK)
   const auto extractDM = [](const vector_type &vector) {
     auto dm = DM{};
     Policy::handleError(VecGetDM(vector.data(), &dm));

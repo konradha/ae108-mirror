@@ -171,6 +171,14 @@ public:
   toCanonicalOrder(const distributed<vector_type> &vector) const;
 
   /**
+   * @brief Returns a matrix in canonical row/column order (the degrees of
+   * freedom of the elements sorted by global index, followed by the degrees of
+   * freedom of the vertices sorted by global index) transformed from the
+   * provided matrix in PETSc's row/column order.
+   */
+  matrix_type toCanonicalOrder(const matrix_type &matrix) const;
+
+  /**
    * @brief Returns a global vector in PETSc's row order transformed from the
    * provided vector in canonical row order (the degrees of freedom of the
    * elements sorted by global index, followed by the degrees of freedom of the
@@ -654,6 +662,40 @@ Mesh<Policy>::toCanonicalOrder(const distributed<vector_type> &vector) const {
   Policy::handleError(DMPlexGlobalToNaturalEnd(
       _mesh.get(), vector.unwrap().data(), result.unwrap().data()));
   return result;
+}
+
+template <class Policy>
+typename Mesh<Policy>::matrix_type
+Mesh<Policy>::toCanonicalOrder(const matrix_type &matrix) const {
+  const auto mapping = [&]() {
+    auto sf = PetscSF{};
+    Policy::handleError(DMPlexGetGlobalToNaturalSF(_mesh.get(), &sf));
+    auto mapping = ISLocalToGlobalMapping();
+    Policy::handleError(ISLocalToGlobalMappingCreateSF(
+        sf, matrix.localRowRange().first, &mapping));
+    return makeUniqueEntity<Policy>(mapping);
+  }();
+
+  const auto reorder = [&](const auto &in) {
+    auto out = IS();
+    Policy::handleError(
+        ISLocalToGlobalMappingApplyIS(mapping.get(), in.get(), &out));
+    return makeUniqueEntity<Policy>(out);
+  };
+
+  const auto indices = [&](const auto n) {
+    auto is = IS();
+    Policy::handleError(ISCreateStride(Policy::communicator(), n, 0, 1, &is));
+    return reorder(makeUniqueEntity<Policy>(is));
+  };
+
+  const auto rows = indices(matrix.localSize().first);
+  const auto cols = indices(matrix.localSize().second);
+
+  auto mat = Mat();
+  Policy::handleError(MatCreateSubMatrix(matrix.data(), rows.get(), cols.get(),
+                                         MAT_INITIAL_MATRIX, &mat));
+  return matrix_type(makeUniqueEntity<Policy>(mat));
 }
 
 template <class Policy>

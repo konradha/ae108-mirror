@@ -72,6 +72,11 @@ template <> PetscErrorCode callDestructor(Tao *const ptr) noexcept {
 template <> PetscErrorCode callDestructor(PetscViewer *const ptr) noexcept {
   return PetscViewerDestroy(ptr);
 }
+
+template <>
+PetscErrorCode callDestructor(ISLocalToGlobalMapping *const ptr) noexcept {
+  return ISLocalToGlobalMappingDestroy(ptr);
+}
 } // namespace detail
 } // namespace cpppetsc
 } // namespace ae108

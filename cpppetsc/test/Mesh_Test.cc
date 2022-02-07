@@ -85,6 +85,31 @@ createIndexVector(const Mesh<Policy> &mesh) {
 }
 
 /**
+ * @brief Creates a matrix that contains the vertex index
+ * for every vertex dof.
+ */
+template <class Policy>
+typename Mesh<Policy>::matrix_type createIndexMatrix(const Mesh<Policy> &mesh) {
+  using matrix_type = typename Mesh<Policy>::matrix_type;
+  using value_type = typename Mesh<Policy>::value_type;
+
+  auto matrix = matrix_type::fromMesh(mesh);
+  for (const auto &vertex : mesh.localVertices()) {
+    const auto isGhost = bool{vertex.globalDofLineRange().first < 0};
+    if (isGhost)
+      continue;
+    const auto values =
+        std::vector<value_type>(vertex.numberOfDofs() * vertex.numberOfDofs(),
+                                static_cast<value_type>(vertex.index()));
+    vertex.addVertexMatrix(values, &matrix);
+  }
+
+  matrix.finalize();
+
+  return matrix;
+}
+
+/**
  * @brief Returns a vector of the local values in parameter.
  */
 template <class Policy>
@@ -903,7 +928,7 @@ TYPED_TEST(Mesh_Test, adding_vertex_0_to_matrix_works) {
     }
 
     const auto input =
-        createData<value_type>(this->verticesPerElement * this->dofPerVertex);
+        createData<value_type>(this->dofPerVertex * this->dofPerVertex);
     vertex.addVertexMatrix(input, &result);
   }
 
@@ -921,6 +946,28 @@ TYPED_TEST(Mesh_Test, adding_vertex_0_to_matrix_works) {
       for (auto j = range.first; j < range.second; ++j) {
         EXPECT_THAT(result, ScalarEqIfLocal(i, j, reference));
         reference++;
+      }
+    }
+  }
+}
+
+TYPED_TEST(Mesh_Test, reordering_matrix_in_canonical_order_works) {
+  using value_type = typename TestFixture::value_type;
+
+  const auto matrix = createIndexMatrix(this->mesh);
+
+  const auto result = this->mesh.toCanonicalOrder(matrix);
+
+  for (auto offset = 0; offset < this->totalNumberOfVertices; ++offset) {
+    for (auto i = 0; i < this->dofPerVertex; ++i) {
+      for (auto j = 0; j < this->dofPerVertex; ++j) {
+        EXPECT_THAT(
+            result,
+            ScalarEqIfLocal(this->totalNumberOfElements * this->dofPerElement +
+                                offset * this->dofPerVertex + i,
+                            this->totalNumberOfElements * this->dofPerElement +
+                                offset * this->dofPerVertex + j,
+                            static_cast<value_type>(offset)));
       }
     }
   }

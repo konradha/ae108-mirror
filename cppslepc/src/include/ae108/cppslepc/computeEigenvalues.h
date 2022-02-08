@@ -75,6 +75,7 @@ computeGeneralizedEigenvalues(
 } // namespace cppslepc
 } // namespace ae108
 
+#include <range/v3/range/conversion.hpp>
 #include <range/v3/view/iota.hpp>
 #include <range/v3/view/transform.hpp>
 #include <slepceps.h>

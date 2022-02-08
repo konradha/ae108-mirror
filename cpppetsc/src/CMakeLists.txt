@@ -82,6 +82,6 @@ target_link_libraries(${PROJECT_NAME}-cpppetsc
                       PUBLIC range-v3::range-v3
 )
 
-target_compile_features(${PROJECT_NAME}-cpppetsc PUBLIC cxx_std_11)
+target_compile_features(${PROJECT_NAME}-cpppetsc PUBLIC cxx_std_17)
 
 ae108_install_library(cpppetsc)

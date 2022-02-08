@@ -53,6 +53,6 @@ target_link_libraries(${PROJECT_NAME}-assembly
                       PUBLIC Eigen3::Eigen
 )
 
-target_compile_features(${PROJECT_NAME}-assembly PUBLIC cxx_std_11)
+target_compile_features(${PROJECT_NAME}-assembly PUBLIC cxx_std_17)
 
 ae108_install_library(assembly)

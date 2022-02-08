@@ -183,6 +183,12 @@ public:
   std::pair<size_type, size_type> localRowRange() const;
 
   /**
+   * @brief Returns the local column indices in the format:
+   * (first column index, last column index + 1).
+   */
+  std::pair<size_type, size_type> localColumnRange() const;
+
+  /**
    * @brief Returns the entry at the provided coordinates.
    *
    * @remark Does not check bounds.
@@ -560,6 +566,16 @@ Matrix<Policy>::localRowRange() const {
   auto return_value = std::pair<size_type, size_type>();
   Policy::handleError(MatGetOwnershipRange(_mat.get(), &return_value.first,
                                            &return_value.second));
+  return return_value;
+}
+
+template <class Policy>
+std::pair<typename Matrix<Policy>::size_type,
+          typename Matrix<Policy>::size_type>
+Matrix<Policy>::localColumnRange() const {
+  auto return_value = std::pair<size_type, size_type>();
+  Policy::handleError(MatGetOwnershipRangeColumn(
+      _mat.get(), &return_value.first, &return_value.second));
   return return_value;
 }
 

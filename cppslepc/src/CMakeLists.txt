@@ -26,7 +26,7 @@ target_include_directories(${PROJECT_NAME}-cppslepc PUBLIC
 )
 
 target_compile_features(${PROJECT_NAME}-cppslepc
-                        PUBLIC cxx_std_11
+                        PUBLIC cxx_std_17
 )
 
 find_package(AE108_SLEPc 1.12 MODULE REQUIRED)

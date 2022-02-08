@@ -32,4 +32,4 @@ target_link_libraries(${PROJECT_NAME}-cppptest
                       PUBLIC GTest::gmock
 )
 
-target_compile_features(${PROJECT_NAME}-cppptest PUBLIC cxx_std_11)
+target_compile_features(${PROJECT_NAME}-cppptest PUBLIC cxx_std_17)

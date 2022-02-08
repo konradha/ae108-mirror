@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG BASE_IMAGE=ubuntu:focal
+ARG BASE_IMAGE=ubuntu:jammy
 FROM $BASE_IMAGE
 
 ARG PETSC_SCALAR_TYPE=real

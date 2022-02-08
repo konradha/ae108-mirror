@@ -246,17 +246,17 @@ def add_sliced_hdf_dataitem(
         "DataItem",
         {"Dimensions": shape_to_xdmf_dimensions((3, item.ndim)), "Format": "XML"},
     )
-    dimensions.text = "{} {} {}".format(
-        shape_to_xdmf_dimensions(
+    dimensions.text = f"""{
+          shape_to_xdmf_dimensions(
             tuple(sliced_dimensions.get(i, 0) for i in range(item.ndim))
-        ),
-        shape_to_xdmf_dimensions(tuple(1 for _ in range(item.ndim))),
-        shape_to_xdmf_dimensions(
-            tuple(
-                1 if i in sliced_dimensions else item.shape[i] for i in range(item.ndim)
-            )
-        ),
-    )
+          )
+          } {
+          shape_to_xdmf_dimensions(tuple(1 for _ in range(item.ndim)))
+          } {
+          shape_to_xdmf_dimensions(
+            tuple(1 if i in sliced_dimensions else item.shape[i] for i in range(item.ndim))
+          )
+          }"""
     add_hdf_dataitem(hyperslab, hdf_file, hdf_path)
     return hyperslab
 
@@ -282,7 +282,7 @@ def add_hdf_dataitem(
             "Rank": str(item.ndim),
         },
     )
-    dataitem.text = "{}:{}".format(hdf_file.filename, hdf_path)
+    dataitem.text = f"{hdf_file.filename}:{hdf_path}"
     return dataitem
 
 
@@ -358,15 +358,13 @@ def add_topology(parent: ET.Element, hdf_file: h5py.File) -> ET.Element:
         {"Format": "XML", "Dimensions": str(dataitem_dimension)},
     )
     dataitem.text = "  ".join(
-        "{} {}".format(
-            " ".join(
-                str(type_)
-                for type_ in number_of_corners_to_type(
-                    len(vertices), topological_dimension
-                )
-            ),
-            " ".join(str(vertex) for vertex in vertices),
-        )
+        f"""{
+          " ".join(str(type_)
+          for type_ in number_of_corners_to_type(len(vertices), topological_dimension))
+        } {
+          " ".join(str(vertex)
+          for vertex in vertices)
+        }"""
         for vertices in read_element_vertices(hdf_file)
     )
 
@@ -411,7 +409,7 @@ def add_field(
         - 3 columns: A vector field will be added.
         - otherwise: The field is split into scalar fields, and those are added.
     """
-    hdf_path = "/fields/{}".format(field_name)
+    hdf_path = "/fields/{field_name}"
 
     item = hdf_file[hdf_path]
     shape = item.shape
@@ -456,7 +454,7 @@ def add_field(
                 parent,
                 "Attribute",
                 {
-                    "Name": "{}[{}]{}".format(field_name, column, postfix),
+                    "Name": f"{field_name}[{column}]{postfix}",
                     "Center": center,
                     "AttributeType": "Scalar",
                 },
@@ -519,7 +517,7 @@ def main() -> None:
     XDMF to file.
     """
     filename = parse_input_filename()
-    with open(filename.stem + ".xdmf", "w") as xdmf_file:
+    with open(filename.stem + ".xdmf", "w", encoding="utf-8") as xdmf_file:
         xdmf_file.write(hdf_to_xdmf_string(h5py.File(filename, "r")))
 
 

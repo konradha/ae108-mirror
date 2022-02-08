@@ -19,31 +19,31 @@ FROM $BASE_IMAGE
 ARG PETSC_SCALAR_TYPE=real
 
 RUN apt-get update && \
-        DEBIAN_FRONTEND="noninteractive" \
-        TZ="Europe/Zurich" \
-        apt-get install -y \
-        clang-format \
-        cmake \
-        g++ \
-        git \
-        googletest \
-        libboost-program-options-dev \
-        libeigen3-dev \
-        librange-v3-dev \
-        ninja-build \
-        python3 python3-pip \
-        python3-h5py \
-        gdb
+  DEBIAN_FRONTEND="noninteractive" \
+  TZ="Europe/Zurich" \
+  apt-get install -y \
+  clang-format \
+  cmake \
+  g++ \
+  git \
+  googletest \
+  libboost-program-options-dev \
+  libeigen3-dev \
+  librange-v3-dev \
+  ninja-build \
+  python3 python3-pip \
+  python3-h5py \
+  gdb
 
 RUN pip3 install \
-        mypy==0.790 \
-        black==20.8b1 \
-        pylint==2.6.0 \
-        sympy==1.7.1 \
-        gcovr
+  mypy==0.931 \
+  black==22.1.0 \
+  pylint==2.12.2 \
+  sympy==1.7.1 \
+  gcovr==5.0
 
 RUN apt-get update && \
-        DEBIAN_FRONTEND="noninteractive" \
-        apt-get install -y \
-        libpetsc-${PETSC_SCALAR_TYPE}-dev \
-        libslepc-${PETSC_SCALAR_TYPE}3.15-dev
+  DEBIAN_FRONTEND="noninteractive" \
+  apt-get install -y \
+  libpetsc-${PETSC_SCALAR_TYPE}-dev \
+  libslepc-${PETSC_SCALAR_TYPE}3.15-dev

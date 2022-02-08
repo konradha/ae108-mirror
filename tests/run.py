@@ -197,8 +197,8 @@ def diff_files(
         ComparisonType.NUMERIC: diff_numeric_string,
     }
 
-    with open(value, "r") as value_file:
-        with open(reference, "r") as reference_file:
+    with open(value, "r", encoding="utf-8") as value_file:
+        with open(reference, "r", encoding="utf-8") as reference_file:
             comparison_to_function.get(comparison, lambda _0, _1, _2: None)(
                 value_file.read(), reference_file.read(), case
             )
@@ -326,7 +326,7 @@ def load_tests(
             lambda processes, name=test_name: f"test_{name}_with_{processes}_mpi_processes"
         )
 
-        with open(path, "r") as file:
+        with open(path, "r", encoding="utf-8") as file:
             test_case_definitions = as_test_case_definitions(
                 path.parent, json.load(file)
             )
@@ -365,7 +365,7 @@ def run_testcase(
             mpi_processes=definition.mpi_processes,
         )
 
-        with open(directory_path / "stdout.txt", "w") as file:
+        with open(directory_path / "stdout.txt", "w", encoding="utf-8") as file:
             file.write(result.stdout)
 
         diff_files(

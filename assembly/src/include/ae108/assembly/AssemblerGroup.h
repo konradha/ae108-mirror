@@ -42,7 +42,7 @@ class AssemblerGroup : public DerivePluginsUniquely<
       typename MemberTypeTrait<AssemblerGroup, N>::type;
 
 public:
-  template <class... Args> explicit AssemblerGroup(Args &&... args);
+  template <class... Args> explicit AssemblerGroup(Args &&...args);
 
   /**
    * @brief Get the Nth member assembler.
@@ -169,7 +169,7 @@ namespace assembly {
 
 template <class... SingleElementAssemblers>
 template <class... Args>
-AssemblerGroup<SingleElementAssemblers...>::AssemblerGroup(Args &&... args)
+AssemblerGroup<SingleElementAssemblers...>::AssemblerGroup(Args &&...args)
     : _assemblers(std::forward<Args>(args)...) {}
 
 template <class... SingleElementAssemblers>

@@ -28,7 +28,7 @@ namespace utilities {
  */
 template <std::size_t To, std::size_t From = 0u> struct StaticLooper {
   template <class Functor, class Value, class... Args>
-  static void run(Functor &&functor, Value &&value, Args &&... args);
+  static void run(Functor &&functor, Value &&value, Args &&...args);
 };
 
 /**
@@ -36,7 +36,7 @@ template <std::size_t To, std::size_t From = 0u> struct StaticLooper {
  */
 template <std::size_t To> struct StaticLooper<To, To> {
   template <class Functor, class Value, class... Args>
-  static void run(Functor &&, Value &&, Args &&... args);
+  static void run(Functor &&, Value &&, Args &&...args);
 };
 } // namespace utilities
 } // namespace assembly
@@ -53,7 +53,7 @@ namespace utilities {
 template <std::size_t To, std::size_t From>
 template <class Functor, class Value, class... Args>
 void StaticLooper<To, From>::run(Functor &&functor, Value &&value,
-                                 Args &&... args) {
+                                 Args &&...args) {
   functor(value.template get<From>(), args...);
   StaticLooper<To, From + 1>::run(std::forward<Functor>(functor),
                                   std::forward<Value>(value),

@@ -19,7 +19,7 @@
 #include <utility>
 
 #define DEFINE_ASSEMBLER_METHOD_BASE(methodName, cvQualifiers)                 \
-  template <class... Args> void methodName(Args &&... args) cvQualifiers {     \
+  template <class... Args> void methodName(Args &&...args) cvQualifiers {      \
     this->dispatch(std::forward<Args>(args)...);                               \
   }
 
@@ -79,13 +79,13 @@ protected:
    * @brief Calls execute with the given parameters for all (member) assemblers
    * that have the plugin (const version).
    */
-  template <class... Args> void dispatch(Args &&... args) const;
+  template <class... Args> void dispatch(Args &&...args) const;
 
   /**
    * @brief Calls execute with the given parameters for all (member) assemblers
    * that have the plugin (nonconst version).
    */
-  template <class... Args> void dispatch(Args &&... args);
+  template <class... Args> void dispatch(Args &&...args);
 
   ~FeaturePlugin() = default;
 };
@@ -117,7 +117,7 @@ using CastType =
 
 template <template <class> class Plugin> struct Executor {
   template <class Assembler, class... Args>
-  void operator()(Assembler &assembler, Args &&... args) const {
+  void operator()(Assembler &assembler, Args &&...args) const {
     operatorImpl(
         HasPlugin<typename std::remove_const<Assembler>::type, Plugin>{},
         assembler, std::forward<Args>(args)...);
@@ -126,7 +126,7 @@ template <template <class> class Plugin> struct Executor {
 private:
   template <class Assembler, class... Args>
   void operatorImpl(std::true_type, Assembler &assembler,
-                    Args &&... args) const {
+                    Args &&...args) const {
     static_cast<CastType<Assembler, Plugin>>(assembler).execute(
         std::forward<Args>(args)...);
   }
@@ -139,7 +139,7 @@ private:
  * @brief Implementation of dispatch for the assembler-group case.
  */
 template <template <class> class Plugin, class Assembler, class... Args>
-void dispatchImpl(std::true_type, Assembler &assembler, Args &&... args) {
+void dispatchImpl(std::true_type, Assembler &assembler, Args &&...args) {
   utilities::StaticLooper<NumberOfMembersTypeTrait<typename std::remove_const<
       Assembler>::type>::value>::run(detail::Executor<Plugin>{}, assembler,
                                      std::forward<Args>(args)...);
@@ -149,7 +149,7 @@ void dispatchImpl(std::true_type, Assembler &assembler, Args &&... args) {
  * @brief Implementation of dispatch for the non-assembler-group case.
  */
 template <template <class> class Plugin, class Assembler, class... Args>
-void dispatchImpl(std::false_type, Assembler &assembler, Args &&... args) {
+void dispatchImpl(std::false_type, Assembler &assembler, Args &&...args) {
   static_cast<CastType<Assembler, Plugin>>(assembler).execute(
       std::forward<Args>(args)...);
 }
@@ -168,14 +168,14 @@ const Assembler &FeaturePlugin<Assembler, Plugin>::assembler() const {
 
 template <class Assembler, template <class> class Plugin>
 template <class... Args>
-void FeaturePlugin<Assembler, Plugin>::dispatch(Args &&... args) const {
+void FeaturePlugin<Assembler, Plugin>::dispatch(Args &&...args) const {
   detail::dispatchImpl<Plugin>(IsGroupTypeTrait<Assembler>{}, assembler(),
                                std::forward<Args>(args)...);
 }
 
 template <class Assembler, template <class> class Plugin>
 template <class... Args>
-void FeaturePlugin<Assembler, Plugin>::dispatch(Args &&... args) {
+void FeaturePlugin<Assembler, Plugin>::dispatch(Args &&...args) {
   detail::dispatchImpl<Plugin>(IsGroupTypeTrait<Assembler>{}, assembler(),
                                std::forward<Args>(args)...);
 }

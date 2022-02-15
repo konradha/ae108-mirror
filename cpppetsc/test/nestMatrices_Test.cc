@@ -101,7 +101,6 @@ TYPED_TEST(nestMatrices_Test, throws_if_inconsistent_rows) {
 
 TYPED_TEST(nestMatrices_Test, result_has_correct_first_column) {
   using matrix_type = typename TestFixture::matrix_type;
-  using vector_type = typename TestFixture::vector_type;
 
   auto u = matrix_type::fromList({
       {1.},
@@ -131,7 +130,6 @@ TYPED_TEST(nestMatrices_Test, result_has_correct_first_column) {
 
 TYPED_TEST(nestMatrices_Test, result_has_correct_second_column) {
   using matrix_type = typename TestFixture::matrix_type;
-  using vector_type = typename TestFixture::vector_type;
 
   auto u = matrix_type::fromList({
       {1.},

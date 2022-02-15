@@ -16,6 +16,7 @@
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
 #include "ae108/cpppetsc/Vector.h"
+#include "ae108/cpppetsc/createTransformInput.h"
 #include "ae108/cpppetsc/multiply.h"
 #include "ae108/cpppetsc/nestMatrices.h"
 #include "ae108/cppptest/Matchers.h"
@@ -120,8 +121,9 @@ TYPED_TEST(nestMatrices_Test, result_has_correct_first_column) {
       {&w, &x},
   });
 
-  const auto entry = multiply(
-      nested, distributed<vector_type>(vector_type::fromList({1., 0.})));
+  auto in = createTransformInput(nested);
+  in.unwrap().replace()(0) = 1.;
+  const auto entry = multiply(nested, in);
 
   EXPECT_THAT(entry.unwrap(), ScalarEqIfLocal(0, 1.));
   EXPECT_THAT(entry.unwrap(), ScalarEqIfLocal(1, 3.));
@@ -149,8 +151,9 @@ TYPED_TEST(nestMatrices_Test, result_has_correct_second_column) {
       {&w, &x},
   });
 
-  const auto entry = multiply(
-      nested, distributed<vector_type>(vector_type::fromList({1., 0.})));
+  auto in = createTransformInput(nested);
+  in.unwrap().replace()(1) = 1.;
+  const auto entry = multiply(nested, in);
 
   EXPECT_THAT(entry.unwrap(), ScalarEqIfLocal(2, 1.));
   EXPECT_THAT(entry.unwrap(), ScalarEqIfLocal(4, 3.));

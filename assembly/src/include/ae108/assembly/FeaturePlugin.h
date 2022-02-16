@@ -22,7 +22,7 @@
 
 #define DEFINE_ASSEMBLER_METHOD_BASE(PluginName, methodName, cvQualifiers)     \
   template <class... Args> void methodName(Args &&... args) cvQualifiers {     \
-    if constexpr (!IsGroupTypeTrait<                                           \
+    if constexpr (!::ae108::assembly::IsGroupTypeTrait<                        \
                       typename PluginName::assembler_type>::value) {           \
       execute(std::forward<Args>(args)...);                                    \
     } else {                                                                   \

@@ -108,7 +108,7 @@ def number_of_corners_to_type(
     [49]
     >>> number_of_corners_to_type(27) # quadratic hexahedron (27)
     [50]
-    >>> number_of_corners_to_type(5, 1)
+    >>> number_of_corners_to_type(5)
     Traceback (most recent call last):
     generate_xdmf.UnsupportedElementType
     """

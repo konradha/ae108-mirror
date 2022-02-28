@@ -70,7 +70,7 @@ class UnsupportedElementType(Exception):
 
 
 def number_of_corners_to_type(
-    number_of_vertices: int, use_tetrahedron: bool = True
+    number_of_vertices: int, prefer_3D: bool = True
 ) -> typing.List[int]:
     """
     Returns a guess of the element type for the provided number of vertices.
@@ -92,7 +92,11 @@ def number_of_corners_to_type(
     [5]
     >>> number_of_corners_to_type(6) # quadratic triangle
     [36]
-    >>> number_of_corners_to_type(8) # quadratic quadrilateral (8)
+    >>> number_of_corners_to_type(8) # hexahedron
+    [9]
+    >>> number_of_corners_to_type(8, True) # hexahedron
+    [9]
+    >>> number_of_corners_to_type(8, False) # quadratic quadrilateral (8)
     [37]
     >>> number_of_corners_to_type(9) # quadratic quadrilateral (9)
     [35]
@@ -113,9 +117,9 @@ def number_of_corners_to_type(
             1: [1, 1],
             2: [2, 2],
             3: [4],
-            4: [6 if use_tetrahedron else 5],
+            4: [6 if prefer_3D else 5],
             6: [36],
-            8: [37],
+            8: [9 if prefer_3D else 37],
             9: [35],
             10: [38],
             20: [48],

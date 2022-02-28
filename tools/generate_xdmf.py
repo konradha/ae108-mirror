@@ -65,12 +65,12 @@ def extract_field_name(name: str) -> str:
 class UnsupportedElementType(Exception):
     """
     This exception is raised if an unsupported element type
-    (number of vertices, topological dimension) is provided.
+    (number of vertices) is provided.
     """
 
 
 def number_of_corners_to_type(
-    number_of_vertices: int, topological_dimension: int
+    number_of_vertices: int, use_tetrahedron: bool = True
 ) -> typing.List[int]:
     """
     Returns a guess of the element type for the provided number of vertices.
@@ -78,57 +78,51 @@ def number_of_corners_to_type(
     Some element types (e.g. polylines) are described by two numbers:
     the type and the number of vertices.
 
-    >>> number_of_corners_to_type(1, 2)
+    >>> number_of_corners_to_type(1) # vertex
     [1, 1]
-    >>> number_of_corners_to_type(2, 2)
+    >>> number_of_corners_to_type(2) # line
     [2, 2]
-    >>> number_of_corners_to_type(3, 2)
+    >>> number_of_corners_to_type(3) # triangle
     [4]
-    >>> number_of_corners_to_type(4, 2)
-    [5]
-    >>> number_of_corners_to_type(6, 2)
-    [36]
-    >>> number_of_corners_to_type(5, 2)
-    Traceback (most recent call last):
-    generate_xdmf.UnsupportedElementType
-    >>> number_of_corners_to_type(1, 3)
-    [1, 1]
-    >>> number_of_corners_to_type(2, 3)
-    [2, 2]
-    >>> number_of_corners_to_type(4, 3)
+    >>> number_of_corners_to_type(4) # tetrahedron
     [6]
-    >>> number_of_corners_to_type(8, 3)
-    [9]
-    >>> number_of_corners_to_type(10, 3)
+    >>> number_of_corners_to_type(4, True) # tetrahedron
+    [6]
+    >>> number_of_corners_to_type(4, False) # quadrilateral
+    [5]
+    >>> number_of_corners_to_type(6) # quadratic triangle
+    [36]
+    >>> number_of_corners_to_type(8) # quadratic quadrilateral (8)
+    [37]
+    >>> number_of_corners_to_type(9) # quadratic quadrilateral (9)
+    [35]
+    >>> number_of_corners_to_type(10) # quadratic tetrahedron (38)
     [38]
-    >>> number_of_corners_to_type(3, 3)
-    Traceback (most recent call last):
-    generate_xdmf.UnsupportedElementType
-    >>> number_of_corners_to_type(9, 3)
-    Traceback (most recent call last):
-    generate_xdmf.UnsupportedElementType
-    >>> number_of_corners_to_type(4, 1)
+    >>> number_of_corners_to_type(20) # quadratic hexahedron (20)
+    [48]
+    >>> number_of_corners_to_type(24) # quadratic hexahedron (24)
+    [49]
+    >>> number_of_corners_to_type(27) # quadratic hexahedron (27)
+    [50]
+    >>> number_of_corners_to_type(5, 1)
     Traceback (most recent call last):
     generate_xdmf.UnsupportedElementType
     """
     try:
         type_map = {
-            2: {
-                1: [1, 1],
-                2: [2, 2],
-                3: [4],
-                4: [5],
-                6: [36],
-            },
-            3: {
-                1: [1, 1],
-                2: [2, 2],
-                4: [6],
-                8: [9],
-                10: [38],
-            },
+            1: [1, 1],
+            2: [2, 2],
+            3: [4],
+            4: [6 if use_tetrahedron else 5],
+            6: [36],
+            8: [37],
+            9: [35],
+            10: [38],
+            20: [48],
+            24: [49],
+            27: [50],
         }
-        return type_map[topological_dimension][number_of_vertices]
+        return type_map[number_of_vertices]
     except KeyError as error:
         raise UnsupportedElementType() from error
 
@@ -295,7 +289,7 @@ def read_topological_dimension(hdf_file: h5py.File) -> int:
 
 def read_coordinate_dimension(hdf_file: h5py.File) -> int:
     """
-    Returns the topological dimension specified in the mesh.
+    Returns the coordinate dimension specified in the mesh.
     """
     return hdf_file["/geometry/vertices"].shape[1]
 
@@ -337,11 +331,11 @@ def add_topology(parent: ET.Element, hdf_file: h5py.File) -> ET.Element:
     cones_data = hdf_file["/topology/cones"][()]
 
     number_of_elements = numpy.sum(cones_data > 0)
-    topological_dimension = read_topological_dimension(hdf_file)
+    coordinate_dimension = read_coordinate_dimension(hdf_file)
 
     dataitem_dimension = sum(
         cone_size
-        + len(number_of_corners_to_type(int(cone_size), topological_dimension))
+        + len(number_of_corners_to_type(int(cone_size), coordinate_dimension > 2))
         for cone_size in numpy.nditer(cones_data)
         if cone_size > 0
     )
@@ -362,7 +356,7 @@ def add_topology(parent: ET.Element, hdf_file: h5py.File) -> ET.Element:
             " ".join(
                 str(type_)
                 for type_ in number_of_corners_to_type(
-                    len(vertices), topological_dimension
+                    len(vertices), coordinate_dimension > 2
                 )
             ),
             " ".join(str(vertex) for vertex in vertices),
@@ -554,9 +548,7 @@ if __name__ == "__main__":
         sys.exit(ErrorCode.UNSUPPORTED_COORDINATE_DIM)
     except UnsupportedElementType:
         print(
-            "Error: "
-            "The combination of topological dimension and "
-            "number of vertices per element is not supported.",
+            "Error: The number of vertices per element is not supported.",
             file=sys.stderr,
         )
         sys.exit(ErrorCode.UNSUPPORTED_ELEMENT_TYPE)

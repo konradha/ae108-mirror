@@ -44,8 +44,7 @@ using Viewer = cpppetsc::Viewer<Policy>;
 constexpr auto number_of_vertices_per_element = Mesh::size_type{4};
 constexpr auto number_of_elements = Mesh::size_type{2};
 constexpr auto number_of_vertices = Mesh::size_type{6};
-constexpr auto topological_dimension = Mesh::TopologicalDimension{2};
-constexpr auto coordinate_dimension = Mesh::CoordinateDimension{3};
+constexpr auto coordinate_dimension = Mesh::size_type{3};
 constexpr auto dof_per_vertex = Mesh::size_type{1};
 constexpr auto dof_per_element = Mesh::size_type{0};
 
@@ -80,9 +79,9 @@ int main(int argc, char **argv) {
   const auto context = Context(&argc, &argv);
 
   // First we create a mesh.
-  const auto mesh = Mesh::fromConnectivity(
-      topological_dimension, coordinate_dimension, connectivity,
-      number_of_vertices, dof_per_vertex, dof_per_element);
+  const auto mesh = Mesh::fromConnectivity(coordinate_dimension, connectivity,
+                                           number_of_vertices, dof_per_vertex,
+                                           dof_per_element);
 
   // Then we create a vector of coordinates from `vertex_positions`.
   using DataSource = std::function<void(Mesh::size_type, Mesh::value_type *)>;

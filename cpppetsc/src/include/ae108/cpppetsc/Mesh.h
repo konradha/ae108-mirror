@@ -55,26 +55,12 @@ public:
   static constexpr size_type IGNORE_VERTEX_INDEX = -1;
 
   /**
-   * @brief Calls the second overload with topological and coordinate
-   * dimension both equal to `dimension`.
-   */
-  template <class Container>
-  static Mesh fromConnectivity(const size_type dimension,
-                               const Container &elementVertexIDs,
-                               const size_type numberOfVertices,
-                               const size_type dofPerVertex,
-                               const size_type dofPerElement = 0);
-
-  using TopologicalDimension =
-      TaggedEntity<size_type, struct TopologicalDimensionTag>;
-  using CoordinateDimension =
-      TaggedEntity<size_type, struct CoordinateDimensionTag>;
-
-  /**
    * @brief Creates a Mesh from the connectivity representation.
    *
    * @tparam Container Requirements: size(); Container::value_type requirements:
    * size(), data().
+   *
+   * @param dimension The coordinate dimension.
    *
    * @param elementVertexIDs A container of containers: the container at index i
    * contains the vertex IDs of the element with index i. Each vertex ID must
@@ -84,12 +70,11 @@ public:
    * @param numberOfVertices The maximum vertex ID in the mesh.
    */
   template <class Container>
-  static Mesh fromConnectivity(const TopologicalDimension topologicalDimension,
-                               const CoordinateDimension coordinateDimension,
+  static Mesh fromConnectivity(const size_type dimension,
                                const Container &elementVertexIDs,
                                const size_type numberOfVertices,
                                const size_type dofPerVertex,
-                               const size_type dofPerElement);
+                               const size_type dofPerElement = 0);
 
   /**
    * @brief Clone the mesh with a different default section.
@@ -128,14 +113,9 @@ public:
   size_type localNumberOfVertices() const;
 
   /**
-   * @brief Returns the dimension of the elements.
-   */
-  TopologicalDimension topologicalDimension() const;
-
-  /**
    * @brief Returns the dimension of the coordinates.
    */
-  CoordinateDimension coordinateDimension() const;
+  size_type coordinateDimension() const;
 
   /**
    * @brief Fill the local vector with the corresponding values from the
@@ -311,24 +291,13 @@ Mesh<Policy> Mesh<Policy>::fromConnectivity(const size_type dimension,
                                             const size_type numberOfVertices,
                                             const size_type dofPerVertex,
                                             const size_type dofPerElement) {
-  return fromConnectivity(TopologicalDimension(dimension),
-                          CoordinateDimension(dimension), elementVertexIDs,
-                          numberOfVertices, dofPerVertex, dofPerElement);
-}
-
-template <class Policy>
-template <class Container>
-Mesh<Policy> Mesh<Policy>::fromConnectivity(
-    const TopologicalDimension topologicalDimension,
-    const CoordinateDimension coordinateDimension,
-    const Container &elementVertexIDs, const size_type numberOfVertices,
-    const size_type dofPerVertex, const size_type dofPerElement) {
   auto mesh =
       Mesh(static_cast<size_type>(elementVertexIDs.size()), numberOfVertices);
 
-  Policy::handleError(
-      DMSetCoordinateDim(mesh._mesh.get(), coordinateDimension));
-  Policy::handleError(DMSetDimension(mesh._mesh.get(), topologicalDimension));
+  Policy::handleError(DMSetCoordinateDim(mesh._mesh.get(), dimension));
+  // set dimension to 1 to use two levels in the graph:
+  // the vertices and the elements
+  Policy::handleError(DMSetDimension(mesh._mesh.get(), 1));
 
   addChart(elementVertexIDs, numberOfVertices, mesh._mesh.get());
 
@@ -509,12 +478,9 @@ void Mesh<Policy>::addChart(const Container &elementVertexIDs,
 template <class Policy>
 void Mesh<Policy>::addSection(const size_type dofPerVertex,
                               const size_type dofPerElement) {
-  const size_type dimension = topologicalDimension();
-  assert(dimension > 0);
-
   auto section = PetscSection();
   const std::array<size_type, 1> numberOfComponents = {{1}};
-  std::vector<size_type> numberOfDofsPerDim(dimension + 1);
+  std::vector<size_type> numberOfDofsPerDim(2);
   numberOfDofsPerDim.front() = dofPerVertex;
   numberOfDofsPerDim.back() = dofPerElement;
 
@@ -575,19 +541,10 @@ typename Mesh<Policy>::size_type Mesh<Policy>::localNumberOfElements() const {
 }
 
 template <class Policy>
-typename Mesh<Policy>::TopologicalDimension
-Mesh<Policy>::topologicalDimension() const {
-  auto dim = size_type{};
-  Policy::handleError(DMGetDimension(_mesh.get(), &dim));
-  return TopologicalDimension(dim);
-}
-
-template <class Policy>
-typename Mesh<Policy>::CoordinateDimension
-Mesh<Policy>::coordinateDimension() const {
+typename Mesh<Policy>::size_type Mesh<Policy>::coordinateDimension() const {
   auto dim = size_type{};
   Policy::handleError(DMGetCoordinateDim(_mesh.get(), &dim));
-  return CoordinateDimension(dim);
+  return dim;
 }
 
 template <class Policy>

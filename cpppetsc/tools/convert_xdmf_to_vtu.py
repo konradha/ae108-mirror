@@ -18,9 +18,9 @@
 Converts an XDMF file to an ASCII VTU file.
 """
 
-from vtk import vtkXMLUnstructuredGridWriter, vtkXdmfReader
 import argparse
 import pathlib
+from vtk import vtkXMLUnstructuredGridWriter, vtkXdmfReader  # pylint: disable=E0611
 
 
 def parse_input_filename() -> pathlib.Path:
@@ -39,14 +39,14 @@ def main():
     Reads the XDMF file from the path provided via command line argument
     and writes an ASCII VTU file to the same location, but with extension ".vtu".
     """
-    input = parse_input_filename()
-    output = input.stem + ".vtu"
+    in_filename = parse_input_filename()
+    out_filename = in_filename.stem + ".vtu"
 
     reader = vtkXdmfReader()
-    reader.SetFileName(input)
+    reader.SetFileName(in_filename)
     reader.Update()
     writer = vtkXMLUnstructuredGridWriter()
-    writer.SetFileName(output)
+    writer.SetFileName(out_filename)
     writer.SetDataModeToAscii()
     writer.SetInputData(reader.GetOutput())
     writer.Write()

@@ -70,7 +70,7 @@ class UnsupportedElementType(Exception):
 
 
 def number_of_corners_to_type(
-    number_of_vertices: int, prefer_3D: bool = True
+    number_of_vertices: int, prefer_3d: bool = True
 ) -> typing.List[int]:
     """
     Returns a guess of the element type for the provided number of vertices.
@@ -117,9 +117,9 @@ def number_of_corners_to_type(
             1: [1, 1],
             2: [2, 2],
             3: [4],
-            4: [6 if prefer_3D else 5],
+            4: [6 if prefer_3d else 5],
             6: [36],
-            8: [9 if prefer_3D else 37],
+            8: [9 if prefer_3d else 37],
             9: [35],
             10: [38],
             20: [48],

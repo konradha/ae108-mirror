@@ -8,6 +8,7 @@
   ],
   "compare_stdout": "text",
   "mpi_processes": [
-    1
+    1,
+    3
   ]
 }

@@ -93,7 +93,7 @@ check-script:
     image: $CI_REGISTRY_IMAGE/dev-real:$CI_COMMIT_REF_SLUG
     script:
         - find . -name "*.py" -print0 | xargs -0 python3 -m black --check
-        - find . -name "*.py" -print0 | xargs -0 python3 -m pylint
+        - find . -name "*.py" -print0 | xargs -0 python3 -m pylint --generated-members=vtk.*
         - find . -name "*.py" -print0 | xargs -0 python3 -m mypy --python-version 3.7 --ignore-missing
         - find . -name "*.py" -print0 | xargs -0 python3 -m doctest
 

@@ -30,6 +30,7 @@ RUN apt-get update && \
   libboost-program-options-dev \
   libeigen3-dev \
   librange-v3-dev \
+  libxrender1 \
   ninja-build \
   python3 python3-pip \
   python3-h5py \

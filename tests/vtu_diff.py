@@ -116,6 +116,15 @@ def all_cell_data(
     ]
 
 
+def all_cell_types(
+    grid: vtk.vtkUnstructuredGrid,
+) -> typing.List[int]:
+    """
+    Returns a list of all cell types.
+    """
+    return list(map(grid.GetCellType, range(grid.GetNumberOfCells())))
+
+
 class GridComparison(unittest.TestCase):
     """
     Compares two grids.
@@ -158,6 +167,27 @@ class GridComparison(unittest.TestCase):
         ):
             for result_x, reference_x in zip(result_coordinates, reference_coordinates):
                 self.assertAlmostEqual(result_x, reference_x)
+
+    def test_same_cell_types(self):
+        """
+        The cells of the grid have the same types.
+        """
+        for result, reference in zip(
+            sorted(
+                list(
+                    zip(all_cell_coordinates(RESULT_GRID), all_cell_types(RESULT_GRID))
+                )
+            ),
+            sorted(
+                list(
+                    zip(
+                        all_cell_coordinates(REFERENCE_GRID),
+                        all_cell_types(REFERENCE_GRID),
+                    )
+                )
+            ),
+        ):
+            self.assertEqual(result[1], reference[1])
 
     def test_same_number_of_point_data(self):
         """

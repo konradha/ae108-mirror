@@ -1,0 +1,14 @@
+{
+  "executable": [
+    "examples",
+    "ae108-examples-Output"
+  ],
+  "ae108_output": [
+    "output.ae108"
+  ],
+  "compare_stdout": "text",
+  "mpi_processes": [
+    1,
+    3
+  ]
+}

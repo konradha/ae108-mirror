@@ -85,6 +85,7 @@ check-license-header:
                 --exclude-dir='.git' \
                 --exclude='*.json' \
                 --exclude='*.txt' \
+                --exclude='*.vtu' \
                 --files-without-match "Apache License" \
                 .
 

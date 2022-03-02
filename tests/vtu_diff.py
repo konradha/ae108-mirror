@@ -15,7 +15,7 @@
 # limitations under the License.
 
 """
-Compares the contents of two XDMF files.
+Compares the contents of two VTU files.
 """
 
 import unittest
@@ -218,11 +218,11 @@ class GridComparison(unittest.TestCase):
                     self.assertAlmostEqual(result_x, reference_x)
 
 
-def read_xdmf(path: pathlib.Path) -> vtk.vtkUnstructuredGrid:
+def read_vtu(path: pathlib.Path) -> vtk.vtkUnstructuredGrid:
     """
-    Reads the XDMF file at path and returns the result.
+    Reads the VTU file at path and returns the result.
     """
-    reader = vtk.vtkXdmfReader()
+    reader = vtk.vtkXMLUnstructuredGridReader()
     reader.SetFileName(str(path))
     reader.Update()
     return reader.GetOutput()
@@ -233,19 +233,17 @@ def main():
     Reads the file names from the command options and runs the tests.
     """
     parser = argparse.ArgumentParser(
-        description="Compares the contents of two XDMF files."
+        description="Compares the contents of two VTU files."
     )
-    parser.add_argument("result", type=pathlib.Path, help="the result *.xdmf file")
-    parser.add_argument(
-        "reference", type=pathlib.Path, help="the reference *.xdmf file"
-    )
+    parser.add_argument("result", type=pathlib.Path, help="the result *.vtu file")
+    parser.add_argument("reference", type=pathlib.Path, help="the reference *.vtu file")
     arguments, other = parser.parse_known_args()
 
     global RESULT_GRID  # pylint: disable=W0603
-    RESULT_GRID = read_xdmf(arguments.result)
+    RESULT_GRID = read_vtu(arguments.result)
 
     global REFERENCE_GRID  # pylint: disable=W0603
-    REFERENCE_GRID = read_xdmf(arguments.reference)
+    REFERENCE_GRID = read_vtu(arguments.reference)
 
     return unittest.main(argv=sys.argv[:1] + other)
 

@@ -92,10 +92,10 @@ def cell_index_permutation() -> typing.List[int]:
     return list(map(result.__getitem__, reference))
 
 
-T = typing.TypeVar("T")
+DataType = typing.TypeVar("DataType")
 
 
-def permute_point_data(data: typing.List[T]) -> typing.Iterable[T]:
+def permute_point_data(data: typing.List[DataType]) -> typing.Iterable[DataType]:
     """
     Permutes the items of `data` into the reference order inferred from the coordinates.
     """
@@ -104,7 +104,7 @@ def permute_point_data(data: typing.List[T]) -> typing.Iterable[T]:
         yield data[i]
 
 
-def permute_cell_data(data: typing.List[T]) -> typing.Iterable[T]:
+def permute_cell_data(data: typing.List[DataType]) -> typing.Iterable[DataType]:
     """
     Permutes the items of `data` into the reference order inferred from the connectivities.
     """

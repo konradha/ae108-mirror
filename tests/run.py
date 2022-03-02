@@ -415,8 +415,8 @@ def run_testcase(
         )
 
         for file_name in definition.ae108_output:
-            with tempfile.TemporaryDirectory() as directory:
-                conversion_path = pathlib.Path(directory)
+            with tempfile.TemporaryDirectory() as conversion_directory:
+                conversion_path = pathlib.Path(conversion_directory)
                 run_process(
                     args=[
                         str(ROOT_DIRECTORY / "tools" / "generate_xdmf.py"),

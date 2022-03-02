@@ -32,7 +32,7 @@ import unittest
 import re
 
 
-ROOT_DIRECTORY = pathlib.Path(__file__).parent.parent
+ROOT_DIRECTORY = pathlib.Path(__file__).resolve().parent.parent
 
 
 class ComparisonType(enum.Enum):

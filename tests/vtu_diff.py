@@ -35,7 +35,7 @@ def point_coordinates(
     grid: vtk.vtkUnstructuredGrid, point_id: int
 ) -> typing.List[float]:
     """
-    Returns the coordinates of the cell with index `point_id`.
+    Returns the coordinates of the vertex with index `point_id`.
     """
     return list(grid.GetPoint(point_id))
 
@@ -259,7 +259,6 @@ class GridComparison(unittest.TestCase):
         """
         The cells of the grid have the same cell data.
         """
-
         for result, reference in zip(
             sorted(all_cell_data(RESULT_GRID), key=lambda x: x["name"]),
             sorted(all_cell_data(REFERENCE_GRID), key=lambda x: x["name"]),

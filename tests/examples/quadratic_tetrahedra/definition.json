@@ -1,0 +1,14 @@
+{
+  "executable": [
+    "examples",
+    "ae108-examples-QuadraticTetrahedra"
+  ],
+  "ae108_output": [
+    "quadratic_tetrahedra.ae108"
+  ],
+  "compare_stdout": "text",
+  "mpi_processes": [
+    1,
+    3
+  ]
+}

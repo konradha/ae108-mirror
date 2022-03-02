@@ -34,6 +34,7 @@ RUN apt-get update && \
   ninja-build \
   python3 python3-pip \
   python3-h5py \
+  python3-scipy \
   gdb
 
 RUN pip3 install \

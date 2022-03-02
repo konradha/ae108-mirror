@@ -117,18 +117,22 @@ def all_point_data(
     grid: vtk.vtkUnstructuredGrid,
 ) -> typing.List[typing.Dict[str, typing.Any]]:
     """
-    Returns a list of point data.
+    Returns a list of real-valued point data.
+    Ignores arrays that end with ".imag" and drops a ".real" suffix in the name.
     """
     data = grid.GetPointData()
     return [
         {
-            "name": data.GetArrayName(i),
+            "name": data.GetArrayName(i)
+            if not data.GetArrayName(i).endswith(".real")
+            else data.GetArrayName(i)[:-5],
             "array": [
                 list(data.GetArray(i).GetTuple(j))
                 for j in range(data.GetArray(i).GetNumberOfTuples())
             ],
         }
         for i in range(data.GetNumberOfArrays())
+        if not data.GetArrayName(i).endswith(".imag")
     ]
 
 
@@ -136,18 +140,22 @@ def all_cell_data(
     grid: vtk.vtkUnstructuredGrid,
 ) -> typing.List[typing.Dict[str, typing.Any]]:
     """
-    Returns a list of cell data.
+    Returns a list of real-valued cell data.
+    Ignores arrays that end with ".imag" and drops a ".real" suffix in the name.
     """
     data = grid.GetCellData()
     return [
         {
-            "name": data.GetArrayName(i),
+            "name": data.GetArrayName(i)
+            if not data.GetArrayName(i).endswith(".real")
+            else data.GetArrayName(i)[:-5],
             "array": [
                 list(data.GetArray(i).GetTuple(j))
                 for j in range(data.GetArray(i).GetNumberOfTuples())
             ],
         }
         for i in range(data.GetNumberOfArrays())
+        if not data.GetArrayName(i).endswith(".imag")
     ]
 
 
@@ -224,11 +232,10 @@ class GridComparison(unittest.TestCase):
             len(all_point_data(RESULT_GRID)), len(all_point_data(REFERENCE_GRID))
         )
 
-    def test_same_point_data_arrays(self):
+    def test_same_real_point_data_arrays(self):
         """
         The points of the grid have the same point data at the same coordinates.
         """
-
         for result, reference in zip(
             sorted(all_point_data(RESULT_GRID), key=lambda x: x["name"]),
             sorted(all_point_data(REFERENCE_GRID), key=lambda x: x["name"]),
@@ -240,7 +247,7 @@ class GridComparison(unittest.TestCase):
                 for result_x, reference_x in zip(result_item, reference_item):
                     self.assertAlmostEqual(result_x, reference_x)
 
-    def test_same_number_of_cell_data(self):
+    def test_same_number_of_real_cell_data(self):
         """
         The cells of the grid have the same number of data.
         """
@@ -248,7 +255,7 @@ class GridComparison(unittest.TestCase):
             len(all_cell_data(RESULT_GRID)), len(all_cell_data(REFERENCE_GRID))
         )
 
-    def test_same_cell_data_arrays(self):
+    def test_same_real_cell_data_arrays(self):
         """
         The cells of the grid have the same cell data.
         """

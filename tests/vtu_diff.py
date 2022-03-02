@@ -224,7 +224,7 @@ class GridComparison(unittest.TestCase):
         ):
             self.assertEqual(result, reference)
 
-    def test_same_number_of_point_data(self):
+    def test_same_number_of_real_point_data(self):
         """
         The points of the grid have the same number of data.
         """

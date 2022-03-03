@@ -1,8 +1,8 @@
 DM Object: 1 MPI processes
   type: plex
-DM_0x564286f4d190_0 in 2 dimensions:
+DM_0x5650d32f4e60_0 in 1 dimension:
   0-cells: 10
-  2-cells: 8
+  1-cells: 8
 Labels:
   depth: 2 strata with value/size (0 (10), 1 (8))
   celltype: 0 strata with value/size ()

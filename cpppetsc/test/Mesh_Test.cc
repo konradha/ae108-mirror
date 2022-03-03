@@ -130,10 +130,7 @@ template <typename T> struct Mesh_Test : Test {
   using value_type = typename mesh_type::value_type;
   using real_type = typename mesh_type::real_type;
 
-  const typename mesh_type::TopologicalDimension topologicalDimension =
-      typename mesh_type::TopologicalDimension(1);
-  const typename mesh_type::CoordinateDimension coordinateDimension =
-      typename mesh_type::CoordinateDimension(2);
+  static constexpr size_type coordinateDimension = 2;
   static constexpr size_type totalNumberOfElements = 3;
   static constexpr size_type totalNumberOfVertices = 3;
   static constexpr size_type verticesPerElement = 2;
@@ -144,8 +141,8 @@ template <typename T> struct Mesh_Test : Test {
   const Connectivity connectivity = {{0, 2}, {1, 2}, {0, 2}};
 
   const mesh_type mesh = mesh_type::fromConnectivity(
-      topologicalDimension, coordinateDimension, connectivity,
-      totalNumberOfVertices, dofPerVertex, dofPerElement);
+      coordinateDimension, connectivity, totalNumberOfVertices, dofPerVertex,
+      dofPerElement);
 };
 
 template <class Policy, int VertexDof, int ElementDof> struct TestCase {
@@ -170,26 +167,7 @@ TYPED_TEST(Mesh_Test, from_connectivity_generates_correct_number_of_entities) {
 }
 
 TYPED_TEST(Mesh_Test, from_connectivity_generates_correct_dimensions) {
-  EXPECT_THAT(this->mesh.topologicalDimension(),
-              Eq(this->topologicalDimension));
   EXPECT_THAT(this->mesh.coordinateDimension(), Eq(this->coordinateDimension));
-}
-
-TYPED_TEST(Mesh_Test, simple_from_connectivity_delegates_to_second_overload) {
-  using size_type = typename TestFixture::size_type;
-  using mesh_type = typename TestFixture::mesh_type;
-
-  const auto dimension = size_type{1};
-  const auto mesh = mesh_type::fromConnectivity(
-      dimension, this->connectivity, this->totalNumberOfVertices,
-      this->dofPerVertex, this->dofPerElement);
-
-  EXPECT_THAT(mesh.topologicalDimension(), Eq(dimension));
-  EXPECT_THAT(mesh.coordinateDimension(), Eq(dimension));
-  EXPECT_THAT(mesh.totalNumberOfVertices(),
-              Eq(this->mesh.totalNumberOfVertices()));
-  EXPECT_THAT(mesh.totalNumberOfElements(),
-              Eq(this->mesh.totalNumberOfElements()));
 }
 
 TYPED_TEST(Mesh_Test, cloned_mesh_has_correct_number_of_entities) {
@@ -977,7 +955,7 @@ TYPED_TEST(Mesh_Test, element_views_are_valid_after_moving_mesh) {
   using mesh_type = typename TestFixture::mesh_type;
 
   auto mesh = mesh_type::fromConnectivity(
-      this->topologicalDimension, this->coordinateDimension, this->connectivity,
+      this->coordinateDimension, this->connectivity,
       this->totalNumberOfVertices, this->dofPerVertex, this->dofPerElement);
   const auto range = mesh.localElements();
   const auto movedMesh = std::move(mesh);

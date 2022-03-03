@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian" header_type="UInt32" compressor="vtkZLibDataCompressor">
+  <UnstructuredGrid>
+    <Piece NumberOfPoints="6" NumberOfCells="2">
+      <PointData Scalars="point_array" Vectors="coordinates">
+        <DataArray type="Float64" Name="coordinates" NumberOfComponents="3" format="ascii" RangeMin="0" RangeMax="2.23606797749979">
+          0 0 0 1 0 0
+          1 1 0 0 1 0
+          2 0 0 2 1 0
+          <InformationKey name="L2_NORM_RANGE" location="vtkDataArray" length="2">
+            <Value index="0">
+              0
+            </Value>
+            <Value index="1">
+              2.2360679775
+            </Value>
+          </InformationKey>
+        </DataArray>
+        <DataArray type="Float64" Name="point_array" format="ascii" RangeMin="0" RangeMax="0">
+          0 0 0 0 0 0
+        </DataArray>
+        <DataArray type="Float64" Name="vertex_index_data[0]" format="ascii" RangeMin="0" RangeMax="5">
+          0 1 2 3 4 5
+        </DataArray>
+        <DataArray type="Float64" Name="vertex_index_data[1]" format="ascii" RangeMin="0" RangeMax="5">
+          0 1 2 3 4 5
+        </DataArray>
+        <DataArray type="Float64" Name="vertex_index_data[2]" format="ascii" RangeMin="0" RangeMax="5">
+          0 1 2 3 4 5
+        </DataArray>
+        <DataArray type="Float64" Name="vertex_index_data[3]" format="ascii" RangeMin="0" RangeMax="5">
+          0 1 2 3 4 5
+        </DataArray>
+        <DataArray type="Float64" Name="vertex_index_data[4]" format="ascii" RangeMin="0" RangeMax="5">
+          0 1 2 3 4 5
+        </DataArray>
+      </PointData>
+      <CellData Scalars="cell_array">
+        <DataArray type="Float64" Name="cell_array" format="ascii" RangeMin="0" RangeMax="0">
+          0 0
+        </DataArray>
+      </CellData>
+      <Points>
+        <DataArray type="Float64" Name="Points" NumberOfComponents="3" format="ascii" RangeMin="0" RangeMax="2.23606797749979">
+          0 0 0 1 0 0
+          1 1 0 0 1 0
+          2 0 0 2 1 0
+          <InformationKey name="L2_NORM_RANGE" location="vtkDataArray" length="2">
+            <Value index="0">
+              0
+            </Value>
+            <Value index="1">
+              2.2360679775
+            </Value>
+          </InformationKey>
+        </DataArray>
+      </Points>
+      <Cells>
+        <DataArray type="Int64" Name="connectivity" format="ascii" RangeMin="0" RangeMax="5">
+          0 1 2 3 1 4
+          5 2
+        </DataArray>
+        <DataArray type="Int64" Name="offsets" format="ascii" RangeMin="4" RangeMax="8">
+          4 8
+        </DataArray>
+        <DataArray type="UInt8" Name="types" format="ascii" RangeMin="9" RangeMax="9">
+          9 9
+        </DataArray>
+      </Cells>
+    </Piece>
+  </UnstructuredGrid>
+</VTKFile>

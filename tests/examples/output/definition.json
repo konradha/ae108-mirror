@@ -1,0 +1,19 @@
+{
+  "executable": [
+    "examples",
+    "ae108-examples-Output"
+  ],
+  "ae108_output": [
+    {
+      "filename": "output.ae108",
+      "xdmf_generator_flags": [
+        "--planar"
+      ]
+    }
+  ],
+  "compare_stdout": "text",
+  "mpi_processes": [
+    1,
+    3
+  ]
+}

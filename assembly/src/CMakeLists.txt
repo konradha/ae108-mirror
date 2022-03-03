@@ -33,7 +33,6 @@ add_library(${PROJECT_NAME}-assembly
             ./FeaturePlugins.cc
             ./HasUniqueTypeTrait.cc
             ./IsSingleUniqueType.cc
-            ./StaticLooper.cc
             ./UpdateInternalVariablesPlugin.cc
             ./deserialize.cc
             ./groupElementDataPerVertex.cc

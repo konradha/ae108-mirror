@@ -32,7 +32,7 @@ import unittest
 import re
 
 
-ROOT_DIRECTORY = pathlib.Path(__file__).parent.parent
+ROOT_DIRECTORY = pathlib.Path(__file__).resolve().parent.parent
 
 
 class ComparisonType(enum.Enum):
@@ -46,6 +46,16 @@ class ComparisonType(enum.Enum):
 
 
 @dataclasses.dataclass(frozen=True)
+class BinaryOutputDefinition:
+    """
+    Contains the parameters necessary to compare binary output.
+    """
+
+    filename: pathlib.Path
+    xdmf_generator_flags: typing.List[str]
+
+
+@dataclasses.dataclass(frozen=True)
 class TestCaseDefinition:
     """
     Contains the parameters necessary to execute a test.
@@ -55,6 +65,7 @@ class TestCaseDefinition:
     args: typing.List[str]
     references: pathlib.Path
     compare_stdout: ComparisonType
+    ae108_output: typing.List[BinaryOutputDefinition]
     mpi_processes: int
 
 
@@ -141,6 +152,13 @@ def as_test_case_definitions(
             compare_stdout=string_to_comparison_type[
                 definition.get("compare_stdout", "none")
             ],
+            ae108_output=[
+                BinaryOutputDefinition(
+                    filename=pathlib.Path(output["filename"]),
+                    xdmf_generator_flags=output.get("xdmf_generator_flags", []),
+                )
+                for output in definition.get("ae108_output", [])
+            ],
             mpi_processes=mpi_processes,
         )
 
@@ -152,7 +170,7 @@ def run_executable_with_mpirun(
     working_directory: pathlib.Path,
 ) -> subprocess.CompletedProcess:
     """
-    Runs the executable at `path` with the provided `args`
+    Runs the executable at `executable` with the provided `args`
     from `working_directory` with `mpi_processes` processes.
 
     >>> empty_path = pathlib.Path()
@@ -166,8 +184,30 @@ def run_executable_with_mpirun(
     ...
     subprocess.CalledProcessError: Command '['mpirun', '-n', '2', '.', '-v']' ...
     """
-    return subprocess.run(
+    return run_process(
         args=["mpirun", "-n", str(mpi_processes), str(executable)] + args,
+        working_directory=working_directory,
+    )
+
+
+def run_process(
+    args: typing.List[str],
+    working_directory: pathlib.Path = pathlib.Path.cwd(),
+) -> subprocess.CompletedProcess:
+    """
+    Runs a process with the provided `args` from `working_directory`.
+
+    >>> empty_path = pathlib.Path()
+    >>> run_process(
+    ...     args=["mpirun", "."],
+    ...     working_directory=empty_path
+    ... ) # doctest: +ELLIPSIS
+    Traceback (most recent call last):
+    ...
+    subprocess.CalledProcessError: Command '['mpirun', '.']' ...
+    """
+    return subprocess.run(
+        args=args,
         cwd=working_directory,
         capture_output=True,
         check=True,
@@ -175,7 +215,7 @@ def run_executable_with_mpirun(
     )
 
 
-def diff_files(
+def diff_text_files(
     case: unittest.TestCase,
     value: pathlib.Path,
     reference: pathlib.Path,
@@ -187,7 +227,7 @@ def diff_files(
     Nonexisting references are automatically created.
 
     >>> path = pathlib.Path(__file__)
-    >>> diff_files(unittest.TestCase(), path, path, ComparisonType.TEXT)
+    >>> diff_text_files(unittest.TestCase(), path, path, ComparisonType.TEXT)
     """
     if not reference.exists():
         shutil.copy(value, reference)
@@ -202,6 +242,21 @@ def diff_files(
             comparison_to_function.get(comparison, lambda _0, _1, _2: None)(
                 value_file.read(), reference_file.read(), case
             )
+
+
+def diff_vtu_files(
+    value: pathlib.Path,
+    reference: pathlib.Path,
+):
+    """
+    Compares the files at `value`, `reference`.
+    """
+    if not reference.exists():
+        shutil.copy(value, reference)
+
+    run_process(
+        [str(ROOT_DIRECTORY / "tests" / "vtu_diff.py"), str(value), str(reference)]
+    )
 
 
 def diff_text_string(
@@ -368,12 +423,33 @@ def run_testcase(
         with open(directory_path / "stdout.txt", "w", encoding="utf-8") as file:
             file.write(result.stdout)
 
-        diff_files(
+        diff_text_files(
             case,
             directory_path / "stdout.txt",
             definition.references / "stdout.txt",
             definition.compare_stdout,
         )
+
+        for output in definition.ae108_output:
+            with tempfile.TemporaryDirectory() as conversion_directory:
+                conversion_path = pathlib.Path(conversion_directory)
+                run_process(
+                    args=[str(ROOT_DIRECTORY / "tools" / "generate_xdmf.py")]
+                    + output.xdmf_generator_flags
+                    + [str(directory_path / output.filename)],
+                    working_directory=conversion_path,
+                )
+                run_process(
+                    [
+                        str(ROOT_DIRECTORY / "tools" / "convert_xdmf_to_vtu.py"),
+                        str(conversion_path / output.filename.with_suffix(".xdmf")),
+                    ],
+                    working_directory=conversion_path,
+                )
+                diff_vtu_files(
+                    conversion_path / output.filename.with_suffix(".vtu"),
+                    definition.references / output.filename.with_suffix(".vtu"),
+                )
 
 
 def main() -> None:

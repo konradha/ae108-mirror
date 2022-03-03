@@ -37,22 +37,30 @@ class AssemblerGroup : public DerivePluginsUniquely<
                            AssemblerGroup<SingleElementAssemblers...>,
                            typename ConcatenatePlugins<typename PluginTypeTrait<
                                SingleElementAssemblers>::type...>::type> {
-  template <std::size_t N>
-  using member_assembler_type =
-      typename MemberTypeTrait<AssemblerGroup, N>::type;
-
 public:
   template <class... Args> explicit AssemblerGroup(Args &&...args);
 
   /**
    * @brief Get the Nth member assembler.
    */
-  template <std::size_t N> const member_assembler_type<N> &get() const;
+  template <std::size_t N> const auto &get() const & {
+    return std::get<N>(_assemblers);
+  }
 
   /**
    * @brief Get the Nth member assembler.
    */
-  template <std::size_t N> member_assembler_type<N> &get();
+  template <std::size_t N> auto &get() & { return std::get<N>(_assemblers); }
+
+  /**
+   * @brief Return the tuple of assemblers.
+   */
+  const auto &assemblers() const &noexcept { return _assemblers; }
+
+  /**
+   * @brief Return the tuple of assemblers.
+   */
+  auto &assemblers() &noexcept { return _assemblers; }
 
 private:
   using tuple_type = std::tuple<SingleElementAssemblers...>;
@@ -138,25 +146,6 @@ template <class... SingleElementAssemblers>
 struct IsGroupTypeTrait<AssemblerGroup<SingleElementAssemblers...>>
     : std::true_type {};
 
-/**
- * @brief Specialization: The number of assemblers in the group is the number of
- * SingleElementAssemblers-template-parameters.
- */
-template <class... SingleElementAssemblers>
-struct NumberOfMembersTypeTrait<AssemblerGroup<SingleElementAssemblers...>>
-    : std::integral_constant<std::size_t, sizeof...(SingleElementAssemblers)> {
-};
-
-/**
- * @brief Specialization: The Nth member is the Nth element of
- * SingleElementAssemblers.
- */
-template <std::size_t N, class... SingleElementAssemblers>
-struct MemberTypeTrait<AssemblerGroup<SingleElementAssemblers...>, N> {
-  using type =
-      typename std::tuple_element<N,
-                                  std::tuple<SingleElementAssemblers...>>::type;
-};
 } // namespace assembly
 } // namespace ae108
 
@@ -171,22 +160,6 @@ template <class... SingleElementAssemblers>
 template <class... Args>
 AssemblerGroup<SingleElementAssemblers...>::AssemblerGroup(Args &&...args)
     : _assemblers(std::forward<Args>(args)...) {}
-
-template <class... SingleElementAssemblers>
-template <std::size_t N>
-const typename AssemblerGroup<
-    SingleElementAssemblers...>::template member_assembler_type<N> &
-AssemblerGroup<SingleElementAssemblers...>::get() const {
-  return std::get<N>(_assemblers);
-}
-
-template <class... SingleElementAssemblers>
-template <std::size_t N>
-typename AssemblerGroup<
-    SingleElementAssemblers...>::template member_assembler_type<N> &
-AssemblerGroup<SingleElementAssemblers...>::get() {
-  return std::get<N>(_assemblers);
-}
 
 } // namespace assembly
 } // namespace ae108

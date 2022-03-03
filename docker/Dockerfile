@@ -42,7 +42,7 @@ RUN pip3 install \
   black==22.1.0 \
   pylint==2.12.2 \
   sympy==1.7.1 \
-  vtk==9.1.0 \
+  # vtk==9.1.0 \
   gcovr==5.0
 
 RUN apt-get update && \

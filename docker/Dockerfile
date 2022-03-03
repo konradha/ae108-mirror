@@ -42,7 +42,8 @@ RUN pip3 install \
   black==22.1.0 \
   pylint==2.12.2 \
   sympy==1.7.1 \
-  gcovr==5.0
+  gcovr==5.0 \
+  h5py==3.6.0
 
 RUN apt-get update && \
   DEBIAN_FRONTEND="noninteractive" \

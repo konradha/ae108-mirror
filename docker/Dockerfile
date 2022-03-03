@@ -42,7 +42,6 @@ RUN pip3 install \
   black==22.1.0 \
   pylint==2.12.2 \
   sympy==1.7.1 \
-  # vtk==9.1.0 \
   gcovr==5.0
 
 RUN apt-get update && \
@@ -50,3 +49,5 @@ RUN apt-get update && \
   apt-get install -y \
   libpetsc-${PETSC_SCALAR_TYPE}-dev \
   libslepc-${PETSC_SCALAR_TYPE}3.15-dev
+
+RUN pip3 install --find-links https://wheels.pyvista.org/ vtk==9.1.0.dev0

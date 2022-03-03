@@ -46,6 +46,16 @@ class ComparisonType(enum.Enum):
 
 
 @dataclasses.dataclass(frozen=True)
+class BinaryOutputDefinition:
+    """
+    Contains the parameters necessary to compare binary output.
+    """
+
+    filename: pathlib.Path
+    xdmf_generator_flags: typing.List[str]
+
+
+@dataclasses.dataclass(frozen=True)
 class TestCaseDefinition:
     """
     Contains the parameters necessary to execute a test.
@@ -55,7 +65,7 @@ class TestCaseDefinition:
     args: typing.List[str]
     references: pathlib.Path
     compare_stdout: ComparisonType
-    ae108_output: typing.List[pathlib.Path]
+    ae108_output: BinaryOutputDefinition
     mpi_processes: int
 
 
@@ -142,7 +152,13 @@ def as_test_case_definitions(
             compare_stdout=string_to_comparison_type[
                 definition.get("compare_stdout", "none")
             ],
-            ae108_output=[pathlib.Path(x) for x in definition.get("ae108_output", [])],
+            ae108_output=[
+                BinaryOutputDefinition(
+                    filename=pathlib.Path(output["filename"]),
+                    xdmf_generator_flags=output.get("xdmf_generator_flags", []),
+                )
+                for output in definition.get("ae108_output", [])
+            ],
             mpi_processes=mpi_processes,
         )
 
@@ -414,26 +430,25 @@ def run_testcase(
             definition.compare_stdout,
         )
 
-        for file_name in definition.ae108_output:
+        for output in definition.ae108_output:
             with tempfile.TemporaryDirectory() as conversion_directory:
                 conversion_path = pathlib.Path(conversion_directory)
                 run_process(
-                    args=[
-                        str(ROOT_DIRECTORY / "tools" / "generate_xdmf.py"),
-                        str(directory_path / file_name),
-                    ],
+                    args=[str(ROOT_DIRECTORY / "tools" / "generate_xdmf.py")]
+                    + output.xdmf_generator_flags
+                    + [str(directory_path / output.filename)],
                     working_directory=conversion_path,
                 )
                 run_process(
                     [
                         str(ROOT_DIRECTORY / "tools" / "convert_xdmf_to_vtu.py"),
-                        str(conversion_path / file_name.with_suffix(".xdmf")),
+                        str(conversion_path / output.filename.with_suffix(".xdmf")),
                     ],
                     working_directory=conversion_path,
                 )
                 diff_vtu_files(
-                    conversion_path / file_name.with_suffix(".vtu"),
-                    definition.references / file_name.with_suffix(".vtu"),
+                    conversion_path / output.filename.with_suffix(".vtu"),
+                    definition.references / output.filename.with_suffix(".vtu"),
                 )
 
 

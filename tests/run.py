@@ -65,7 +65,7 @@ class TestCaseDefinition:
     args: typing.List[str]
     references: pathlib.Path
     compare_stdout: ComparisonType
-    ae108_output: BinaryOutputDefinition
+    ae108_output: typing.List[BinaryOutputDefinition]
     mpi_processes: int
 
 

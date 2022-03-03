@@ -4,10 +4,13 @@
     "ae108-examples-ForceElement"
   ],
   "ae108_output": [
-    "force_element.ae108"
+    {
+      "filename": "force_element.ae108"
+    }
   ],
   "compare_stdout": "text",
   "mpi_processes": [
-    1
+    1,
+    3
   ]
 }

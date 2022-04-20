@@ -39,11 +39,11 @@ RUN apt-get update && \
 
 RUN pip3 install \
   mypy==0.790 \
-  black==20.8b1 \
+  black==22.3.0 \
   pylint==2.6.0 \
   sympy==1.7.1 \
   vtk==9.1.0 \
-  gcovr
+  gcovr==5.0
 
 RUN apt-get update && \
   DEBIAN_FRONTEND="noninteractive" \

@@ -43,7 +43,7 @@ RUN pip3 install \
   pylint==2.6.0 \
   sympy==1.7.1 \
   vtk==9.1.0 \
-  gcovr
+  gcovr==5.0
 
 RUN apt-get update && \
   DEBIAN_FRONTEND="noninteractive" \

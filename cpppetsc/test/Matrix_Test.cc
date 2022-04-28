@@ -92,10 +92,19 @@ TYPED_TEST(Matrix_Test, move_assignment_works) {
   EXPECT_THAT(copy.size().second, Eq(3));
 }
 
-TYPED_TEST(Matrix_Test, local_range_works) {
+TYPED_TEST(Matrix_Test, local_row_range_works) {
   typename TestFixture::matrix_type mat(2, 3);
 
   const auto result = mat.localRowRange();
+  EXPECT_THAT(result.first, Ge(0));
+  EXPECT_THAT(result.second, Ge(result.first));
+  EXPECT_THAT(result.second, Le(2));
+}
+
+TYPED_TEST(Matrix_Test, local_column_range_works) {
+  typename TestFixture::matrix_type mat(2, 3);
+
+  const auto result = mat.localColumnRange();
   EXPECT_THAT(result.first, Ge(0));
   EXPECT_THAT(result.second, Ge(result.first));
   EXPECT_THAT(result.second, Le(3));

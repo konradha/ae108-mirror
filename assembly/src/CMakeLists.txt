@@ -33,7 +33,6 @@ add_library(${PROJECT_NAME}-assembly
             ./FeaturePlugins.cc
             ./HasUniqueTypeTrait.cc
             ./IsSingleUniqueType.cc
-            ./StaticLooper.cc
             ./UpdateInternalVariablesPlugin.cc
             ./deserialize.cc
             ./groupElementDataPerVertex.cc
@@ -53,6 +52,6 @@ target_link_libraries(${PROJECT_NAME}-assembly
                       PUBLIC Eigen3::Eigen
 )
 
-target_compile_features(${PROJECT_NAME}-assembly PUBLIC cxx_std_11)
+target_compile_features(${PROJECT_NAME}-assembly PUBLIC cxx_std_17)
 
 ae108_install_library(assembly)

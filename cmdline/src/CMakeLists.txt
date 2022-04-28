@@ -28,6 +28,6 @@ target_include_directories(${PROJECT_NAME}-cmdline PUBLIC
 find_package(Boost 1.67 REQUIRED COMPONENTS program_options)
 target_link_libraries(${PROJECT_NAME}-cmdline PUBLIC Boost::program_options)
 
-target_compile_features(${PROJECT_NAME}-cmdline PUBLIC cxx_std_11)
+target_compile_features(${PROJECT_NAME}-cmdline PUBLIC cxx_std_17)
 
 ae108_install_library(cmdline)

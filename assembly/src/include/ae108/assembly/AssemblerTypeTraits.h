@@ -71,17 +71,5 @@ template <class Assembler> struct PluginTypeTrait {};
  * (designed for the nongroup case) the value is false.
  */
 template <class Assembler> struct IsGroupTypeTrait : std::false_type {};
-
-/**
- * @brief Deduces the number of member assemblers. By default (designed for the
- * nongroup case) this number is undefined.
- */
-template <class Assembler> struct NumberOfMembersTypeTrait {};
-
-/**
- * @brief Deduces the type of the member assembler at a given index. By default
- * (designed for the nongroup case) this type is undefined.
- */
-template <class Assembler, std::size_t> struct MemberTypeTrait {};
 } // namespace assembly
 } // namespace ae108

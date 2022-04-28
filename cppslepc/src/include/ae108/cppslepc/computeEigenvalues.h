@@ -54,23 +54,18 @@ computeEigenvalues(const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &);
 template <class Policy>
 std::vector<
     std::complex<typename LinearEigenvalueProblemSolver<Policy>::real_type>>
-computeGeneralizedEigenvalues(const cpppetsc::Matrix<Policy> &A,
-                              const cpppetsc::Matrix<Policy> &B,
-                              const std::size_t number_of_eigenvalues);
+computeEigenvalues(const cpppetsc::Matrix<Policy> &A,
+                   const cpppetsc::Matrix<Policy> &B);
 
 extern template std::vector<std::complex<typename LinearEigenvalueProblemSolver<
     cpppetsc::SequentialComputePolicy>::real_type>>
-computeGeneralizedEigenvalues(
-    const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &,
-    const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &,
-    const std::size_t number_of_eigenvalues);
+computeEigenvalues(const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &,
+                   const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &);
 
 extern template std::vector<std::complex<typename LinearEigenvalueProblemSolver<
     cpppetsc::ParallelComputePolicy>::real_type>>
-computeGeneralizedEigenvalues(
-    const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &,
-    const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &,
-    const std::size_t number_of_eigenvalues);
+computeEigenvalues(const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &,
+                   const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &);
 
 } // namespace cppslepc
 } // namespace ae108
@@ -114,8 +109,8 @@ computeEigenvalues(const cpppetsc::Matrix<Policy> &A) {
 template <class Policy>
 std::vector<
     std::complex<typename LinearEigenvalueProblemSolver<Policy>::real_type>>
-computeGeneralizedEigenvalues(const cpppetsc::Matrix<Policy> &A,
-                              const cpppetsc::Matrix<Policy> &B) {
+computeEigenvalues(const cpppetsc::Matrix<Policy> &A,
+                   const cpppetsc::Matrix<Policy> &B) {
   auto solver = LinearEigenvalueProblemSolver<Policy>{};
 
   solver.setOperators(&A, &B);

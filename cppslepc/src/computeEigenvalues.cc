@@ -29,15 +29,13 @@ computeEigenvalues(const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &);
 
 template std::vector<std::complex<typename LinearEigenvalueProblemSolver<
     cpppetsc::SequentialComputePolicy>::real_type>>
-computeGeneralizedEigenvalues(
-    const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &,
-    const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &);
+computeEigenvalues(const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &,
+                   const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &);
 
 template std::vector<std::complex<typename LinearEigenvalueProblemSolver<
     cpppetsc::ParallelComputePolicy>::real_type>>
-computeGeneralizedEigenvalues(
-    const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &A,
-    const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &B);
+computeEigenvalues(const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &A,
+                   const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &B);
 
 } // namespace cppslepc
 } // namespace ae108

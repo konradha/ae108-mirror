@@ -14,16 +14,20 @@
 
 #pragma once
 
+#include "ae108/elements/ComputeConsistentMassMatrixTrait.h"
 #include "ae108/elements/ComputeEnergyTrait.h"
 #include "ae108/elements/ComputeForcesTrait.h"
 #include "ae108/elements/ComputeStiffnessMatrixTrait.h"
 #include "ae108/elements/ElementBase.h"
 #include "ae108/elements/integrator/integrate.h"
+#include "ae108/elements/integrator/integrate_shape.h"
 #include "ae108/elements/materialmodels/compute_energy.h"
 #include "ae108/elements/materialmodels/compute_stress.h"
 #include "ae108/elements/materialmodels/compute_tangent_matrix.h"
+#include "ae108/elements/shape/compute_values.h"
 #include "ae108/elements/tensor/as_matrix_of_columns.h"
 #include "ae108/elements/tensor/as_matrix_of_rows.h"
+#include "ae108/elements/tensor/as_vector.h"
 #include <type_traits>
 
 namespace ae108 {
@@ -206,6 +210,43 @@ private:
           Eigen::Stride<Eigen::Index{Element::MaterialModel::dimension() *
                                      Element::degrees_of_freedom()},
                         Eigen::Index{1}>>>::type;
+};
+
+template <class MaterialModel_, class Integrator_, class ValueType_,
+          class RealType_>
+struct ComputeConsistentMassMatrixTrait<
+    CoreElement<MaterialModel_, Integrator_, ValueType_, RealType_>> {
+  template <class Element>
+  typename Element::StiffnessMatrix
+  operator()(const Element &element) const noexcept {
+    using size_type = typename Element::size_type;
+
+    return integrator::integrate_shape<Integrator_>(
+        element.integrator(),
+        [&](auto &&, const auto &value) {
+          auto result = Element::StiffnessMatrix::Zero().eval();
+          const auto mass = (tensor::as_vector(&value) *
+                             tensor::as_vector(&value).transpose())
+                                .eval();
+
+          for (auto i = size_type{0}; i < element.degrees_of_freedom(); ++i) {
+            ResultSlice<Element>(&result(i, i)) = mass;
+          }
+          return result;
+        },
+        Element::StiffnessMatrix::Zero().eval());
+  }
+
+private:
+  template <class Element>
+  using ResultSlice =
+      Eigen::Map<Eigen::Matrix<typename Element::value_type, Element::size(),
+                               Element::size(), Eigen::RowMajor>,
+                 0,
+                 Eigen::Stride<Eigen::Index{Element::size() *
+                                            Element::degrees_of_freedom() *
+                                            Element::degrees_of_freedom()},
+                               Eigen::Index{Element::degrees_of_freedom()}>>;
 };
 
 } // namespace elements

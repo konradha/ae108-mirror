@@ -29,7 +29,7 @@ DEFINE_CONST_ASSEMBLER_PLUGIN(AssembleConsistentMassMatrixPlugin,
   std::vector<value_type> outputBuffer;
 
   for (const auto &meshElement : this->assembler().meshElements()) {
-    const auto matrix = meshElement.instance().computeConsistentMassMatrix();
+    const auto matrix = compute_consistent_mass_matrix(meshElement.instance());
     outputBuffer.resize(matrix.rows() * matrix.cols());
     utilities::serialize(matrix, outputBuffer.begin());
 

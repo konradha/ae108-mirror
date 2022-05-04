@@ -17,6 +17,7 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 add_library(${PROJECT_NAME}-elements
             AutomaticForcesTrait.cc
             AutomaticStiffnessMatrixTrait.cc
+            ComputeConsistentMassMatrixTrait.cc
             ComputeEnergyTrait.cc
             ComputeForcesTrait.cc
             ComputeStiffnessMatrixTrait.cc
@@ -27,6 +28,7 @@ add_library(${PROJECT_NAME}-elements
             TimoshenkoBeamElement.cc
             automatic_forces.cc
             automatic_stiffness_matrix.cc
+            compute_consistent_mass_matrix.cc
             compute_energy.cc
             compute_forces.cc
             compute_stiffness_matrix.cc
@@ -38,10 +40,12 @@ add_library(${PROJECT_NAME}-elements
             embedding/automatic_jacobian.cc
             embedding/compute_jacobian.cc
             embedding/embed_point.cc
+            integrator/IntegrateShapeTrait.cc
             integrator/IntegrateTrait.cc
             integrator/IntegratorBase.cc
             integrator/IsoparametricIntegrator.cc
             integrator/integrate.cc
+            integrator/integrate_shape.cc
             materialmodels/AutomaticStressTrait.cc
             materialmodels/AutomaticTangentMatrixTrait.cc
             materialmodels/ComputeEnergyTrait.cc

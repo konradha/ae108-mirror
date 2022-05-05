@@ -22,6 +22,7 @@
 #include "ae108/elements/ElementBase.h"
 #include "ae108/elements/integrator/integrate.h"
 #include "ae108/elements/integrator/integrate_shape.h"
+#include "ae108/elements/integrator/volume.h"
 #include "ae108/elements/materialmodels/compute_energy.h"
 #include "ae108/elements/materialmodels/compute_stress.h"
 #include "ae108/elements/materialmodels/compute_tangent_matrix.h"
@@ -257,7 +258,8 @@ struct ComputeLumpedMassMatrixTrait<
   template <class Element>
   typename Element::StiffnessMatrix
   operator()(const Element &element) const noexcept {
-    return 1. / element.size() * Element::StiffnessMatrix::Identity();
+    return volume(element.integrator()) / element.size() *
+           Element::StiffnessMatrix::Identity();
   }
 };
 

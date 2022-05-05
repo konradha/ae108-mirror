@@ -17,6 +17,7 @@
 #include "ae108/elements/ComputeConsistentMassMatrixTrait.h"
 #include "ae108/elements/ComputeEnergyTrait.h"
 #include "ae108/elements/ComputeForcesTrait.h"
+#include "ae108/elements/ComputeLumpedMassMatrixTrait.h"
 #include "ae108/elements/ComputeStiffnessMatrixTrait.h"
 #include "ae108/elements/ElementBase.h"
 #include "ae108/elements/integrator/integrate.h"
@@ -247,6 +248,17 @@ private:
                                             Element::degrees_of_freedom() *
                                             Element::degrees_of_freedom()},
                                Eigen::Index{Element::degrees_of_freedom()}>>;
+};
+
+template <class MaterialModel_, class Integrator_, class ValueType_,
+          class RealType_>
+struct ComputeLumpedMassMatrixTrait<
+    CoreElement<MaterialModel_, Integrator_, ValueType_, RealType_>> {
+  template <class Element>
+  typename Element::StiffnessMatrix
+  operator()(const Element &element) const noexcept {
+    return 1. / element.size() * Element::StiffnessMatrix::Identity();
+  }
 };
 
 } // namespace elements

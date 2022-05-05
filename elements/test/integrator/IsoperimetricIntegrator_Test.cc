@@ -15,6 +15,7 @@
 #include "ae108/elements/embedding/IsoparametricEmbedding.h"
 #include "ae108/elements/integrator/IsoparametricIntegrator.h"
 #include "ae108/elements/integrator/integrate.h"
+#include "ae108/elements/integrator/integrate_shape.h"
 #include "ae108/elements/quadrature/Quadrature.h"
 #include "ae108/elements/shape/Seg2.h"
 #include <gmock/gmock.h>
@@ -63,6 +64,18 @@ TEST_F(IsoperimetricIntegrator_Test, computing_volume_works) {
       Integrator::DiscretizedFunction<1>(), 0.);
 
   EXPECT_THAT(result, DoubleEq(1.));
+}
+
+TEST_F(IsoperimetricIntegrator_Test, integrating_shape_works) {
+  const auto factor = std::sqrt(2.);
+  const auto result = integrate_shape<Integrator>(
+      integrator,
+      [factor](auto &&, const auto &point) {
+        return point[0] + factor * point[1];
+      },
+      0.);
+
+  EXPECT_THAT(result, DoubleEq(1. / 2. + factor * 1. / 2.));
 }
 
 } // namespace

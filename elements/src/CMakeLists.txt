@@ -46,8 +46,10 @@ add_library(${PROJECT_NAME}-elements
             integrator/IntegrateTrait.cc
             integrator/IntegratorBase.cc
             integrator/IsoparametricIntegrator.cc
+            integrator/VolumeTrait.cc
             integrator/integrate.cc
             integrator/integrate_shape.cc
+            integrator/volume.cc
             materialmodels/AutomaticStressTrait.cc
             materialmodels/AutomaticTangentMatrixTrait.cc
             materialmodels/ComputeEnergyTrait.cc

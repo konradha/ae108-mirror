@@ -19,6 +19,7 @@
 #include "ae108/elements/integrator/IntegrateShapeTrait.h"
 #include "ae108/elements/integrator/IntegrateTrait.h"
 #include "ae108/elements/integrator/IntegratorBase.h"
+#include "ae108/elements/integrator/VolumeTrait.h"
 #include "ae108/elements/quadrature/integrate.h"
 #include "ae108/elements/tensor/Tensor.h"
 #include "ae108/elements/tensor/as_matrix_of_rows.h"
@@ -121,6 +122,17 @@ struct IntegrateShapeTrait<
              const typename Integrator::PostTransform &post,
              const Value &value) { return R(post * f(id, value)); },
         init, integrator.post(), values);
+  }
+};
+
+template <class Shape_, class Quadrature_, class ValueType_, class RealType_>
+struct VolumeTrait<
+    IsoparametricIntegrator<Shape_, Quadrature_, ValueType_, RealType_>> {
+  template <class Integrator>
+  auto operator()(const Integrator &integrator) const noexcept {
+    return quadrature::integrate<Quadrature_>(
+        [](auto &&, auto &&, const auto &post) { return post; },
+        typename Integrator::real_type{0.}, integrator.post());
   }
 };
 

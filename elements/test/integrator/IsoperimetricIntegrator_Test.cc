@@ -16,6 +16,7 @@
 #include "ae108/elements/integrator/IsoparametricIntegrator.h"
 #include "ae108/elements/integrator/integrate.h"
 #include "ae108/elements/integrator/integrate_shape.h"
+#include "ae108/elements/integrator/volume.h"
 #include "ae108/elements/quadrature/Quadrature.h"
 #include "ae108/elements/shape/Seg2.h"
 #include <gmock/gmock.h>
@@ -56,8 +57,8 @@ TEST_F(IsoperimetricIntegrator_Test, post_transform_is_correct) {
   EXPECT_THAT(post, ElementsAre(DoubleEq(.5)));
 }
 
-TEST_F(IsoperimetricIntegrator_Test, computing_volume_works) {
-  const auto result = integrate<Integrator>(
+TEST_F(IsoperimetricIntegrator_Test, computing_volume_via_integration_works) {
+  const auto result = integrate(
       integrator,
       [](const Integrator::size_type &, const Integrator::Point<1> &,
          const Integrator::PreTransform &) { return 1.; },
@@ -66,9 +67,14 @@ TEST_F(IsoperimetricIntegrator_Test, computing_volume_works) {
   EXPECT_THAT(result, DoubleEq(1.));
 }
 
+TEST_F(IsoperimetricIntegrator_Test, computing_volume_works) {
+  const auto result = volume(integrator);
+  EXPECT_THAT(result, DoubleEq(1.));
+}
+
 TEST_F(IsoperimetricIntegrator_Test, integrating_shape_works) {
   const auto factor = std::sqrt(2.);
-  const auto result = integrate_shape<Integrator>(
+  const auto result = integrate_shape(
       integrator,
       [factor](auto &&, const auto &point) {
         return point[0] + factor * point[1];

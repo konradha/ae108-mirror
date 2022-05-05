@@ -20,6 +20,7 @@ add_library(${PROJECT_NAME}-elements
             ComputeConsistentMassMatrixTrait.cc
             ComputeEnergyTrait.cc
             ComputeForcesTrait.cc
+            ComputeLumpedMassMatrixTrait.cc
             ComputeStiffnessMatrixTrait.cc
             CoreElement.cc
             ElementBase.cc
@@ -31,6 +32,7 @@ add_library(${PROJECT_NAME}-elements
             compute_consistent_mass_matrix.cc
             compute_energy.cc
             compute_forces.cc
+            compute_lumped_mass_matrix.cc
             compute_stiffness_matrix.cc
             embedding/AutomaticJacobianTrait.cc
             embedding/EmbedTrait.cc
@@ -40,10 +42,12 @@ add_library(${PROJECT_NAME}-elements
             embedding/automatic_jacobian.cc
             embedding/compute_jacobian.cc
             embedding/embed_point.cc
+            integrator/ComputeVolumeTrait.cc
             integrator/IntegrateShapeTrait.cc
             integrator/IntegrateTrait.cc
             integrator/IntegratorBase.cc
             integrator/IsoparametricIntegrator.cc
+            integrator/compute_volume.cc
             integrator/integrate.cc
             integrator/integrate_shape.cc
             materialmodels/AutomaticStressTrait.cc

@@ -16,6 +16,7 @@
 
 #include "ae108/elements/embedding/IsoparametricEmbedding.h"
 #include "ae108/elements/embedding/compute_jacobian.h"
+#include "ae108/elements/integrator/ComputeVolumeTrait.h"
 #include "ae108/elements/integrator/IntegrateShapeTrait.h"
 #include "ae108/elements/integrator/IntegrateTrait.h"
 #include "ae108/elements/integrator/IntegratorBase.h"
@@ -62,7 +63,7 @@ public:
     return dxN_;
   };
 
-  using PostTransform = typename IsoparametricIntegrator::value_type;
+  using PostTransform = typename IsoparametricIntegrator::real_type;
 
   const typename Quadrature::template Collection<PostTransform> &
   post() const noexcept {
@@ -121,6 +122,17 @@ struct IntegrateShapeTrait<
              const typename Integrator::PostTransform &post,
              const Value &value) { return R(post * f(id, value)); },
         init, integrator.post(), values);
+  }
+};
+
+template <class Shape_, class Quadrature_, class ValueType_, class RealType_>
+struct ComputeVolumeTrait<
+    IsoparametricIntegrator<Shape_, Quadrature_, ValueType_, RealType_>> {
+  template <class Integrator>
+  auto operator()(const Integrator &integrator) const noexcept {
+    return quadrature::integrate<Quadrature_>(
+        [](auto &&, auto &&, const auto &post) { return post; },
+        typename Integrator::real_type{0.}, integrator.post());
   }
 };
 

@@ -12,4 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "ae108/elements/integrator/VolumeTrait.h"
+#include "ae108/elements/integrator/ComputeVolumeTrait.h"

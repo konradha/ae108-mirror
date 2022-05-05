@@ -12,4 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "ae108/elements/integrator/volume.h"
+#pragma once
+
+namespace ae108 {
+namespace elements {
+namespace integrator {
+
+template <class Integrator> struct ComputeVolumeTrait;
+
+} // namespace integrator
+} // namespace elements
+} // namespace ae108

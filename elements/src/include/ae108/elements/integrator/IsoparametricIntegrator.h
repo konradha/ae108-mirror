@@ -16,10 +16,10 @@
 
 #include "ae108/elements/embedding/IsoparametricEmbedding.h"
 #include "ae108/elements/embedding/compute_jacobian.h"
+#include "ae108/elements/integrator/ComputeVolumeTrait.h"
 #include "ae108/elements/integrator/IntegrateShapeTrait.h"
 #include "ae108/elements/integrator/IntegrateTrait.h"
 #include "ae108/elements/integrator/IntegratorBase.h"
-#include "ae108/elements/integrator/VolumeTrait.h"
 #include "ae108/elements/quadrature/integrate.h"
 #include "ae108/elements/tensor/Tensor.h"
 #include "ae108/elements/tensor/as_matrix_of_rows.h"
@@ -126,7 +126,7 @@ struct IntegrateShapeTrait<
 };
 
 template <class Shape_, class Quadrature_, class ValueType_, class RealType_>
-struct VolumeTrait<
+struct ComputeVolumeTrait<
     IsoparametricIntegrator<Shape_, Quadrature_, ValueType_, RealType_>> {
   template <class Integrator>
   auto operator()(const Integrator &integrator) const noexcept {

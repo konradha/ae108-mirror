@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "ae108/elements/integrator/VolumeTrait.h"
+#include "ae108/elements/integrator/ComputeVolumeTrait.h"
 
 namespace ae108 {
 namespace elements {
@@ -25,7 +25,7 @@ namespace integrator {
  */
 template <class Integrator>
 typename Integrator::real_type volume(const Integrator &integrator) noexcept {
-  return VolumeTrait<Integrator>().template operator()(integrator);
+  return ComputeVolumeTrait<Integrator>().template operator()(integrator);
 }
 
 } // namespace integrator

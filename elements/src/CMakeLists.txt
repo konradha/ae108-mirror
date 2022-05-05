@@ -42,14 +42,14 @@ add_library(${PROJECT_NAME}-elements
             embedding/automatic_jacobian.cc
             embedding/compute_jacobian.cc
             embedding/embed_point.cc
+            integrator/ComputeVolumeTrait.cc
             integrator/IntegrateShapeTrait.cc
             integrator/IntegrateTrait.cc
             integrator/IntegratorBase.cc
             integrator/IsoparametricIntegrator.cc
-            integrator/VolumeTrait.cc
+            integrator/compute_volume.cc
             integrator/integrate.cc
             integrator/integrate_shape.cc
-            integrator/volume.cc
             materialmodels/AutomaticStressTrait.cc
             materialmodels/AutomaticTangentMatrixTrait.cc
             materialmodels/ComputeEnergyTrait.cc

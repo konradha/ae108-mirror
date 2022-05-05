@@ -14,9 +14,9 @@
 
 #include "ae108/elements/embedding/IsoparametricEmbedding.h"
 #include "ae108/elements/integrator/IsoparametricIntegrator.h"
+#include "ae108/elements/integrator/compute_volume.h"
 #include "ae108/elements/integrator/integrate.h"
 #include "ae108/elements/integrator/integrate_shape.h"
-#include "ae108/elements/integrator/volume.h"
 #include "ae108/elements/quadrature/Quadrature.h"
 #include "ae108/elements/shape/Seg2.h"
 #include <gmock/gmock.h>

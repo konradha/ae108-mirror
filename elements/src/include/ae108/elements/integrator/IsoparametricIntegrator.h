@@ -63,7 +63,7 @@ public:
     return dxN_;
   };
 
-  using PostTransform = typename IsoparametricIntegrator::value_type;
+  using PostTransform = typename IsoparametricIntegrator::real_type;
 
   const typename Quadrature::template Collection<PostTransform> &
   post() const noexcept {

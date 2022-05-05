@@ -15,6 +15,7 @@
 #include "Element_Test.h"
 #include "ae108/elements/CoreElement.h"
 #include "ae108/elements/compute_consistent_mass_matrix.h"
+#include "ae108/elements/compute_lumped_mass_matrix.h"
 #include "ae108/elements/embedding/IsoparametricEmbedding.h"
 #include "ae108/elements/integrator/IsoparametricIntegrator.h"
 #include "ae108/elements/materialmodels/AutomaticStressTrait.h"
@@ -107,6 +108,18 @@ TEST_F(CoreElement_Seg2_Test, computes_correct_consistent_mass_matrix) {
   EXPECT_THAT(mass(0, 1), DoubleEq(1. / 6.));
   EXPECT_THAT(mass(1, 0), DoubleEq(1. / 6.));
   EXPECT_THAT(mass(1, 1), DoubleEq(1. / 3.));
+}
+
+TEST_F(CoreElement_Seg2_Test, computes_correct_lumped_mass_matrix) {
+  const auto mass = compute_lumped_mass_matrix(element);
+
+  ASSERT_THAT(mass.rows(), Eq(2));
+  ASSERT_THAT(mass.cols(), Eq(2));
+
+  EXPECT_THAT(mass(0, 0), DoubleEq(1. / 2.));
+  EXPECT_THAT(mass(0, 1), DoubleEq(0.));
+  EXPECT_THAT(mass(1, 0), DoubleEq(0.));
+  EXPECT_THAT(mass(1, 1), DoubleEq(1. / 2.));
 }
 
 template <class Element_> struct Configuration_2D {
@@ -238,6 +251,11 @@ TEST_F(CoreElement_Quad4_Test,
 TEST_F(CoreElement_Quad4_Test, consistent_mass_matrix_is_symmetric) {
   const auto mass = compute_consistent_mass_matrix(element);
   EXPECT_THAT((mass - mass.transpose()).norm(), DoubleEq(0.));
+}
+
+TEST_F(CoreElement_Quad4_Test, lumped_mass_matrix_is_scaled_identity) {
+  const auto mass = compute_lumped_mass_matrix(element);
+  EXPECT_THAT((mass - .25 * decltype(mass)::Identity()).norm(), DoubleEq(0.));
 }
 
 template <class Element_> struct Configuration_3D {

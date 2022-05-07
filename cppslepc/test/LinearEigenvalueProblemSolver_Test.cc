@@ -68,7 +68,7 @@ TYPED_TEST(LinearEigenvalueProblemSolver_Test,
 
   solver.setOperators(&A);
 
-  solver.solve();
+  ASSERT_THAT(solver.solve(), Eq(2));
 
 #ifdef AE108_PETSC_COMPLEX
   auto eigenpair = eigenpair_type{{0, 0}, vector_type(2)};
@@ -84,7 +84,7 @@ TYPED_TEST(LinearEigenvalueProblemSolver_Test,
 #else
   EXPECT_THAT(eigenpair.vector_real(0) * 1. + eigenpair.vector_real(1) * 0,
               cppptest::ScalarNear(0., 1e-7));
-  EXPECT_THAT(eigenpair.vector_imag(0) * 0. + eigenpair.vector_imag(1) * 0,
+  EXPECT_THAT(eigenpair.vector_imag(0) * 1. + eigenpair.vector_imag(1) * 0,
               cppptest::ScalarNear(0., 1e-7));
 #endif
 
@@ -97,7 +97,7 @@ TYPED_TEST(LinearEigenvalueProblemSolver_Test,
 #else
   EXPECT_THAT(eigenpair.vector_real(0) * 0. + eigenpair.vector_real(1) * 1,
               cppptest::ScalarNear(0., 1e-7));
-  EXPECT_THAT(eigenpair.vector_imag(0) * 0. + eigenpair.vector_imag(1) * 0,
+  EXPECT_THAT(eigenpair.vector_imag(0) * 0. + eigenpair.vector_imag(1) * 1,
               cppptest::ScalarNear(0., 1e-7));
 #endif
 }
@@ -119,7 +119,7 @@ TYPED_TEST(LinearEigenvalueProblemSolver_Test,
 
   solver.setOperators(&A);
 
-  solver.solve();
+  ASSERT_THAT(solver.solve(), Eq(2));
 
 #ifdef AE108_PETSC_COMPLEX
   auto eigenpair = eigenpair_type{{0, 0}, vector_type(2)};
@@ -136,7 +136,7 @@ TYPED_TEST(LinearEigenvalueProblemSolver_Test,
 #else
   EXPECT_THAT(eigenpair.vector_real(0) * 1. - eigenpair.vector_real(1) * 2,
               cppptest::ScalarNear(0., 1e-7));
-  EXPECT_THAT(eigenpair.vector_imag(0) * 0. - eigenpair.vector_imag(1) * 0,
+  EXPECT_THAT(eigenpair.vector_imag(0) * 1. - eigenpair.vector_imag(1) * 2,
               cppptest::ScalarNear(0., 1e-7));
 #endif
 
@@ -150,7 +150,7 @@ TYPED_TEST(LinearEigenvalueProblemSolver_Test,
 #else
   EXPECT_THAT(eigenpair.vector_real(0) * 1. - eigenpair.vector_real(1) * (-2.),
               cppptest::ScalarNear(0., 1e-7));
-  EXPECT_THAT(eigenpair.vector_imag(0) * 0. - eigenpair.vector_imag(1) * 0.,
+  EXPECT_THAT(eigenpair.vector_imag(0) * 1. - eigenpair.vector_imag(1) * (-2.),
               cppptest::ScalarNear(0., 1e-7));
 #endif
 }

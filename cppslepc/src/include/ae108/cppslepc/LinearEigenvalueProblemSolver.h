@@ -137,13 +137,13 @@ void LinearEigenvalueProblemSolver<Policy>::getEigenpair(
     const size_type n, EigenPair<Policy> *out) const {
 
 #ifdef AE108_PETSC_COMPLEX
-  EPSGetEigenpair(this->data(), n, &out->value, NULL,
-                  out->vector.unwrap().data(), NULL);
+  Policy::handleError(EPSGetEigenpair(this->data(), n, &out->value, NULL,
+                                      out->vector.unwrap().data(), NULL));
 #else
   value_type real, imag;
-  EPSGetEigenpair(this->data(), n, &real, &imag,
-                  out->vector_real.unwrap().data(),
-                  out->vector_imag.unwrap().data());
+  Policy::handleError(EPSGetEigenpair(this->data(), n, &real, &imag,
+                                      out->vector_real.unwrap().data(),
+                                      out->vector_imag.unwrap().data()));
   out->value.real(real);
   out->value.imag(imag);
 #endif

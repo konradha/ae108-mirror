@@ -15,9 +15,11 @@
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
 #include "ae108/cppptest/Matchers.h"
+#include "ae108/cppslepc/InvalidEigenvalueIndexException.h"
 #include "ae108/cppslepc/LinearEigenvalueProblemSolver.h"
 #include <gmock/gmock.h>
 
+using testing::Eq;
 using testing::Test;
 using testing::Types;
 
@@ -67,8 +69,9 @@ TYPED_TEST(LinearEigenvalueProblemSolver_Test,
   });
 
   solver.setOperators(&A);
+  solver.solve();
 
-  ASSERT_THAT(solver.solve(), Eq(2));
+  ASSERT_THAT(solver.numberOfEigenpairs(), Eq(2));
 
 #ifdef AE108_PETSC_COMPLEX
   auto eigenpair = eigenpair_type{{0, 0}, vector_type(2)};
@@ -118,8 +121,9 @@ TYPED_TEST(LinearEigenvalueProblemSolver_Test,
   });
 
   solver.setOperators(&A);
+  solver.solve();
 
-  ASSERT_THAT(solver.solve(), Eq(2));
+  ASSERT_THAT(solver.numberOfEigenpairs(), Eq(2));
 
 #ifdef AE108_PETSC_COMPLEX
   auto eigenpair = eigenpair_type{{0, 0}, vector_type(2)};
@@ -153,6 +157,54 @@ TYPED_TEST(LinearEigenvalueProblemSolver_Test,
   EXPECT_THAT(eigenpair.vector_imag(0) * 1. - eigenpair.vector_imag(1) * (-2.),
               cppptest::ScalarNear(0., 1e-7));
 #endif
+}
+
+TYPED_TEST(LinearEigenvalueProblemSolver_Test,
+           throws_exception_for_nonexisting_eigenvalue_index) {
+  using solver_type = typename TestFixture::solver_type;
+  using matrix_type = typename TestFixture::matrix_type;
+
+  auto solver = solver_type{};
+
+  const auto A = matrix_type::fromList({
+      {1., 0.},
+      {0., 1.},
+  });
+
+  solver.setOperators(&A);
+
+  ASSERT_THAT(solver.numberOfEigenpairs(), Eq(0));
+  EXPECT_THROW(solver.getEigenvalue(-1), InvalidEigenvalueIndexException);
+  EXPECT_THROW(solver.getEigenvalue(0), InvalidEigenvalueIndexException);
+}
+
+TYPED_TEST(LinearEigenvalueProblemSolver_Test,
+           throws_exception_for_nonexisting_eigenpair_index) {
+  using solver_type = typename TestFixture::solver_type;
+  using matrix_type = typename TestFixture::matrix_type;
+  using vector_type = typename TestFixture::vector_type;
+  using eigenpair_type = typename TestFixture::eigenpair_type;
+
+  auto solver = solver_type{};
+
+  const auto A = matrix_type::fromList({
+      {1., 0.},
+      {0., 1.},
+  });
+
+  solver.setOperators(&A);
+
+#ifdef AE108_PETSC_COMPLEX
+  auto eigenpair = eigenpair_type{{0, 0}, vector_type(2)};
+#else
+  auto eigenpair = eigenpair_type{{0, 0}, vector_type(2), vector_type(2)};
+#endif
+
+  ASSERT_THAT(solver.numberOfEigenpairs(), Eq(0));
+  EXPECT_THROW(solver.getEigenpair(-1, &eigenpair),
+               InvalidEigenvalueIndexException);
+  EXPECT_THROW(solver.getEigenpair(0, &eigenpair),
+               InvalidEigenvalueIndexException);
 }
 
 } // namespace

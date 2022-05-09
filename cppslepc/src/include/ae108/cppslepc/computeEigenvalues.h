@@ -82,12 +82,13 @@ namespace detail {
 template <class Policy>
 std::vector<
     std::complex<typename LinearEigenvalueProblemSolver<Policy>::real_type>>
-solve(const LinearEigenvalueProblemSolver<Policy> &solver) {
+solve(LinearEigenvalueProblemSolver<Policy> solver) {
   using solver_type = LinearEigenvalueProblemSolver<Policy>;
   using size_type = typename solver_type::size_type;
 
   namespace rv = ranges::cpp20::views;
-  return rv::iota(0, solver.solve()) |
+  solver.solve();
+  return rv::iota(0, solver.numberOfEigenpairs()) |
          rv::transform([&](const size_type index) {
            return solver.getEigenvalue(index);
          }) |
@@ -103,7 +104,7 @@ computeEigenvalues(const cpppetsc::Matrix<Policy> &A) {
 
   solver.setOperators(&A);
 
-  return detail::solve(solver);
+  return detail::solve(std::move(solver));
 }
 
 template <class Policy>
@@ -115,7 +116,7 @@ computeEigenvalues(const cpppetsc::Matrix<Policy> &A,
 
   solver.setOperators(&A, &B);
 
-  return detail::solve(solver);
+  return detail::solve(std::move(solver));
 }
 
 } // namespace cppslepc

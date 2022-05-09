@@ -21,6 +21,7 @@
 #include "ae108/cpppetsc/Vector.h"
 #include "ae108/cppslepc/EigenPair.h"
 #include "ae108/cppslepc/EigenvalueProblemSolverDivergedException.h"
+#include "ae108/cppslepc/InvalidEigenvalueIndexException.h"
 #include <slepc/slepceps.h>
 
 namespace ae108 {
@@ -50,18 +51,24 @@ public:
   void setOperators(const matrix_type *A, const matrix_type *B);
 
   /**
-   * @brief Solve linear eigenvalue problem and returns the number of converged
-   * eigenpairs.
+   * @brief Solve linear eigenvalue problem.
    */
-  size_type solve() const;
+  void solve();
+
+  /**
+   * @brief Number of discovered eigenpairs.
+   */
+  size_type numberOfEigenpairs() const;
 
   /**
    * @brief Get nth eigenpair.
+   * @throw InvalidEigenvalueIndexException
    */
   void getEigenpair(const size_type n, EigenPair<Policy> *out) const;
 
   /**
    * @brief Get nth eigenvalue.
+   * @throw InvalidEigenvalueIndexException
    */
   complex_type getEigenvalue(const size_type n) const;
 
@@ -107,10 +114,7 @@ void LinearEigenvalueProblemSolver<Policy>::setOperators(
   Policy::handleError(EPSSetOperators(this->data(), A->data(), B->data()));
 }
 
-template <class Policy>
-typename LinearEigenvalueProblemSolver<Policy>::size_type
-LinearEigenvalueProblemSolver<Policy>::solve() const {
-
+template <class Policy> void LinearEigenvalueProblemSolver<Policy>::solve() {
   Policy::handleError(EPSSetFromOptions(this->data()));
 
   Policy::handleError(EPSSolve(this->data()));
@@ -124,17 +128,22 @@ LinearEigenvalueProblemSolver<Policy>::solve() const {
   if (hasError) {
     throw EigenvalueProblemSolverDivergedException{};
   }
+}
 
-  return [&]() {
-    auto size = size_type{};
-    Policy::handleError(EPSGetConverged(this->data(), &size));
-    return size;
-  }();
+template <class Policy>
+typename LinearEigenvalueProblemSolver<Policy>::size_type
+LinearEigenvalueProblemSolver<Policy>::numberOfEigenpairs() const {
+  auto size = size_type{};
+  Policy::handleError(EPSGetConverged(this->data(), &size));
+  return size;
 }
 
 template <class Policy>
 void LinearEigenvalueProblemSolver<Policy>::getEigenpair(
     const size_type n, EigenPair<Policy> *out) const {
+  if (n < 0 || n >= numberOfEigenpairs()) {
+    throw InvalidEigenvalueIndexException();
+  }
 
 #ifdef AE108_PETSC_COMPLEX
   Policy::handleError(EPSGetEigenpair(this->data(), n, &out->value, NULL,
@@ -152,6 +161,9 @@ void LinearEigenvalueProblemSolver<Policy>::getEigenpair(
 template <class Policy>
 typename LinearEigenvalueProblemSolver<Policy>::complex_type
 LinearEigenvalueProblemSolver<Policy>::getEigenvalue(const size_type n) const {
+  if (n < 0 || n >= numberOfEigenpairs()) {
+    throw InvalidEigenvalueIndexException();
+  }
 
   auto eigenvalue = complex_type();
 

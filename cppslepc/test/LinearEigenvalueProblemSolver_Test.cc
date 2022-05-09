@@ -83,8 +83,10 @@ TYPED_TEST(LinearEigenvalueProblemSolver_Test,
   solver.getEigenpair(0, &eigenpair);
   EXPECT_THAT(eigenpair.value, ComplexNear(2, 1e-7));
 #ifdef AE108_PETSC_COMPLEX
-  EXPECT_THAT(scalarProduct(eigenpair.vector, vector_type::fromList({1., 0.})),
-              cppptest::ScalarNear(0., 1e-15));
+  EXPECT_THAT(
+      scalarProduct(eigenpair.vector,
+                    vector_type(vector_type::value_type::fromList({1., 0.}))),
+      cppptest::ScalarNear(0., 1e-15));
 #else
   EXPECT_THAT(
       scalarProduct(eigenpair.vector_real,
@@ -100,8 +102,10 @@ TYPED_TEST(LinearEigenvalueProblemSolver_Test,
 
   EXPECT_THAT(eigenpair.value, ComplexNear(1, 1e-7));
 #ifdef AE108_PETSC_COMPLEX
-  EXPECT_THAT(scalarProduct(eigenpair.vector, vector_type::fromList({0., 1.})),
-              cppptest::ScalarNear(0., 1e-15));
+  EXPECT_THAT(
+      scalarProduct(eigenpair.vector,
+                    vector_type(vector_type::value_type::fromList({0., 1.}))),
+      cppptest::ScalarNear(0., 1e-15));
 #else
   EXPECT_THAT(
       scalarProduct(eigenpair.vector_real,
@@ -162,8 +166,10 @@ TYPED_TEST(LinearEigenvalueProblemSolver_Test,
 
   EXPECT_THAT(eigenpair.value, ComplexNear(-1, 1e-7));
 #ifdef AE108_PETSC_COMPLEX
-  EXPECT_THAT(scalarProduct(eigenpair.vector, vector_type::fromList({1., 2.})),
-              cppptest::ScalarNear(0., 1e-15));
+  EXPECT_THAT(
+      scalarProduct(eigenpair.vector,
+                    vector_type(vector_type::value_type::fromList({1., 2.})))),
+      cppptest::ScalarNear(0., 1e-15));
 #else
   EXPECT_THAT(
       scalarProduct(eigenpair.vector_real,

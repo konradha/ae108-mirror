@@ -21,7 +21,6 @@
 #include "ae108/cpppetsc/Vector.h"
 #include "ae108/cppslepc/EigenPair.h"
 #include "ae108/cppslepc/EigenvalueProblemSolverDivergedException.h"
-#include "ae108/cppslepc/InvalidEigenvalueIndexException.h"
 #include <slepc/slepceps.h>
 
 namespace ae108 {
@@ -66,6 +65,8 @@ public:
 
   /**
    * @brief Solve linear eigenvalue problem.
+   * @throw NoOperatorsSetException if the operators have not been set before
+   * the call to solve()
    */
   void solve();
 
@@ -76,13 +77,13 @@ public:
 
   /**
    * @brief Get nth eigenpair.
-   * @throw InvalidEigenvalueIndexException
+   * @throw InvalidEigenvalueIndexException if `n` is out of range
    */
   void getEigenpair(const size_type n, EigenPair<Policy> *out) const;
 
   /**
    * @brief Get nth eigenvalue.
-   * @throw InvalidEigenvalueIndexException
+   * @throw InvalidEigenvalueIndexException if `n` is out of range
    */
   complex_type getEigenvalue(const size_type n) const;
 
@@ -102,6 +103,9 @@ extern template class LinearEigenvalueProblemSolver<
 
 } // namespace cppslepc
 } // namespace ae108
+
+#include "ae108/cppslepc/InvalidEigenvalueIndexException.h"
+#include "ae108/cppslepc/NoOperatorsSetException.h"
 
 namespace ae108 {
 namespace cppslepc {
@@ -131,6 +135,18 @@ void LinearEigenvalueProblemSolver<Policy>::setOperators(
 }
 
 template <class Policy> void LinearEigenvalueProblemSolver<Policy>::solve() {
+  const auto numberOfMatrices = [&]() {
+    auto st = ST();
+    Policy::handleError(EPSGetST(data(), &st));
+    auto n = size_type();
+    Policy::handleError(STGetNumMatrices(st, &n));
+    return n;
+  };
+
+  if (numberOfMatrices() == 0) {
+    throw NoOperatorsSetException();
+  }
+
   Policy::handleError(EPSSolve(this->data()));
 
   const auto hasError = [&]() {

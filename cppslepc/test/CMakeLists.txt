@@ -18,6 +18,7 @@ add_executable(${PROJECT_NAME}-CppSlepcTests
         EigenvalueProblemSolverDivergedException_Test.cc
         InvalidEigenvalueIndexException_Test.cc
         LinearEigenvalueProblemSolver_Test.cc
+        NoOperatorsSetException_Test.cc
         computeEigenvalues_Test.cc
         main.cc
 )

@@ -18,6 +18,7 @@
 #include "ae108/cppptest/Matchers.h"
 #include "ae108/cppslepc/InvalidEigenvalueIndexException.h"
 #include "ae108/cppslepc/LinearEigenvalueProblemSolver.h"
+#include "ae108/cppslepc/NoOperatorsSetException.h"
 #include <gmock/gmock.h>
 
 using testing::Eq;
@@ -228,6 +229,15 @@ TYPED_TEST(LinearEigenvalueProblemSolver_Test,
                InvalidEigenvalueIndexException);
   EXPECT_THROW(solver.getEigenpair(0, &eigenpair),
                InvalidEigenvalueIndexException);
+}
+
+TYPED_TEST(LinearEigenvalueProblemSolver_Test,
+           throws_exception_if_operators_not_set) {
+  using solver_type = typename TestFixture::solver_type;
+
+  auto solver = solver_type{};
+
+  EXPECT_THROW(solver.solve(), NoOperatorsSetException);
 }
 
 } // namespace

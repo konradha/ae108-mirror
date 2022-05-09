@@ -20,6 +20,7 @@ add_library(${PROJECT_NAME}-cppslepc
     EigenvalueSolverDivergedException.cc
     InvalidEigenvalueIndexException.cc
     LinearEigenvalueProblemSolver.cc
+    NoOperatorsSetException.cc
     computeEigenvalues.cc
 )
 

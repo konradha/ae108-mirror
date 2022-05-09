@@ -113,7 +113,9 @@ LinearEigenvalueProblemSolver<Policy>::LinearEigenvalueProblemSolver()
         Policy::handleError(EPSCreate(Policy::communicator(), &solver));
         return cpppetsc::UniqueEntity<EPS>(
             solver, [](EPS eps) { Policy::handleError(EPSDestroy(&eps)); });
-      }()) {}
+      }()) {
+  Policy::handleError(EPSSetFromOptions(this->data()));
+}
 
 template <class Policy>
 void LinearEigenvalueProblemSolver<Policy>::setOperators(
@@ -129,8 +131,6 @@ void LinearEigenvalueProblemSolver<Policy>::setOperators(
 }
 
 template <class Policy> void LinearEigenvalueProblemSolver<Policy>::solve() {
-  Policy::handleError(EPSSetFromOptions(this->data()));
-
   Policy::handleError(EPSSolve(this->data()));
 
   const auto hasError = [&]() {

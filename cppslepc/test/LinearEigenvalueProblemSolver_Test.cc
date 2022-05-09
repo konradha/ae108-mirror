@@ -55,14 +55,14 @@ using Policies =
 TYPED_TEST_CASE(LinearEigenvalueProblemSolver_Test, Policies);
 
 TYPED_TEST(LinearEigenvalueProblemSolver_Test,
-           hermetian_evp_eigen_pair_is_correct) {
+           hermitian_evp_eigen_pair_is_correct) {
   using solver_type = typename TestFixture::solver_type;
   using vector_type = typename TestFixture::vector_type;
   using matrix_type = typename TestFixture::matrix_type;
   using eigenpair_type = typename TestFixture::eigenpair_type;
 
   auto solver = solver_type{};
-  EPSSetProblemType(solver.data(), EPS_HEP);
+  solver.setType(solver_type::Type::hermitian);
 
   const auto A = matrix_type::fromList({
       {1., 0.},
@@ -115,14 +115,14 @@ TYPED_TEST(LinearEigenvalueProblemSolver_Test,
 }
 
 TYPED_TEST(LinearEigenvalueProblemSolver_Test,
-           non_hermetian_evp_eigen_pair_is_correct) {
+           nonhermitian_evp_eigen_pair_is_correct) {
   using solver_type = typename TestFixture::solver_type;
   using vector_type = typename TestFixture::vector_type;
   using matrix_type = typename TestFixture::matrix_type;
   using eigenpair_type = typename TestFixture::eigenpair_type;
 
   auto solver = solver_type{};
-  EPSSetProblemType(solver.data(), EPS_NHEP);
+  solver.setType(solver_type::Type::nonhermitian);
 
   const auto A = matrix_type::fromList({
       {1., 4.},

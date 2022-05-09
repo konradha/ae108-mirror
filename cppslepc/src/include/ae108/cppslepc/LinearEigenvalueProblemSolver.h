@@ -50,6 +50,20 @@ public:
    */
   void setOperators(const matrix_type *A, const matrix_type *B);
 
+  enum class Type {
+    hermitian = EPS_HEP,
+    nonhermitian = EPS_NHEP,
+    generalized_hermitian = EPS_GHEP,
+    generalized_nonhermitian = EPS_GNHEP,
+    generalized_nonhermitian_spd = EPS_PGNHEP,
+    generalized_indefinite = EPS_GHIEP
+  };
+
+  /**
+   * @brief Sets the type of the eigenvalue problem.
+   */
+  void setType(const Type type);
+
   /**
    * @brief Solve linear eigenvalue problem.
    */
@@ -136,6 +150,12 @@ LinearEigenvalueProblemSolver<Policy>::numberOfEigenpairs() const {
   auto size = size_type{};
   Policy::handleError(EPSGetConverged(this->data(), &size));
   return size;
+}
+
+template <class Policy>
+void LinearEigenvalueProblemSolver<Policy>::setType(const Type type) {
+  Policy::handleError(
+      EPSSetProblemType(this->data(), static_cast<EPSProblemType>(type)));
 }
 
 template <class Policy>

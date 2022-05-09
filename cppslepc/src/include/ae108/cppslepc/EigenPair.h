@@ -33,5 +33,7 @@ template <class Policy> struct EigenPair {
 #endif
 };
 
+extern template class EigenPair<cpppetsc::SequentialComputePolicy>;
+extern template class EigenPair<cpppetsc::ParallelComputePolicy>;
 } // namespace cppslepc
 } // namespace ae108

@@ -237,7 +237,7 @@ TYPED_TEST(LinearEigenvalueProblemSolver_Test,
 #ifdef AE108_PETSC_COMPLEX
   EXPECT_THAT(
       scalarProduct(eigenpair.vector,
-                    vector_type(vector_type::value_type::fromList({1., 2.})))),
+                    vector_type(vector_type::value_type::fromList({1., 2.}))),
       cppptest::ScalarNear(0., 1e-15));
 #else
   EXPECT_THAT(

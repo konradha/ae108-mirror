@@ -351,6 +351,31 @@ TYPED_TEST(LinearEigenvalueProblemSolver_Test,
                InvalidProblemTypeException);
 }
 
+TYPED_TEST(LinearEigenvalueProblemSolver_Test,
+           solver_supports_switching_problem_type) {
+  using solver_type = typename TestFixture::solver_type;
+  using matrix_type = typename TestFixture::matrix_type;
+
+  auto solver = solver_type{};
+
+  const auto A = matrix_type::fromList({
+      {1., 0.},
+      {0., 1.},
+  });
+  const auto B = matrix_type::fromList({
+      {2., 0.},
+      {0., 2.},
+  });
+
+  solver.setOperators(&A, &B, solver_type::Type::generalized_hermitian);
+  solver.setOperators(&A, solver_type::Type::hermitian);
+
+  solver.solve();
+
+  EXPECT_THAT(solver.getEigenvalue(0), cppptest::ScalarNear(1., 1e-15));
+  EXPECT_THAT(solver.getEigenvalue(1), cppptest::ScalarNear(1., 1e-15));
+}
+
 } // namespace
 } // namespace cppslepc
 } // namespace ae108

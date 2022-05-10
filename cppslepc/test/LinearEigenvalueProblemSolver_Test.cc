@@ -17,6 +17,7 @@
 #include "ae108/cpppetsc/scalarProduct.h"
 #include "ae108/cppptest/Matchers.h"
 #include "ae108/cppslepc/InvalidEigenvalueIndexException.h"
+#include "ae108/cppslepc/InvalidProblemTypeException.h"
 #include "ae108/cppslepc/LinearEigenvalueProblemSolver.h"
 #include "ae108/cppslepc/NoOperatorsSetException.h"
 #include <gmock/gmock.h>
@@ -63,14 +64,13 @@ TYPED_TEST(LinearEigenvalueProblemSolver_Test,
   using eigenpair_type = typename TestFixture::eigenpair_type;
 
   auto solver = solver_type{};
-  solver.setType(solver_type::Type::hermitian);
 
   const auto A = matrix_type::fromList({
       {1., 0.},
       {0., 2.},
   });
 
-  solver.setOperators(&A);
+  solver.setOperators(&A, solver_type::Type::hermitian);
   solver.solve();
 
   ASSERT_THAT(solver.numberOfEigenpairs(), Eq(2));
@@ -195,14 +195,13 @@ TYPED_TEST(LinearEigenvalueProblemSolver_Test,
   using eigenpair_type = typename TestFixture::eigenpair_type;
 
   auto solver = solver_type{};
-  solver.setType(solver_type::Type::nonhermitian);
 
   const auto A = matrix_type::fromList({
       {1., 4.},
       {1., 1.},
   });
 
-  solver.setOperators(&A);
+  solver.setOperators(&A, solver_type::Type::nonhermitian);
   solver.solve();
 
   ASSERT_THAT(solver.numberOfEigenpairs(), Eq(2));
@@ -306,6 +305,50 @@ TYPED_TEST(LinearEigenvalueProblemSolver_Test,
   auto solver = solver_type{};
 
   EXPECT_THROW(solver.solve(), NoOperatorsSetException);
+}
+
+TYPED_TEST(LinearEigenvalueProblemSolver_Test,
+           throws_exception_if_generalized_type_for_one_operator) {
+  using solver_type = typename TestFixture::solver_type;
+  using matrix_type = typename TestFixture::matrix_type;
+
+  auto solver = solver_type{};
+
+  const auto A = matrix_type::fromList({
+      {1., 0.},
+      {0., 1.},
+  });
+
+  EXPECT_THROW(
+      solver.setOperators(&A, solver_type::Type::generalized_hermitian),
+      InvalidProblemTypeException);
+  EXPECT_THROW(
+      solver.setOperators(&A, solver_type::Type::generalized_nonhermitian),
+      InvalidProblemTypeException);
+  EXPECT_THROW(
+      solver.setOperators(&A, solver_type::Type::generalized_nonhermitian_spd),
+      InvalidProblemTypeException);
+  EXPECT_THROW(
+      solver.setOperators(&A, solver_type::Type::generalized_indefinite),
+      InvalidProblemTypeException);
+}
+
+TYPED_TEST(LinearEigenvalueProblemSolver_Test,
+           throws_exception_if_nongeneralized_type_for_two_operators) {
+  using solver_type = typename TestFixture::solver_type;
+  using matrix_type = typename TestFixture::matrix_type;
+
+  auto solver = solver_type{};
+
+  const auto A = matrix_type::fromList({
+      {1., 0.},
+      {0., 1.},
+  });
+
+  EXPECT_THROW(solver.setOperators(&A, &A, solver_type::Type::hermitian),
+               InvalidProblemTypeException);
+  EXPECT_THROW(solver.setOperators(&A, &A, solver_type::Type::nonhermitian),
+               InvalidProblemTypeException);
 }
 
 } // namespace

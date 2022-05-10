@@ -37,19 +37,8 @@ public:
 
   explicit LinearEigenvalueProblemSolver();
 
-  /**
-   * @brief Sets the matrices associated with a standard eigenvalue problem,
-   * i.e. Ax = lambda * x.
-   */
-  void setOperators(const matrix_type *A);
-
-  /**
-   * @brief Sets the matrices associated with a generalized eigenvalue
-   * problem, i.e. Ax = lambda * Bx.
-   */
-  void setOperators(const matrix_type *A, const matrix_type *B);
-
   enum class Type {
+    unspecified = 0,
     hermitian = EPS_HEP,
     nonhermitian = EPS_NHEP,
     generalized_hermitian = EPS_GHEP,
@@ -59,9 +48,21 @@ public:
   };
 
   /**
-   * @brief Sets the type of the eigenvalue problem.
+   * @brief Sets the matrices associated with a standard eigenvalue problem,
+   * i.e. Ax = lambda * x.
+   * @throw InvalidProblemTypeException if the type does not represent a
+   * nongeneralized problem
    */
-  void setType(const Type type);
+  void setOperators(const matrix_type *A, const Type type = Type::unspecified);
+
+  /**
+   * @brief Sets the matrices associated with a generalized eigenvalue
+   * problem, i.e. Ax = lambda * Bx.
+   * @throw InvalidProblemTypeException if the type does not represent a
+   * generalized problem
+   */
+  void setOperators(const matrix_type *A, const matrix_type *B,
+                    const Type type = Type::unspecified);
 
   /**
    * @brief Solve linear eigenvalue problem.
@@ -93,6 +94,18 @@ public:
   EPS data() const;
 
 private:
+  enum class GeneralizedProblem {
+    no = 0,
+    yes = 1,
+  };
+
+  /**
+   * @brief Sets the type of the eigenvalue problem.
+   * @throw InvalidProblemTypeException if the type does not match the state of
+   * `generalized`
+   */
+  void setType(const Type type, const GeneralizedProblem generalized);
+
   cpppetsc::UniqueEntity<EPS> eps_;
 };
 
@@ -105,6 +118,7 @@ extern template class LinearEigenvalueProblemSolver<
 } // namespace ae108
 
 #include "ae108/cppslepc/InvalidEigenvalueIndexException.h"
+#include "ae108/cppslepc/InvalidProblemTypeException.h"
 #include "ae108/cppslepc/NoOperatorsSetException.h"
 
 namespace ae108 {
@@ -122,16 +136,18 @@ LinearEigenvalueProblemSolver<Policy>::LinearEigenvalueProblemSolver()
 }
 
 template <class Policy>
-void LinearEigenvalueProblemSolver<Policy>::setOperators(
-    const typename LinearEigenvalueProblemSolver<Policy>::matrix_type *A) {
+void LinearEigenvalueProblemSolver<Policy>::setOperators(const matrix_type *A,
+                                                         const Type type) {
   Policy::handleError(EPSSetOperators(this->data(), A->data(), NULL));
+  setType(type, GeneralizedProblem::no);
 }
 
 template <class Policy>
-void LinearEigenvalueProblemSolver<Policy>::setOperators(
-    const typename LinearEigenvalueProblemSolver<Policy>::matrix_type *A,
-    const typename LinearEigenvalueProblemSolver<Policy>::matrix_type *B) {
+void LinearEigenvalueProblemSolver<Policy>::setOperators(const matrix_type *A,
+                                                         const matrix_type *B,
+                                                         const Type type) {
   Policy::handleError(EPSSetOperators(this->data(), A->data(), B->data()));
+  setType(type, GeneralizedProblem::yes);
 }
 
 template <class Policy> void LinearEigenvalueProblemSolver<Policy>::solve() {
@@ -169,7 +185,18 @@ LinearEigenvalueProblemSolver<Policy>::numberOfEigenpairs() const {
 }
 
 template <class Policy>
-void LinearEigenvalueProblemSolver<Policy>::setType(const Type type) {
+void LinearEigenvalueProblemSolver<Policy>::setType(
+    const Type type, const GeneralizedProblem generalized) {
+  if (type != Type::unspecified) {
+    const auto generalizedType =
+        bool{type == Type::generalized_hermitian ||
+             type == Type::generalized_nonhermitian ||
+             type == Type::generalized_nonhermitian_spd ||
+             type == Type::generalized_indefinite};
+    if (generalizedType != (generalized == GeneralizedProblem::yes)) {
+      throw InvalidProblemTypeException();
+    }
+  }
   Policy::handleError(
       EPSSetProblemType(this->data(), static_cast<EPSProblemType>(type)));
 }

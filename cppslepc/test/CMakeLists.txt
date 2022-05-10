@@ -17,6 +17,7 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 add_executable(${PROJECT_NAME}-CppSlepcTests
         EigenvalueProblemSolverDivergedException_Test.cc
         InvalidEigenvalueIndexException_Test.cc
+        InvalidProblemTypeException_Test.cc
         LinearEigenvalueProblemSolver_Test.cc
         NoOperatorsSetException_Test.cc
         computeEigenvalues_Test.cc

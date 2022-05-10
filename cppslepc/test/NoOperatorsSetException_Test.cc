@@ -28,7 +28,7 @@ struct NoOperatorsSetException_Test : Test {
 
 TEST_F(NoOperatorsSetException_Test, what_describes_exception) {
   EXPECT_THAT(exception.what(), StrEq("The matrices defining the eigenvalue "
-                                      "problem have not been defined yet."));
+                                      "problem have not been specified yet."));
 }
 
 } // namespace

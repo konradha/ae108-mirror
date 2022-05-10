@@ -18,7 +18,7 @@ namespace ae108 {
 namespace cppslepc {
 
 const char *NoOperatorsSetException::what() const noexcept {
-  return "The matrices defining the eigenvalue problem have not been defined "
+  return "The matrices defining the eigenvalue problem have not been specified "
          "yet.";
 }
 

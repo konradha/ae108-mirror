@@ -38,16 +38,16 @@ RUN apt-get update && \
 
 RUN pip3 install \
   mypy==0.931 \
-  black==22.1.0 \
+  black==22.3.0 \
   pylint==2.12.2 \
   sympy==1.7.1 \
   gcovr==5.0 \
   h5py==3.6.0
+
+RUN pip3 install --find-links https://wheels.pyvista.org/ vtk==9.1.0.dev0
 
 RUN apt-get update && \
   DEBIAN_FRONTEND="noninteractive" \
   apt-get install -y \
   libpetsc-${PETSC_SCALAR_TYPE}-dev \
   libslepc-${PETSC_SCALAR_TYPE}3.15-dev
-
-RUN pip3 install --find-links https://wheels.pyvista.org/ vtk==9.1.0.dev0

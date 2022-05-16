@@ -119,10 +119,9 @@ MATCHER_P4(ScalarNearIfLocal, row, col, reference, tolerance,
                ::testing::PrintToString(reference) + " at (" +
                ::testing::PrintToString(row) + ", " +
                ::testing::PrintToString(col) + ")") {
-  return !isLocal(arg, row) ||
-         near_to_reference(arg(row, col), reference, tolerance, result_listener);
+  return !isLocal(arg, row) || near_to_reference(arg(row, col), reference,
+                                                 tolerance, result_listener);
 }
-
 
 /**
  * @brief Check that the value has the given address.

@@ -22,8 +22,8 @@
 #include <array>
 #include <gmock/gmock.h>
 
-using ae108::cppptest::ScalarNearIfLocal;
 using ae108::cppptest::ScalarEqIfLocal;
+using ae108::cppptest::ScalarNearIfLocal;
 using testing::DoubleEq;
 using testing::Eq;
 using testing::Ge;

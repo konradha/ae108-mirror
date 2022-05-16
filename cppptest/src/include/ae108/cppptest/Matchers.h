@@ -99,6 +99,32 @@ MATCHER_P3(ScalarEqIfLocal, row, col, reference,
 }
 
 /**
+ * @brief Check that the value at index row is almost equal to reference (if it
+ * is available locally).
+ */
+MATCHER_P3(ScalarNearIfLocal, row, reference, tolerance,
+           std::string(negation ? "not " : "") + "equal to " +
+               ::testing::PrintToString(reference) + " at (" +
+               ::testing::PrintToString(row) + ")") {
+  return !isLocal(arg, row) ||
+         near_to_reference(arg(row), reference, tolerance, result_listener);
+}
+
+/**
+ * @brief Check that the value at index (row, col) is almost equal to reference
+ * (if it is available locally).
+ */
+MATCHER_P4(ScalarNearIfLocal, row, col, reference, tolerance,
+           std::string(negation ? "not " : "") + "equal to " +
+               ::testing::PrintToString(reference) + " at (" +
+               ::testing::PrintToString(row) + ", " +
+               ::testing::PrintToString(col) + ")") {
+  return !isLocal(arg, row) ||
+         near_to_reference(arg(row, col), reference, tolerance, result_listener);
+}
+
+
+/**
  * @brief Check that the value has the given address.
  */
 MATCHER_P(AddressEq, reference,

@@ -22,6 +22,7 @@
 #include <array>
 #include <gmock/gmock.h>
 
+using ae108::cppptest::ScalarNearIfLocal;
 using ae108::cppptest::ScalarEqIfLocal;
 using testing::DoubleEq;
 using testing::Eq;
@@ -176,7 +177,7 @@ TYPED_TEST(boundaryConditionsToEquations_Test,
   const auto image = apply(result, displacements);
 
   for (auto row = size_type{0}; row < image.unwrap().size(); ++row) {
-    EXPECT_THAT(image.unwrap(), ScalarEqIfLocal(row, 0.));
+    EXPECT_THAT(image.unwrap(), ScalarNearIfLocal(row, 0., 1e-17));
   }
 }
 

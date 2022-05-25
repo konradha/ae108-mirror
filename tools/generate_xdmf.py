@@ -423,7 +423,7 @@ def add_field(
         - 3 columns: A vector field will be added.
         - otherwise: The field is split into scalar fields, and those are added.
     """
-    hdf_path = "/fields/{field_name}"
+    hdf_path = f"/fields/{field_name}"
 
     item = hdf_file[hdf_path]
     shape = item.shape

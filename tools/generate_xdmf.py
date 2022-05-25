@@ -368,16 +368,17 @@ def add_topology(
         "DataItem",
         {"Format": "XML", "Dimensions": str(dataitem_dimension)},
     )
+
     dataitem.text = "  ".join(
-        "{} {}".format(
-            " ".join(
-                str(type_)
-                for type_ in number_of_corners_to_type(
-                    len(vertices), prefer_planar or coordinate_dimension <= 2
-                )
-            ),
-            " ".join(str(vertex) for vertex in vertices),
+        f"""{" ".join(str(type_)
+          for type_ in number_of_corners_to_type(
+            len(vertices),
+            prefer_planar or coordinate_dimension <= 2,
+          )
         )
+        } {
+          " ".join(str(vertex) for vertex in vertices)
+        }"""
         for vertices in read_element_vertices(hdf_file)
     )
 
@@ -530,7 +531,7 @@ def main() -> None:
     XDMF to file.
     """
     filename, prefer_planar = parse_command_line_arguments()
-    with open(filename.stem + ".xdmf", "w") as xdmf_file:
+    with open(filename.stem + ".xdmf", "w", encoding="utf-8") as xdmf_file:
         xdmf_file.write(hdf_to_xdmf_string(h5py.File(filename, "r"), prefer_planar))
 
 

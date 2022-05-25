@@ -44,7 +44,7 @@ RUN pip3 install \
   gcovr==5.0 \
   h5py==3.6.0
 
-RUN pip3 install --find-links https://wheels.pyvista.org/ vtk==9.1.0.dev0
+RUN pip3 install vtk --extra-index-url https://gitlab.kitware.com/api/v4/projects/13/packages/pypi/simple
 
 RUN apt-get update && \
   DEBIAN_FRONTEND="noninteractive" \

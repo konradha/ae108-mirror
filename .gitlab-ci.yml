@@ -115,7 +115,9 @@ check-script:
             '
     artifacts:
         reports:
-            cobertura: build/coverage.xml
+            coverage_report:
+                coverage_format: cobertura
+                path: build/coverage.xml
             junit: build/*/test/gtest-results.xml
         when: always
 

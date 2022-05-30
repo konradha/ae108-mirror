@@ -189,9 +189,15 @@ private:
   static UniqueEntity<DM> createDM();
 
   /**
-   * @brief Adds the default uniform section to the mesh.
+   * @brief Creates an uniform section with the provided degrees of freedom.
    */
-  void addSection(const size_type dofPerVertex, const size_type dofPerElement);
+  UniqueEntity<PetscSection> createSection(const size_type dofPerVertex,
+                                           const size_type dofPerElement) const;
+
+  /**
+   * @brief Sets the default section of the mesh.
+   */
+  void setSection(UniqueEntity<PetscSection> section);
 
   /**
    * @brief Adds the chart as described by the connectivity to the mesh.
@@ -309,7 +315,7 @@ Mesh<Policy> Mesh<Policy>::fromConnectivity(const size_type dimension,
 
   distributeMesh(&mesh);
 
-  mesh.addSection(dofPerVertex, dofPerElement);
+  mesh.setSection(mesh.createSection(dofPerVertex, dofPerElement));
 
   mesh.setGlobalToNaturalSF(mesh.createReorderingSF(
       mesh.canonicalRowIndices(dofPerVertex, dofPerElement)));
@@ -416,7 +422,7 @@ Mesh<Policy> Mesh<Policy>::cloneWithDofs(const size_type dofPerVertex,
         DMPlexSetMigrationSF(mesh._mesh.get(), mesh._migration.get()));
   }
 
-  mesh.addSection(dofPerVertex, dofPerElement);
+  mesh.setSection(mesh.createSection(dofPerVertex, dofPerElement));
 
   mesh.setGlobalToNaturalSF(mesh.createReorderingSF(
       mesh.canonicalRowIndices(dofPerVertex, dofPerElement)));
@@ -484,8 +490,9 @@ void Mesh<Policy>::addChart(const Container &elementVertexIDs,
 }
 
 template <class Policy>
-void Mesh<Policy>::addSection(const size_type dofPerVertex,
-                              const size_type dofPerElement) {
+UniqueEntity<PetscSection>
+Mesh<Policy>::createSection(const size_type dofPerVertex,
+                            const size_type dofPerElement) const {
   const std::array<size_type, 1> numberOfComponents = {{1}};
   std::vector<size_type> numberOfDofsPerDim(2);
   numberOfDofsPerDim.front() = dofPerVertex;
@@ -493,18 +500,20 @@ void Mesh<Policy>::addSection(const size_type dofPerVertex,
 
   Policy::handleError(DMSetNumFields(_mesh.get(), numberOfComponents.size()));
 
-  _section = [&]() {
-    auto s = PetscSection();
-    Policy::handleError(DMPlexCreateSection(
-        _mesh.get(), nullptr /* label */, numberOfComponents.data(),
-        numberOfDofsPerDim.data(), 0 /* number of boundary conditions */,
-        nullptr /* boundary conditions */,
-        nullptr /* boundary condition components */,
-        nullptr /* boundary condition points */, nullptr /* permutation */,
-        &s));
-    return makeUniqueEntity<Policy>(s);
-  }();
+  auto section = PetscSection();
+  Policy::handleError(DMPlexCreateSection(
+      _mesh.get(), nullptr /* label */, numberOfComponents.data(),
+      numberOfDofsPerDim.data(), 0 /* number of boundary conditions */,
+      nullptr /* boundary conditions */,
+      nullptr /* boundary condition components */,
+      nullptr /* boundary condition points */, nullptr /* permutation */,
+      &section));
+  return makeUniqueEntity<Policy>(section);
+}
 
+template <class Policy>
+void Mesh<Policy>::setSection(UniqueEntity<PetscSection> section) {
+  _section = std::move(section);
   Policy::handleError(DMSetSection(_mesh.get(), _section.get()));
 }
 

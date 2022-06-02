@@ -113,3 +113,10 @@ target_link_libraries(${PROJECT_NAME}-DynamicSolver
                       PRIVATE ae108::assembly
                       PRIVATE ae108::elements
 )
+
+add_executable(${PROJECT_NAME}-CantileverBeam CantileverBeam.cc)
+target_link_libraries(${PROJECT_NAME}-CantileverBeam
+                      PRIVATE ae108::solve
+                      PRIVATE ae108::assembly
+                      PRIVATE ae108::elements
+)

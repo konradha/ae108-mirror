@@ -25,18 +25,39 @@ namespace cpppetsc {
 /**
  * @brief Creates a matrix P that can be multiplied from the right hand side
  * with the provided Matrix A, i.e. A * P is well-formed.
+ *
+ * @param columns Global number of columns of the created matrix.
  */
 template <class Policy>
 Matrix<Policy>
 createRhsTransform(const Matrix<Policy> &matrix,
                    const typename Matrix<Policy>::size_type columns);
 
+/**
+ * @brief Creates a matrix P that can be multiplied from the right hand side
+ * with the provided Matrix A, i.e. A * P is well-formed.
+ */
+template <class Policy>
+Matrix<Policy>
+createRhsTransform(const Matrix<Policy> &matrix,
+                   const typename Matrix<Policy>::LocalCols localColumns,
+                   const typename Matrix<Policy>::GlobalCols globalColumns);
+
 extern template Matrix<SequentialComputePolicy>
-createRhsTransform(const Matrix<SequentialComputePolicy> &matrix,
+createRhsTransform(const Matrix<SequentialComputePolicy> &,
                    typename Matrix<SequentialComputePolicy>::size_type);
 extern template Matrix<ParallelComputePolicy>
-createRhsTransform(const Matrix<ParallelComputePolicy> &matrix,
+createRhsTransform(const Matrix<ParallelComputePolicy> &,
                    typename Matrix<ParallelComputePolicy>::size_type);
+
+extern template Matrix<SequentialComputePolicy>
+createRhsTransform(const Matrix<SequentialComputePolicy> &,
+                   const typename Matrix<SequentialComputePolicy>::LocalCols,
+                   const typename Matrix<SequentialComputePolicy>::GlobalCols);
+extern template Matrix<ParallelComputePolicy>
+createRhsTransform(const Matrix<ParallelComputePolicy> &,
+                   const typename Matrix<ParallelComputePolicy>::LocalCols,
+                   const typename Matrix<ParallelComputePolicy>::GlobalCols);
 
 } // namespace cpppetsc
 } // namespace ae108
@@ -48,29 +69,20 @@ template <class Policy>
 Matrix<Policy>
 createRhsTransform(const Matrix<Policy> &matrix,
                    const typename Matrix<Policy>::size_type columns) {
-  using size_type = typename Matrix<Policy>::size_type;
+  return createRhsTransform(matrix,
+                            typename Matrix<Policy>::LocalCols{PETSC_DECIDE},
+                            typename Matrix<Policy>::GlobalCols{columns});
+}
 
-  auto result = []() {
-    auto mat = Mat{};
-    Policy::handleError(MatCreate(Policy::communicator(), &mat));
-    return Matrix<Policy>(makeUniqueEntity<Policy>(mat));
-  }();
-
-  const auto localRows = [&]() {
-    auto rows = size_type{};
-    auto cols = size_type{};
-    Policy::handleError(MatGetLocalSize(matrix.data(), &rows, &cols));
-    return cols;
-  }();
-
-  const auto rows = matrix.size().second;
-
-  Policy::handleError(
-      MatSetSizes(result.data(), localRows, PETSC_DECIDE, rows, columns));
-  Policy::handleError(MatSetFromOptions(result.data()));
-  Policy::handleError(MatSetUp(result.data()));
-  result.finalize();
-  return result;
+template <class Policy>
+Matrix<Policy>
+createRhsTransform(const Matrix<Policy> &matrix,
+                   const typename Matrix<Policy>::LocalCols localColumns,
+                   const typename Matrix<Policy>::GlobalCols globalColumns) {
+  return Matrix<Policy>(
+      typename Matrix<Policy>::LocalRows{matrix.localSize().second},
+      localColumns, typename Matrix<Policy>::GlobalRows{matrix.size().second},
+      globalColumns);
 }
 
 } // namespace cpppetsc

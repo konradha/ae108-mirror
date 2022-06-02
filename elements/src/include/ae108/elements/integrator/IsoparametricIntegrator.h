@@ -16,12 +16,15 @@
 
 #include "ae108/elements/embedding/IsoparametricEmbedding.h"
 #include "ae108/elements/embedding/compute_jacobian.h"
+#include "ae108/elements/integrator/ComputeVolumeTrait.h"
+#include "ae108/elements/integrator/IntegrateShapeTrait.h"
 #include "ae108/elements/integrator/IntegrateTrait.h"
 #include "ae108/elements/integrator/IntegratorBase.h"
 #include "ae108/elements/quadrature/integrate.h"
 #include "ae108/elements/tensor/Tensor.h"
 #include "ae108/elements/tensor/as_matrix_of_rows.h"
 #include <Eigen/LU>
+#include <algorithm>
 
 namespace ae108 {
 namespace elements {
@@ -60,7 +63,7 @@ public:
     return dxN_;
   };
 
-  using PostTransform = typename IsoparametricIntegrator::value_type;
+  using PostTransform = typename IsoparametricIntegrator::real_type;
 
   const typename Quadrature::template Collection<PostTransform> &
   post() const noexcept {
@@ -97,6 +100,39 @@ struct IntegrateTrait<
           return R(post * f(id, grad_u, pre));
         },
         init, integrator.pre(), integrator.post());
+  }
+};
+
+template <class Shape_, class Quadrature_, class ValueType_, class RealType_>
+struct IntegrateShapeTrait<
+    IsoparametricIntegrator<Shape_, Quadrature_, ValueType_, RealType_>> {
+  template <class Integrator, class R, class F>
+  R operator()(const Integrator &integrator, F f, R init) const noexcept {
+    using Value =
+        typename Shape_::template Collection<typename Shape_::value_type>;
+    auto values = typename Quadrature_::template Collection<Value>();
+
+    std::transform(Quadrature_::data.points.begin(),
+                   Quadrature_::data.points.end(), values.begin(),
+                   &shape::compute_values<Shape_>);
+
+    return quadrature::integrate<Quadrature_>(
+        [&f](const typename Quadrature_::size_type id,
+             const typename Quadrature_::Point &,
+             const typename Integrator::PostTransform &post,
+             const Value &value) { return R(post * f(id, value)); },
+        init, integrator.post(), values);
+  }
+};
+
+template <class Shape_, class Quadrature_, class ValueType_, class RealType_>
+struct ComputeVolumeTrait<
+    IsoparametricIntegrator<Shape_, Quadrature_, ValueType_, RealType_>> {
+  template <class Integrator>
+  auto operator()(const Integrator &integrator) const noexcept {
+    return quadrature::integrate<Quadrature_>(
+        [](auto &&, auto &&, const auto &post) { return post; },
+        typename Integrator::real_type{0.}, integrator.post());
   }
 };
 

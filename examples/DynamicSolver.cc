@@ -14,11 +14,13 @@
 
 #include "ae108/solve/DynamicSolver.h"
 #include "ae108/assembly/Assembler.h"
+#include "ae108/assembly/plugins/AssembleLumpedMassMatrixPlugin.h"
 #include "ae108/cpppetsc/Context.h"
 #include "ae108/cpppetsc/Mesh.h"
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/Vector.h"
 #include "ae108/elements/CoreElement.h"
+#include "ae108/elements/compute_lumped_mass_matrix.h"
 #include "ae108/elements/embedding/IsoparametricEmbedding.h"
 #include "ae108/elements/integrator/IsoparametricIntegrator.h"
 #include "ae108/elements/materialmodels/Hookean.h"
@@ -114,8 +116,13 @@ using Element = elements::CoreElement<MaterialModel, Integrator,
 // the assembler. (The list DefaultFeaturePlugins contain the features, e.g.
 // energy, that most elements support.)
 
-using Assembler =
-    assembly::Assembler<Element, assembly::DefaultFeaturePlugins, Policy>;
+using Assembler = assembly::Assembler<
+    Element,
+    assembly::FeaturePlugins<assembly::plugins::AssembleEnergyPlugin,
+                             assembly::plugins::AssembleForceVectorPlugin,
+                             assembly::plugins::AssembleStiffnessMatrixPlugin,
+                             assembly::plugins::AssembleLumpedMassMatrixPlugin>,
+    Policy>;
 
 // Our goal is to minimize the energy. This is done by the solver.
 
@@ -193,9 +200,8 @@ int main(int argc, char **argv) {
 
   const auto mass = [&]() {
     auto mass = Matrix::fromMesh(mesh);
-    auto replace = mass.preallocatedAssemblyView(1).replace();
-    replace(0, 0) = .5;
-    replace(1, 1) = .5;
+    assembler.assembleLumpedMassMatrix(&mass);
+    mass.finalize();
     return mass;
   }();
   const auto damping = Matrix::fromMesh(mesh);

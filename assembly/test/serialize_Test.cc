@@ -69,6 +69,20 @@ TEST_F(serialize_Test, serializing_eigen_matrix_works) {
                                   DoubleEq(0.)));
 }
 
+TEST_F(serialize_Test, serializing_dynamically_sized_eigen_matrix_works) {
+  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> values(3, 2);
+  values << 1, 2, 3, 4, 5, 6;
+  std::vector<double> buffer(7);
+
+  const auto result = serialize(values, buffer.begin());
+
+  EXPECT_THAT(result, Eq(buffer.begin() + 6));
+
+  EXPECT_THAT(buffer, ElementsAre(DoubleEq(1.), DoubleEq(2.), DoubleEq(3.),
+                                  DoubleEq(4.), DoubleEq(5.), DoubleEq(6.),
+                                  DoubleEq(0.)));
+}
+
 TEST_F(serialize_Test, serializing_eigen_vector_works) {
   Eigen::Vector3d values;
   values << 1, 2, 3;

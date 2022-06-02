@@ -54,7 +54,7 @@ def compute_gaussian_weights(order: int) -> List[Any]:
 
     return [
         2
-        / (1 - node ** 2)
+        / (1 - node**2)
         / sympy.diff(
             sympy.legendre_poly(order, sympy.Symbol("x"), polys=True), sympy.Symbol("x")
         ).eval(node)

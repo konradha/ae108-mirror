@@ -100,6 +100,7 @@ check-script:
 
 .build-library: &build-library
     stage: build
+    coverage: '/^lines:\s*\d+\.\d+\%/'
     script:
         - useradd developer
         - mkdir build
@@ -115,7 +116,9 @@ check-script:
             '
     artifacts:
         reports:
-            cobertura: build/coverage.xml
+            coverage_report:
+                coverage_format: cobertura
+                path: build/coverage.xml
             junit: build/*/test/gtest-results.xml
         when: always
 

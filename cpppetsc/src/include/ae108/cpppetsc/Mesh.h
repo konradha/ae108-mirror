@@ -189,9 +189,15 @@ private:
   static UniqueEntity<DM> createDM();
 
   /**
-   * @brief Adds the default uniform section to the mesh.
+   * @brief Creates an uniform section with the provided degrees of freedom.
    */
-  void addSection(const size_type dofPerVertex, const size_type dofPerElement);
+  UniqueEntity<PetscSection> createSection(const size_type dofPerVertex,
+                                           const size_type dofPerElement) const;
+
+  /**
+   * @brief Sets the default section of the mesh.
+   */
+  void setSection(UniqueEntity<PetscSection> section);
 
   /**
    * @brief Adds the chart as described by the connectivity to the mesh.
@@ -237,6 +243,9 @@ private:
   void assertCorrectBaseMesh(const vector_type &vector) const;
 
   UniqueEntity<DM> _mesh;
+  UniqueEntity<PetscSF> _migration;
+  UniqueEntity<PetscSection> _section;
+  UniqueEntity<PetscSF> _globalToNatural;
   size_type _totalNumberOfElements = 0;
   size_type _totalNumberOfVertices = 0;
 };
@@ -309,7 +318,7 @@ Mesh<Policy> Mesh<Policy>::fromConnectivity(const size_type dimension,
 
   distributeMesh(&mesh);
 
-  mesh.addSection(dofPerVertex, dofPerElement);
+  mesh.setSection(mesh.createSection(dofPerVertex, dofPerElement));
 
   mesh.setGlobalToNaturalSF(mesh.createReorderingSF(
       mesh.canonicalRowIndices(dofPerVertex, dofPerElement)));
@@ -386,8 +395,9 @@ UniqueEntity<PetscSF> Mesh<Policy>::createReorderingSF(
 
 template <class Policy>
 void Mesh<Policy>::setGlobalToNaturalSF(UniqueEntity<PetscSF> globalToNatural) {
+  _globalToNatural = std::move(globalToNatural);
   Policy::handleError(
-      DMPlexSetGlobalToNaturalSF(_mesh.get(), globalToNatural.release()));
+      DMPlexSetGlobalToNaturalSF(_mesh.get(), _globalToNatural.get()));
 }
 
 template <class Policy>
@@ -405,13 +415,17 @@ Mesh<Policy> Mesh<Policy>::cloneWithDofs(const size_type dofPerVertex,
   auto migration = PetscSF();
   Policy::handleError(DMPlexGetMigrationSF(_mesh.get(), &migration));
   if (migration) {
-    auto cloned = PetscSF();
+    mesh._migration = [&]() {
+      auto sf = PetscSF();
+      Policy::handleError(
+          PetscSFDuplicate(migration, PETSCSF_DUPLICATE_GRAPH, &sf));
+      return makeUniqueEntity<Policy>(sf);
+    }();
     Policy::handleError(
-        PetscSFDuplicate(migration, PETSCSF_DUPLICATE_GRAPH, &cloned));
-    Policy::handleError(DMPlexSetMigrationSF(mesh._mesh.get(), cloned));
+        DMPlexSetMigrationSF(mesh._mesh.get(), mesh._migration.get()));
   }
 
-  mesh.addSection(dofPerVertex, dofPerElement);
+  mesh.setSection(mesh.createSection(dofPerVertex, dofPerElement));
 
   mesh.setGlobalToNaturalSF(mesh.createReorderingSF(
       mesh.canonicalRowIndices(dofPerVertex, dofPerElement)));
@@ -479,15 +493,17 @@ void Mesh<Policy>::addChart(const Container &elementVertexIDs,
 }
 
 template <class Policy>
-void Mesh<Policy>::addSection(const size_type dofPerVertex,
-                              const size_type dofPerElement) {
-  auto section = PetscSection();
+UniqueEntity<PetscSection>
+Mesh<Policy>::createSection(const size_type dofPerVertex,
+                            const size_type dofPerElement) const {
   const std::array<size_type, 1> numberOfComponents = {{1}};
   std::vector<size_type> numberOfDofsPerDim(2);
   numberOfDofsPerDim.front() = dofPerVertex;
   numberOfDofsPerDim.back() = dofPerElement;
 
   Policy::handleError(DMSetNumFields(_mesh.get(), numberOfComponents.size()));
+
+  auto section = PetscSection();
   Policy::handleError(DMPlexCreateSection(
       _mesh.get(), nullptr /* label */, numberOfComponents.data(),
       numberOfDofsPerDim.data(), 0 /* number of boundary conditions */,
@@ -495,11 +511,13 @@ void Mesh<Policy>::addSection(const size_type dofPerVertex,
       nullptr /* boundary condition components */,
       nullptr /* boundary condition points */, nullptr /* permutation */,
       &section));
+  return makeUniqueEntity<Policy>(section);
+}
 
-  Policy::handleError(DMSetSection(_mesh.get(), section));
-
-  // create default global section
-  Policy::handleError(DMGetGlobalSection(_mesh.get(), &section));
+template <class Policy>
+void Mesh<Policy>::setSection(UniqueEntity<PetscSection> section) {
+  _section = std::move(section);
+  Policy::handleError(DMSetSection(_mesh.get(), _section.get()));
 }
 
 template <class Policy> void Mesh<Policy>::distributeMesh(Mesh *const mesh) {

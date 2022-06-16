@@ -37,10 +37,6 @@ template <> PetscErrorCode callDestructor(Vec *const ptr) noexcept {
   return VecDestroy(ptr);
 }
 
-template <> PetscErrorCode callDestructor(VecScatter *const ptr) noexcept {
-  return VecScatterDestroy(ptr);
-}
-
 template <> PetscErrorCode callDestructor(PetscSF *const ptr) noexcept {
   return PetscSFDestroy(ptr);
 }

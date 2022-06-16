@@ -679,7 +679,7 @@ struct IntegrateTrait<Quadrature<Type_, Dimension_, Order_>> {
   template <class Quadrature, class R, class F, class... Args>
   typename std::decay<R>::type
   operator()(F &&f, R &&init,
-             const typename Quadrature::template Collection<Args> &... args)
+             const typename Quadrature::template Collection<Args> &...args)
       const noexcept {
     return eval(std::forward<F>(f), std::forward<R>(init),
                 typename Quadrature::size_type{0},

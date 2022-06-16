@@ -66,7 +66,7 @@ public:
   /**
    * @param args Are used to construct the plugins.
    */
-  template <class... Args> explicit Assembler(Args &&... args);
+  template <class... Args> explicit Assembler(Args &&...args);
 
   using ElementView = typename cpppetsc::LocalElementView<mesh_type>;
 
@@ -82,7 +82,7 @@ public:
    * constructor.
    */
   template <class... Args>
-  void emplaceElement(ElementView view, Args &&... constructorArguments);
+  void emplaceElement(ElementView view, Args &&...constructorArguments);
 
   /**
    * @brief Returns a range of iterators pointing to a struct with two methods:
@@ -191,13 +191,13 @@ namespace assembly {
 
 template <class Element, class Plugins, class Policy>
 template <class... Args>
-Assembler<Element, Plugins, Policy>::Assembler(Args &&... args)
+Assembler<Element, Plugins, Policy>::Assembler(Args &&...args)
     : PluginBase(std::forward<Args>(args)...) {}
 
 template <class Element, class Plugins, class Policy>
 template <class... Args>
 void Assembler<Element, Plugins, Policy>::emplaceElement(
-    ElementView view, Args &&... constructorArguments) {
+    ElementView view, Args &&...constructorArguments) {
   _elements.emplace_back(std::move(view),
                          std::forward<Args>(constructorArguments)...);
 }
@@ -220,7 +220,7 @@ public:
    * @param args Are used to construct in-place the element instance.
    */
   template <class... Args>
-  explicit AnnotatedElement(ElementView view, Args &&... args)
+  explicit AnnotatedElement(ElementView view, Args &&...args)
       : _meshView(std::move(view)), _instance(std::forward<Args>(args)...) {}
 
   const ElementView &meshView() const { return _meshView; }

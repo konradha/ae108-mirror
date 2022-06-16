@@ -313,6 +313,9 @@ Mesh<Policy> Mesh<Policy>::fromConnectivity(const size_type dimension,
   // calculate the strata
   Policy::handleError(DMPlexStratify(mesh._mesh.get()));
 
+  // set unknown cell type
+  Policy::handleError(DMCreateLabel(mesh._mesh.get(), "celltype"));
+
   distributeMesh(&mesh);
 
   mesh.setSection(mesh.createSection(dofPerVertex, dofPerElement));

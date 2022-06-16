@@ -75,6 +75,7 @@ computeGeneralizedEigenvalues(
 } // namespace cppslepc
 } // namespace ae108
 
+#include <range/v3/range/conversion.hpp>
 #include <range/v3/view/iota.hpp>
 #include <range/v3/view/transform.hpp>
 #include <slepceps.h>
@@ -118,9 +119,8 @@ solve(const LinearEigenvalueProblemSolver<Policy> &solver) {
 #ifdef AE108_PETSC_COMPLEX
                eigenvalue.first
 #else
-               std::complex<typename solver_type::real_type> {
-             eigenvalue.first, eigenvalue.second
-           }
+               std::complex<typename solver_type::real_type>{eigenvalue.first,
+                                                             eigenvalue.second}
 #endif
                ;
          }) |

@@ -133,7 +133,7 @@ def to_initializer_list(values: Any) -> str:
     if isinstance(values, (list, tuple)):
         result = ", ".join([to_initializer_list(element) for element in values])
         return "{{" + result + (", " if result.endswith("}") else "") + "}}"
-    return "{:+.16f}".format(float(values))
+    return f"{float(values):+.16f}"
 
 
 def quadrature_definition(order: int, dimension: int) -> str:
@@ -149,14 +149,9 @@ def quadrature_definition(order: int, dimension: int) -> str:
     weights = compute_gaussian_weights_in_dimension(order, dimension)
     return (
         "AE108_ELEMENTS_QUADRATURE_DEFINE("
-        "QuadratureType::Cube, {}, {}, {}, {{{}, {}}}"
-        ");".format(
-            dimension,
-            2 * order - 1,
-            len(nodes),
-            to_initializer_list(nodes),
-            to_initializer_list(weights),
-        )
+        f"QuadratureType::Cube, {dimension}, {2 * order - 1}, {len(nodes)}, "
+        f"{{{to_initializer_list(nodes)}, {to_initializer_list(weights)}}}"
+        ");"
     )
 
 

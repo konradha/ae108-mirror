@@ -29,7 +29,7 @@ target_compile_features(${PROJECT_NAME}-cppslepc
                         PUBLIC cxx_std_17
 )
 
-find_package(AE108_SLEPc 1.12 MODULE REQUIRED)
+find_package(AE108_SLEPc 3.15 MODULE REQUIRED)
 target_link_libraries(${PROJECT_NAME}-cppslepc
                       PUBLIC ${PROJECT_NAME}::external::slepc
                       PUBLIC ${PROJECT_NAME}::cpppetsc

@@ -25,16 +25,17 @@ RUN apt-get update && \
   clang-format \
   cmake \
   g++ \
+  gdb \
   git \
-  googletest \
   libboost-program-options-dev \
   libeigen3-dev \
+  libgmock-dev \
+  libgtest-dev \
   librange-v3-dev \
   libxrender1 \
   ninja-build \
   python3 python3-pip \
-  python3-scipy \
-  gdb
+  python3-scipy
 
 RUN pip3 install \
   mypy==0.931 \

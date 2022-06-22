@@ -26,6 +26,7 @@
 
 using ae108::cppptest::isLocal;
 using ae108::cppptest::ScalarEqIfLocal;
+using ae108::cppptest::ScalarNearIfLocal;
 using testing::Test;
 using testing::Types;
 
@@ -146,7 +147,7 @@ TYPED_TEST(TAOSolver_Test, minimizes_with_equality_constraints) {
   using matrix_type = typename TestFixture::matrix_type;
 
   typename TestFixture::solver_type solver(
-      matrix_type(2, 2), TestFixture::solver_type::Type::pdipm);
+      matrix_type(2, 2), TestFixture::solver_type::Type::almm);
 
   const auto value = 5.;
 
@@ -184,7 +185,7 @@ TYPED_TEST(TAOSolver_Test, minimizes_with_equality_constraints) {
       },
       tag<DistributedTag>(vector_type::fromList({3., 4.})));
 
-  EXPECT_THAT(solution.unwrap(), ScalarEqIfLocal(0, value));
+  EXPECT_THAT(solution.unwrap(), ScalarNearIfLocal(0, value, 1e-7));
   EXPECT_THAT(solution.unwrap(), ScalarEqIfLocal(1, 2.));
 }
 

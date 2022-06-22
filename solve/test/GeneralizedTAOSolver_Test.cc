@@ -22,6 +22,7 @@
 #include <gmock/gmock.h>
 
 using ae108::cppptest::ScalarEqIfLocal;
+using ae108::cppptest::ScalarNearIfLocal;
 using testing::Types;
 
 namespace ae108 {
@@ -78,8 +79,8 @@ TYPED_TEST(GeneralizedTAOSolver_Test, solves_partially_constrained_problem) {
       vector_type::fromGlobalMesh(this->mesh), assembler_type::constantTime,
       &this->assembler);
 
-  EXPECT_THAT(solution.unwrap(), ScalarEqIfLocal(0, 3. / 2.));
-  EXPECT_THAT(solution.unwrap(), ScalarEqIfLocal(1, 3. / 2.));
+  EXPECT_THAT(solution.unwrap(), ScalarNearIfLocal(0, 3. / 2., 1e-6));
+  EXPECT_THAT(solution.unwrap(), ScalarNearIfLocal(1, 3. / 2., 1e-6));
 }
 
 TYPED_TEST(GeneralizedTAOSolver_Test, solves_fully_constrained_problem) {
@@ -111,8 +112,8 @@ TYPED_TEST(GeneralizedTAOSolver_Test, solves_fully_constrained_problem) {
       vector_type::fromGlobalMesh(this->mesh), assembler_type::constantTime,
       &this->assembler);
 
-  EXPECT_THAT(solution.unwrap(), ScalarEqIfLocal(0, 3.));
-  EXPECT_THAT(solution.unwrap(), ScalarEqIfLocal(1, 4.));
+  EXPECT_THAT(solution.unwrap(), ScalarNearIfLocal(0, 3., 1e-6));
+  EXPECT_THAT(solution.unwrap(), ScalarNearIfLocal(1, 4., 1e-6));
 }
 
 TYPED_TEST(GeneralizedTAOSolver_Test,

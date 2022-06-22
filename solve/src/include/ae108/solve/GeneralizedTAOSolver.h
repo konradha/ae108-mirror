@@ -265,7 +265,7 @@ GeneralizedTAOSolver<Assembler>::computeSolution(
   const auto global = matrix.size();
   const auto local = matrix.localSize();
 
-  Solver solver{std::move(matrix), Solver::Type::pdipm};
+  Solver solver{std::move(matrix), Solver::Type::almm};
 
   solver.setConstraints(typename Solver::EqualityConstraints{
       boundaryConditions.residual

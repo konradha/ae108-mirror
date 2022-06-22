@@ -72,6 +72,7 @@ public:
     gpcg,
     nm,
     pounders,
+    brgn,
     lcl,
     ssils,
     ssfls,
@@ -79,6 +80,9 @@ public:
     asfls,
     ipm,
     pdipm,
+    shell,
+    admm,
+    almm,
   };
 
   /**
@@ -315,8 +319,8 @@ template <class Policy> void TAOSolver<Policy>::setType(const Type type) {
     taoType = TAOPOUNDERS;
     break;
   }
-  case Type::pdipm: {
-    taoType = TAOPDIPM;
+  case Type::brgn: {
+    taoType = TAOBRGN;
     break;
   }
   case Type::lcl: {
@@ -341,6 +345,22 @@ template <class Policy> void TAOSolver<Policy>::setType(const Type type) {
   }
   case Type::ipm: {
     taoType = TAOIPM;
+    break;
+  }
+  case Type::pdipm: {
+    taoType = TAOPDIPM;
+    break;
+  }
+  case Type::shell: {
+    taoType = TAOSHELL;
+    break;
+  }
+  case Type::admm: {
+    taoType = TAOADMM;
+    break;
+  }
+  case Type::almm: {
+    taoType = TAOALMM;
     break;
   }
   }

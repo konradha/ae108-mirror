@@ -1,4 +1,4 @@
-// © 2020 ETH Zurich, Mechanics and Materials Lab
+// © 2020, 2022 ETH Zurich, Mechanics and Materials Lab
 // © 2020 California Institute of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -138,6 +138,54 @@ TYPED_TEST(TAOSolver_Test, raises_exception_on_nonconvergence) {
   };
 
   EXPECT_THROW(callSolve(), TAOSolverDivergedException);
+}
+
+TYPED_TEST(TAOSolver_Test, minimizes_with_equality_constraints) {
+  using real_type = typename TestFixture::real_type;
+  using vector_type = typename TestFixture::vector_type;
+  using matrix_type = typename TestFixture::matrix_type;
+
+  typename TestFixture::solver_type solver(
+      matrix_type(2, 2), TestFixture::solver_type::Type::pdipm);
+
+  const auto value = 5.;
+
+  solver.setConstraints({
+      [&](const distributed<vector_type> &input,
+          distributed<vector_type> *const output) {
+        const auto full = vector_type::fromDistributed(input);
+        output->unwrap().setZero();
+        output->unwrap().replace().element(0, full(0) - value);
+      },
+      [](const distributed<vector_type> &, matrix_type *const output) {
+        output->setZero();
+        const auto replacer =
+            output->assemblyView().replace().element(0, 0, 1.);
+      },
+      {tag<DistributedTag>(vector_type(1)), matrix_type(1, 2)},
+  });
+
+  const auto solution = solver.solve(
+      [](const distributed<vector_type> &input, real_type *const output) {
+        const auto full = vector_type::fromDistributed(input);
+        *output = std::pow(full(0) - 1., 2.) + std::pow(full(1) - 2., 2.);
+      },
+      [](const distributed<vector_type> &input,
+         distributed<vector_type> *const output) {
+        const auto full = vector_type::fromDistributed(input);
+        const auto replacer = output->unwrap().replace();
+        replacer(0) = 2. * (full(0) - 1.);
+        replacer(1) = 2. * (full(1) - 2.);
+      },
+      [](const distributed<vector_type> &, matrix_type *const output) {
+        const auto replacer = output->assemblyView().replace();
+        replacer(0, 0) = 2.;
+        replacer(1, 1) = 2.;
+      },
+      tag<DistributedTag>(vector_type::fromList({3., 4.})));
+
+  EXPECT_THAT(solution.unwrap(), ScalarEqIfLocal(0, value));
+  EXPECT_THAT(solution.unwrap(), ScalarEqIfLocal(1, 2.));
 }
 
 template <class Policy> struct TAOSolver_BoundsTest : Test {

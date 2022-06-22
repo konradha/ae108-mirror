@@ -1,4 +1,4 @@
-// © 2020 ETH Zurich, Mechanics and Materials Lab
+// © 2020, 2022 ETH Zurich, Mechanics and Materials Lab
 // © 2020 California Institute of Technology
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +25,7 @@
 #include "ae108/cpppetsc/UniqueEntity.h"
 #include "ae108/cpppetsc/Vector.h"
 #include <functional>
+#include <optional>
 #include <petscmat.h>
 #include <petscmath.h>
 #include <petscsys.h>
@@ -76,7 +77,8 @@ public:
     ssfls,
     asils,
     asfls,
-    ipm
+    ipm,
+    pdipm,
   };
 
   /**
@@ -132,6 +134,29 @@ public:
   void setBounds(const distributed<vector_type> &lowerBounds,
                  const distributed<vector_type> &upperBounds);
 
+  struct EqualityConstraints {
+    /**
+     * @brief The solver attempts to reach a residual of zero.
+     */
+    GradientFunctor residual;
+
+    /**
+     * @brief The jacobian of the residual.
+     */
+    HessianFunctor jacobian;
+
+    /**
+     * @brief Used to store residuals and jacobians internally.
+     */
+    std::pair<distributed<vector_type>, matrix_type> buffer;
+  };
+
+  /**
+   * @brief Set the equality constraints of the problem.
+   * @note Not all solvers consider these constraints.
+   */
+  void setConstraints(EqualityConstraints constraints);
+
   /**
    * @brief Minimizes the objective function using optimization.
    *
@@ -164,6 +189,8 @@ private:
   UniqueEntity<Tao> _tao;
 
   matrix_type _buffer_matrix;
+
+  std::optional<EqualityConstraints> _constraints;
 };
 
 template <class Policy>
@@ -288,6 +315,10 @@ template <class Policy> void TAOSolver<Policy>::setType(const Type type) {
     taoType = TAOPOUNDERS;
     break;
   }
+  case Type::pdipm: {
+    taoType = TAOPDIPM;
+    break;
+  }
   case Type::lcl: {
     taoType = TAOLCL;
     break;
@@ -321,6 +352,19 @@ void TAOSolver<Policy>::setBounds(const distributed<vector_type> &lowerBounds,
                                   const distributed<vector_type> &upperBounds) {
   Policy::handleError(TaoSetVariableBounds(
       _tao.get(), lowerBounds.unwrap().data(), upperBounds.unwrap().data()));
+}
+
+template <class Policy>
+void TAOSolver<Policy>::setConstraints(EqualityConstraints constraints) {
+  _constraints.emplace(std::move(constraints));
+
+  Policy::handleError(TaoSetEqualityConstraintsRoutine(
+      _tao.get(), _constraints->buffer.first.unwrap().data(),
+      &TAOSolver::gradientAdapter, &_constraints->residual));
+  Policy::handleError(TaoSetJacobianEqualityRoutine(
+      _tao.get(), _constraints->buffer.second.data(),
+      _constraints->buffer.second.data(), &TAOSolver::hessianAdapter,
+      &_constraints->jacobian));
 }
 
 template <class Policy> void TAOSolver<Policy>::checkConvergence() const {

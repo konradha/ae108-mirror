@@ -120,3 +120,10 @@ target_link_libraries(${PROJECT_NAME}-CantileverBeam
                       PRIVATE ae108::assembly
                       PRIVATE ae108::elements
 )
+
+add_executable(${PROJECT_NAME}-Bar Bar.cc)
+target_link_libraries(${PROJECT_NAME}-Bar
+                      PRIVATE ae108::solve
+                      PRIVATE ae108::assembly
+                      PRIVATE ae108::elements
+)

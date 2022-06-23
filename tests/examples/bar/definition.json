@@ -1,0 +1,16 @@
+{
+  "executable": [
+    "examples",
+    "ae108-examples-Bar"
+  ],
+  "ae108_output": [
+    {
+      "filename": "bar.ae108"
+    }
+  ],
+  "compare_stdout": "text",
+  "mpi_processes": [
+    1,
+    3
+  ]
+}

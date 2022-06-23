@@ -17,6 +17,7 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 add_library(${PROJECT_NAME}-elements
             AutomaticForcesTrait.cc
             AutomaticStiffnessMatrixTrait.cc
+            Bar.cc
             ComputeConsistentMassMatrixTrait.cc
             ComputeEnergyTrait.cc
             ComputeForcesTrait.cc

@@ -1,11 +1,11 @@
 {
-	"executable": [
-		"examples",
-		"ae108-examples-PeriodicBC"
-	],
-	"compare_stdout": "numeric",
-	"mpi_processes": [
-		1,
-		3
-	]
+  "executable": [
+    "examples",
+    "ae108-examples-PeriodicBC"
+  ],
+  "compare_stdout": "numeric",
+  "mpi_processes": [
+    1,
+    3
+  ]
 }

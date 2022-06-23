@@ -1,10 +1,10 @@
 {
-	"executable": [
-		"examples",
-		"ae108-examples-MeshGeneration"
-	],
-	"compare_stdout": "numeric",
-	"mpi_processes": [
-		1
-	]
+  "executable": [
+    "examples",
+    "ae108-examples-MeshGeneration"
+  ],
+  "compare_stdout": "numeric",
+  "mpi_processes": [
+    1
+  ]
 }

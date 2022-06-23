@@ -1,11 +1,11 @@
 {
-	"executable": [
-		"examples",
-		"ae108-examples-Cmdline"
-	],
-	"args": [
-		"--enable_greeting",
-		"true"
-	],
-	"compare_stdout": "text"
+  "executable": [
+    "examples",
+    "ae108-examples-Cmdline"
+  ],
+  "args": [
+    "--enable_greeting",
+    "true"
+  ],
+  "compare_stdout": "text"
 }

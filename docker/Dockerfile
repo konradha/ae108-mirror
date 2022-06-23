@@ -43,7 +43,8 @@ RUN pip3 install \
   pylint==2.12.2 \
   sympy==1.7.1 \
   gcovr==5.0 \
-  h5py==3.6.0
+  h5py==3.6.0 \
+  jsonschema==4.6.0
 
 RUN pip3 install vtk --extra-index-url https://gitlab.kitware.com/api/v4/projects/13/packages/pypi/simple
 

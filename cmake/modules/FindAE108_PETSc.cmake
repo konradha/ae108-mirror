@@ -51,6 +51,7 @@ if(AE108_PETSc_FOUND AND NOT TARGET ae108::external::petsc)
     endif()
 
     try_compile_with_petsc("-DAE108_PETSC_COMPLEX")
+    set(AE108_PETSC_COMPLEX ${AE108_PETSc_COMPILE_RESULT} CACHE BOOL "ae108: PETSc with complex scalar type")
     if(AE108_PETSc_COMPILE_RESULT)
         target_compile_definitions(ae108::external::petsc
             INTERFACE AE108_PETSC_COMPLEX=1

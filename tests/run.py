@@ -394,26 +394,24 @@ def load_tests(
                     ROOT_DIRECTORY / "tests" / "schema.json", "r", encoding="utf-8"
                 ) as schema:
                     jsonschema.validate(instance=instance, schema=json.load(schema))
+                executable_path = pathlib.Path.cwd() / pathlib.Path(
+                    *instance["executable"]
+                )
+                if not executable_path.exists():
+                    print(
+                        f"Warning: Test '{path.parent}' will be skipped. "
+                        f"The executable '{executable_path}' does not exist.",
+                        file=sys.stderr,
+                    )
+                    continue
                 test_case_definitions = as_test_case_definitions(path.parent, instance)
             except jsonschema.ValidationError as error:
                 print(
-                    f"Warning: Test definition '{path}' is invalid. {error.message}.",
+                    f"Warning: Test '{path.parent}' will be skipped. "
+                    f"The test definition is invalid: {error.message}.",
                     file=sys.stderr,
                 )
-                test_case_definitions = (
-                    definition
-                    for definition in [
-                        TestCaseDefinition(
-                            executable=pathlib.Path(),
-                            references=pathlib.Path(),
-                            args=[],
-                            mpi_processes=1,
-                            compare_stdout=ComparisonType.NONE,
-                            ae108_output=[],
-                        )
-                    ]
-                )
-
+                continue
             testcase = type(
                 group_name,
                 (unittest.TestCase,),

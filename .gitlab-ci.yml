@@ -65,6 +65,7 @@ build-image-docu:
 
 check-code-format:
     stage: analyze
+    needs: ["build-image-dev-real"]
     image: $CI_REGISTRY_IMAGE/dev-real:$CI_COMMIT_REF_SLUG
     script:
         - >
@@ -77,6 +78,7 @@ check-code-format:
 
 check-license-header:
     stage: analyze
+    needs: ["build-image-dev-real"]
     image: $CI_REGISTRY_IMAGE/dev-real:$CI_COMMIT_REF_SLUG
     script:
         - >
@@ -91,6 +93,7 @@ check-license-header:
 
 check-script:
     stage: analyze
+    needs: ["build-image-dev-real"]
     image: $CI_REGISTRY_IMAGE/dev-real:$CI_COMMIT_REF_SLUG
     script:
         - find . -name "*.py" -print0 | xargs -0 python3 -m black --check
@@ -124,10 +127,12 @@ check-script:
 
 build-library-real:
     image: $CI_REGISTRY_IMAGE/dev-real:$CI_COMMIT_REF_SLUG
+    needs: ["build-image-dev-real"]
     <<: *build-library
 
 build-library-complex:
     image: $CI_REGISTRY_IMAGE/dev-complex:$CI_COMMIT_REF_SLUG
+    needs: ["build-image-dev-complex"]
     <<: *build-library
 
 .install-library: &install-library
@@ -150,14 +155,17 @@ build-library-complex:
 
 install-library-real:
     image: $CI_REGISTRY_IMAGE/dev-real:$CI_COMMIT_REF_SLUG
+    needs: ["build-image-dev-real"]
     <<: *install-library
 
 install-library-complex:
     image: $CI_REGISTRY_IMAGE/dev-complex:$CI_COMMIT_REF_SLUG
+    needs: ["build-image-dev-complex"]
     <<: *install-library
 
 build-documentation:
     stage: build
+    needs: ["build-image-docu"]
     image: $CI_REGISTRY_IMAGE/docu:$CI_COMMIT_REF_SLUG
     script:
         - mkdir build

@@ -127,3 +127,10 @@ target_link_libraries(${PROJECT_NAME}-Bar
                       PRIVATE ae108::assembly
                       PRIVATE ae108::elements
 )
+
+add_executable(${PROJECT_NAME}-NonlinearBC NonlinearBC.cc)
+target_link_libraries(${PROJECT_NAME}-NonlinearBC
+                      PRIVATE ae108::solve
+                      PRIVATE ae108::assembly
+                      PRIVATE ae108::elements
+)

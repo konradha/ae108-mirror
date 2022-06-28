@@ -14,8 +14,8 @@
 # limitations under the License.
 
 include(FindPkgConfig)
-pkg_check_modules(SLEPc SLEPc IMPORTED_TARGET)
-find_package(AE108_PETSc 1.12 MODULE)
+pkg_check_modules(SLEPc slepc IMPORTED_TARGET)
+find_package(AE108_PETSc 3.15 MODULE)
 
 find_package_handle_standard_args(AE108_SLEPc
                                   REQUIRED_VARS SLEPc_FOUND AE108_PETSc_FOUND

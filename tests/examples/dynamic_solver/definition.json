@@ -1,11 +1,12 @@
 {
-	"executable": [
-		"examples",
-		"ae108-examples-DynamicSolver"
-	],
-	"compare_stdout": "numeric",
-	"mpi_processes": [
-		1,
-		3
-	]
+  "$schema": "../../schema.json",
+  "executable": [
+    "examples",
+    "ae108-examples-DynamicSolver"
+  ],
+  "compare_stdout": "numeric",
+  "mpi_processes": [
+    1,
+    3
+  ]
 }

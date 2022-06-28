@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG BASE_IMAGE=ubuntu:focal
+ARG BASE_IMAGE=ubuntu:jammy
 FROM $BASE_IMAGE
 
 ARG PETSC_SCALAR_TYPE=real
@@ -25,28 +25,31 @@ RUN apt-get update && \
   clang-format \
   cmake \
   g++ \
+  gdb \
   git \
-  googletest \
   libboost-program-options-dev \
   libeigen3-dev \
+  libgmock-dev \
+  libgtest-dev \
   librange-v3-dev \
   libxrender1 \
   ninja-build \
   python3 python3-pip \
-  python3-h5py \
-  python3-scipy \
-  gdb
+  python3-scipy
 
 RUN pip3 install \
-  mypy==0.790 \
+  mypy==0.931 \
   black==22.3.0 \
-  pylint==2.6.0 \
+  pylint==2.12.2 \
   sympy==1.7.1 \
-  vtk==9.1.0 \
-  gcovr==5.0
+  gcovr==5.0 \
+  h5py==3.6.0 \
+  jsonschema==4.6.0
+
+RUN pip3 install vtk --extra-index-url https://gitlab.kitware.com/api/v4/projects/13/packages/pypi/simple
 
 RUN apt-get update && \
   DEBIAN_FRONTEND="noninteractive" \
   apt-get install -y \
   libpetsc-${PETSC_SCALAR_TYPE}-dev \
-  libslepc-${PETSC_SCALAR_TYPE}3.12-dev
+  libslepc-${PETSC_SCALAR_TYPE}3.15-dev

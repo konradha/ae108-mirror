@@ -1,11 +1,12 @@
 {
-	"executable": [
-		"examples",
-		"ae108-examples-Cmdline"
-	],
-	"args": [
-		"--enable_greeting",
-		"true"
-	],
-	"compare_stdout": "text"
+  "$schema": "../../schema.json",
+  "executable": [
+    "examples",
+    "ae108-examples-Cmdline"
+  ],
+  "args": [
+    "--enable_greeting",
+    "true"
+  ],
+  "compare_stdout": "text"
 }

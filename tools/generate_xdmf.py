@@ -30,6 +30,7 @@ import re
 import typing
 import sys
 import xml.etree.ElementTree as ET
+import itertools
 
 import h5py
 import numpy
@@ -251,17 +252,17 @@ def add_sliced_hdf_dataitem(
         "DataItem",
         {"Dimensions": shape_to_xdmf_dimensions((3, item.ndim)), "Format": "XML"},
     )
-    dimensions.text = "{} {} {}".format(
-        shape_to_xdmf_dimensions(
+    dimensions.text = f"""{
+          shape_to_xdmf_dimensions(
             tuple(sliced_dimensions.get(i, 0) for i in range(item.ndim))
-        ),
-        shape_to_xdmf_dimensions(tuple(1 for _ in range(item.ndim))),
-        shape_to_xdmf_dimensions(
-            tuple(
-                1 if i in sliced_dimensions else item.shape[i] for i in range(item.ndim)
-            )
-        ),
-    )
+          )
+          } {
+          shape_to_xdmf_dimensions(tuple(1 for _ in range(item.ndim)))
+          } {
+          shape_to_xdmf_dimensions(
+            tuple(1 if i in sliced_dimensions else item.shape[i] for i in range(item.ndim))
+          )
+          }"""
     add_hdf_dataitem(hyperslab, hdf_file, hdf_path)
     return hyperslab
 
@@ -287,7 +288,7 @@ def add_hdf_dataitem(
             "Rank": str(item.ndim),
         },
     )
-    dataitem.text = "{}:{}".format(hdf_file.filename, hdf_path)
+    dataitem.text = f"{hdf_file.filename}:{hdf_path}"
     return dataitem
 
 
@@ -311,32 +312,31 @@ class MeshInformationMissing(Exception):
     """
 
 
-def read_element_vertices(hdf_file: h5py.File) -> typing.Iterator[typing.List[int]]:
+def read_element_vertices(hdf_file: h5py.File) -> typing.Iterator[numpy.ndarray]:
     """
     Returns the vertex indices of the elements.
     """
     if not "/topology" in hdf_file:
         raise MeshInformationMissing()
 
-    cells_data = hdf_file["/topology/cells"]
     cones_data = hdf_file["/topology/cones"][()]
     number_of_elements = numpy.sum(cones_data > 0)
+    cells_data = hdf_file["/topology/cells"][()] - number_of_elements
 
     offset = 0
-    for cone_size in numpy.nditer(cones_data):
-        if cone_size == 0:
-            continue
-        yield list(
-            numpy.nditer(cells_data[offset : offset + cone_size] - number_of_elements)
-        )
+    for cone_size in filter(lambda x: x > 0, numpy.nditer(cones_data)):
+        yield cells_data[offset : offset + cone_size]
         offset += cone_size
 
 
 def add_topology(
-    parent: ET.Element, hdf_file: h5py.File, prefer_planar: bool
+    parent: ET.Element,
+    hdf_file: h5py.File,
+    prefer_planar: bool,
 ) -> ET.Element:
     """
-    Adds the topology element to the parent.
+    Writes topology data compatible with XDMF to "/topology/mixed"
+    in `hdf_file`, and adds the topology element to the parent.
     """
     if not "/topology" in hdf_file:
         raise MeshInformationMissing()
@@ -346,40 +346,36 @@ def add_topology(
     number_of_elements = numpy.sum(cones_data > 0)
     coordinate_dimension = read_coordinate_dimension(hdf_file)
 
-    dataitem_dimension = sum(
-        cone_size
-        + len(
-            number_of_corners_to_type(
-                int(cone_size), prefer_planar or coordinate_dimension <= 2
-            )
-        )
-        for cone_size in numpy.nditer(cones_data)
-        if cone_size > 0
-    )
-
     topology = ET.SubElement(
         parent,
         "Topology",
         {"TopologyType": "Mixed", "NumberOfElements": str(number_of_elements)},
     )
 
-    dataitem = ET.SubElement(
-        topology,
-        "DataItem",
-        {"Format": "XML", "Dimensions": str(dataitem_dimension)},
-    )
-    dataitem.text = "  ".join(
-        "{} {}".format(
-            " ".join(
-                str(type_)
-                for type_ in number_of_corners_to_type(
-                    len(vertices), prefer_planar or coordinate_dimension <= 2
+    topology_data = numpy.fromiter(
+        itertools.chain.from_iterable(
+            (
+                itertools.chain(
+                    iter(
+                        number_of_corners_to_type(
+                            vertices.shape[0],
+                            prefer_planar or coordinate_dimension <= 2,
+                        )
+                    ),
+                    numpy.nditer(vertices),
                 )
-            ),
-            " ".join(str(vertex) for vertex in vertices),
-        )
-        for vertices in read_element_vertices(hdf_file)
+                for vertices in read_element_vertices(hdf_file)
+            )
+        ),
+        dtype="int32",
     )
+
+    hdf_file.require_dataset(
+        "/topology/mixed", shape=topology_data.shape, dtype=topology_data.dtype
+    )
+    hdf_file["/topology/mixed"].write_direct(topology_data)
+
+    add_hdf_dataitem(topology, hdf_file, "/topology/mixed")
 
     return topology
 
@@ -422,7 +418,7 @@ def add_field(
         - 3 columns: A vector field will be added.
         - otherwise: The field is split into scalar fields, and those are added.
     """
-    hdf_path = "/fields/{}".format(field_name)
+    hdf_path = f"/fields/{field_name}"
 
     item = hdf_file[hdf_path]
     shape = item.shape
@@ -467,7 +463,7 @@ def add_field(
                 parent,
                 "Attribute",
                 {
-                    "Name": "{}[{}]{}".format(field_name, column, postfix),
+                    "Name": f"{field_name}[{column}]{postfix}",
                     "Center": center,
                     "AttributeType": "Scalar",
                 },
@@ -530,8 +526,13 @@ def main() -> None:
     XDMF to file.
     """
     filename, prefer_planar = parse_command_line_arguments()
-    with open(filename.stem + ".xdmf", "w") as xdmf_file:
-        xdmf_file.write(hdf_to_xdmf_string(h5py.File(filename, "r"), prefer_planar))
+    with open(filename.stem + ".xdmf", "w", encoding="utf-8") as xdmf_file:
+        xdmf_file.write(
+            hdf_to_xdmf_string(
+                h5py.File(filename, "r+"),
+                prefer_planar,
+            )
+        )
 
 
 class ErrorCode(IntEnum):

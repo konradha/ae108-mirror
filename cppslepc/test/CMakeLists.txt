@@ -27,7 +27,7 @@ add_executable(${PROJECT_NAME}-CppSlepcTests
 add_test(NAME ${PROJECT_NAME}-CppSlepcTests
          COMMAND $<TARGET_FILE:${PROJECT_NAME}-CppSlepcTests>)
 
-find_package(AE108_GTest MODULE REQUIRED)
+find_package(GTest 1.8.1 CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME}-CppSlepcTests
                       PRIVATE ${PROJECT_NAME}::cppslepc
                       PRIVATE GTest::gmock

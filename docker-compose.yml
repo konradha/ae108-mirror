@@ -23,6 +23,7 @@ services:
     volumes:
     - .:/mnt/io
     tty: true
+    shm_size: '1gb'
   dev-complex:
     build:
       args:
@@ -32,3 +33,4 @@ services:
     volumes:
     - .:/mnt/io
     tty: true
+    shm_size: '1gb'

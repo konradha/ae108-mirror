@@ -83,9 +83,7 @@ def diff_iterables(
             math.isclose(values[0], values[1], rel_tol=rel_tol, abs_tol=abs_tol)
             or (math.isnan(values[0]) and math.isnan(values[1]))
         ):
-            yield "Line {} differs: '{}' is not '{}'".format(
-                index, strings[0].strip(), strings[1].strip()
-            )
+            yield f"Line {index} differs: '{strings[0].strip()}' is not '{strings[1].strip()}'"
 
 
 def main():
@@ -119,8 +117,8 @@ def main():
 
     arguments = parser.parse_args()
 
-    with open(str(arguments.filename_1), "r") as file_1:
-        with open(str(arguments.filename_2), "r") as file_2:
+    with open(str(arguments.filename_1), "r", encoding="utf-8") as file_1:
+        with open(str(arguments.filename_2), "r", encoding="utf-8") as file_2:
             return sum(
                 1
                 for _ in map(

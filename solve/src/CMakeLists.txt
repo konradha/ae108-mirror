@@ -21,6 +21,7 @@ add_library(${PROJECT_NAME}-solve
             ./DynamicSolver.cc
             ./DynamicState.cc
             ./GeneralizedNonlinearSolver.cc
+            ./GeneralizedTAOSolver.cc
             ./InconsistentBoundaryConditionsException.cc
             ./InvalidVertexException.cc
             ./LeastSquaresSolver.cc

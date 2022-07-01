@@ -64,6 +64,7 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./nestMatrices.cc
             ./nestVectors.cc
             ./readFromViewer.cc
+            ./scalarProduct.cc
             ./setName.cc
             ./vertexDataOffsets.cc
             ./writeToViewer.cc

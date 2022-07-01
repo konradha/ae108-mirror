@@ -16,8 +16,12 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
 add_library(${PROJECT_NAME}-cppslepc
     Context.cc
+    EigenPair.cc
     EigenvalueSolverDivergedException.cc
+    InvalidEigenvalueIndexException.cc
+    InvalidProblemTypeException.cc
     LinearEigenvalueProblemSolver.cc
+    NoOperatorsSetException.cc
     computeEigenvalues.cc
 )
 

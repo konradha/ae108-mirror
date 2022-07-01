@@ -69,6 +69,10 @@ struct CoreElement_Seg2_Test : Test {
   const Element element = Configuration_1D<Element>::create_element();
 };
 
+TEST_F(CoreElement_Seg2_Test, physical_dimension_is_1) {
+  EXPECT_THAT(element.dimension(), Eq(1));
+}
+
 TEST_F(CoreElement_Seg2_Test, computes_energy_with_no_displacements) {
   const auto time = Element::Time{0.};
   const auto displacements = Element::NodalDisplacements();
@@ -156,6 +160,10 @@ struct CoreElement_Quad4_Test : Test {
   using Element = Element_Quad4;
   const Element element = Configuration_2D<Element>::create_element();
 };
+
+TEST_F(CoreElement_Quad4_Test, physical_dimension_is_2) {
+  EXPECT_THAT(element.dimension(), Eq(2));
+}
 
 TEST_F(CoreElement_Quad4_Test, computes_energy_with_no_displacements) {
   const auto time = Element::Time{0.};
@@ -296,6 +304,10 @@ struct CoreElement_Hexa8_Test : Test {
   using Element = Element_Hexa8;
   const Element element = Configuration_3D<Element>::create_element();
 };
+
+TEST_F(CoreElement_Hexa8_Test, physical_dimension_is_3) {
+  EXPECT_THAT(element.dimension(), Eq(3));
+}
 
 TEST_F(CoreElement_Hexa8_Test, computes_correct_energy_with_displacements_1) {
   const auto time = Element::Time{0.};

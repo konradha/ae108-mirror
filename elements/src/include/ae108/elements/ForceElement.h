@@ -26,15 +26,14 @@ namespace elements {
 /**
  * @brief A single-vertex element that applies a force at that vertex.
  */
-template <std::size_t DegreesOfFreedom_, class ValueType_ = double,
+template <std::size_t Dimension_, class ValueType_ = double,
           class RealType_ = double>
 struct ForceElement final
-    : ElementBase<ForceElement<DegreesOfFreedom_, ValueType_, RealType_>,
-                  std::size_t, ValueType_, RealType_, 1 /* size */,
-                  DegreesOfFreedom_> {
+    : ElementBase<ForceElement<Dimension_, ValueType_, RealType_>, std::size_t,
+                  ValueType_, RealType_, 1 /* size */, Dimension_,
+                  Dimension_ /* degrees of freedom */> {
 public:
-  using Force =
-      tensor::Tensor<typename ForceElement::value_type, DegreesOfFreedom_>;
+  using Force = tensor::Tensor<typename ForceElement::value_type, Dimension_>;
 
   /**
    * @brief Constructs the element by providing the force to apply.
@@ -50,9 +49,8 @@ private:
   Force force_;
 };
 
-template <std::size_t DegreesOfFreedom_, class ValueType_, class RealType_>
-struct ComputeEnergyTrait<
-    ForceElement<DegreesOfFreedom_, ValueType_, RealType_>> {
+template <std::size_t Dimension_, class ValueType_, class RealType_>
+struct ComputeEnergyTrait<ForceElement<Dimension_, ValueType_, RealType_>> {
   template <class Element>
   typename Element::Energy
   operator()(const Element &element,
@@ -63,9 +61,8 @@ struct ComputeEnergyTrait<
   }
 };
 
-template <std::size_t DegreesOfFreedom_, class ValueType_, class RealType_>
-struct ComputeForcesTrait<
-    ForceElement<DegreesOfFreedom_, ValueType_, RealType_>> {
+template <std::size_t Dimension_, class ValueType_, class RealType_>
+struct ComputeForcesTrait<ForceElement<Dimension_, ValueType_, RealType_>> {
   template <class Element>
   typename Element::Forces
   operator()(const Element &element,
@@ -75,9 +72,9 @@ struct ComputeForcesTrait<
   }
 };
 
-template <std::size_t DegreesOfFreedom_, class ValueType_, class RealType_>
+template <std::size_t Dimension_, class ValueType_, class RealType_>
 struct ComputeStiffnessMatrixTrait<
-    ForceElement<DegreesOfFreedom_, ValueType_, RealType_>> {
+    ForceElement<Dimension_, ValueType_, RealType_>> {
   template <class Element>
   typename Element::StiffnessMatrix
   operator()(const Element &, const typename Element::NodalDisplacements &,

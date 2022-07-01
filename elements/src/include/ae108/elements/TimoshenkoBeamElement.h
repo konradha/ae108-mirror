@@ -76,7 +76,7 @@ template <std::size_t Dimension_, class ValueType_ = double,
           class RealType_ = double>
 struct TimoshenkoBeamElement final
     : ElementBase<TimoshenkoBeamElement<Dimension_, ValueType_, RealType_>,
-                  std::size_t, ValueType_, RealType_, 2,
+                  std::size_t, ValueType_, RealType_, 2, Dimension_,
                   (Dimension_ * (Dimension_ + 1)) / 2> {
 public:
   explicit TimoshenkoBeamElement(
@@ -86,13 +86,6 @@ public:
   const typename TimoshenkoBeamElement::StiffnessMatrix &
   stiffness_matrix() const {
     return stiffness_matrix_;
-  }
-
-  /**
-   * @brief The dimension of physical space.
-   */
-  static constexpr typename TimoshenkoBeamElement::size_type dimension() {
-    return Dimension_;
   }
 
 private:

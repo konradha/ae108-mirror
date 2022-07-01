@@ -18,6 +18,7 @@
 #include <numeric>
 
 using testing::DoubleEq;
+using testing::Eq;
 using testing::Test;
 using testing::Types;
 
@@ -94,6 +95,10 @@ struct TimoshenkoBeamElement2D_Test : Test {
   const Element element = ReferenceConfiguration<Element>::create_element();
 };
 
+TEST_F(TimoshenkoBeamElement2D_Test, dimension_is_2) {
+  EXPECT_THAT(element.dimension(), Eq(2));
+}
+
 TEST_F(TimoshenkoBeamElement2D_Test, computes_energy_with_axial_displacement) {
   const auto time = Element::Time{0.};
 
@@ -158,6 +163,10 @@ TEST_F(TimoshenkoBeamElement3D_Test,
   }};
 
   EXPECT_THAT(element.computeEnergy(displacements, time), DoubleEq(6. / 13.));
+}
+
+TEST_F(TimoshenkoBeamElement3D_Test, dimension_is_3) {
+  EXPECT_THAT(element.dimension(), Eq(3));
 }
 
 TEST_F(TimoshenkoBeamElement3D_Test,

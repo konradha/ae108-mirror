@@ -38,7 +38,6 @@ public:
   explicit LinearEigenvalueProblemSolver();
 
   enum class Type {
-    unspecified = 0,
     hermitian = EPS_HEP,
     nonhermitian = EPS_NHEP,
     generalized_hermitian = EPS_GHEP,
@@ -53,7 +52,7 @@ public:
    * @throw InvalidProblemTypeException if the type does not represent a
    * nongeneralized problem
    */
-  void setOperators(const matrix_type *A, const Type type = Type::unspecified);
+  void setOperators(const matrix_type *A, const Type type = Type::nonhermitian);
 
   /**
    * @brief Sets the matrices associated with a generalized eigenvalue
@@ -62,7 +61,7 @@ public:
    * generalized problem
    */
   void setOperators(const matrix_type *A, const matrix_type *B,
-                    const Type type = Type::unspecified);
+                    const Type type = Type::generalized_nonhermitian);
 
   /**
    * @brief Solve linear eigenvalue problem.
@@ -187,15 +186,13 @@ LinearEigenvalueProblemSolver<Policy>::numberOfEigenpairs() const {
 template <class Policy>
 void LinearEigenvalueProblemSolver<Policy>::setType(
     const Type type, const GeneralizedProblem generalized) {
-  if (type != Type::unspecified) {
-    const auto generalizedType =
-        bool{type == Type::generalized_hermitian ||
-             type == Type::generalized_nonhermitian ||
-             type == Type::generalized_nonhermitian_spd ||
-             type == Type::generalized_indefinite};
-    if (generalizedType != (generalized == GeneralizedProblem::yes)) {
-      throw InvalidProblemTypeException();
-    }
+  const auto generalizedType =
+      bool{type == Type::generalized_hermitian ||
+           type == Type::generalized_nonhermitian ||
+           type == Type::generalized_nonhermitian_spd ||
+           type == Type::generalized_indefinite};
+  if (generalizedType != (generalized == GeneralizedProblem::yes)) {
+    throw InvalidProblemTypeException();
   }
   Policy::handleError(
       EPSSetProblemType(this->data(), static_cast<EPSProblemType>(type)));

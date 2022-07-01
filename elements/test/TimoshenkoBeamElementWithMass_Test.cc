@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "ae108/elements/TimoshenkoBeamElementWithMass.h"
+#include "ae108/elements/compute_mass_matrix.h"
 #include <Eigen/Dense>
 #include <gmock/gmock.h>
 #include <numeric>
@@ -138,7 +139,7 @@ struct ElementWithMass_Test : ::testing::Test {
    * Checks that the mass matrix is positive (semi-)definite
    */
   void check_semi_positive_definite() const noexcept {
-    const auto mass_matrix = element.computeMassMatrix();
+    const auto mass_matrix = compute_mass_matrix(element);
     Eigen::LLT<typename Element::MassMatrix> llt_of_mass_matrix(mass_matrix);
 
     ASSERT_THAT((mass_matrix.isApprox(mass_matrix.transpose()) &&
@@ -163,7 +164,7 @@ struct ElementWithMass_Test : ::testing::Test {
         acceleration(node * Element::degrees_of_freedom() + dim) +=
             rigid_body_translational_acceleration(dim);
 
-    const auto mass_matrix = element.computeMassMatrix();
+    const auto mass_matrix = compute_mass_matrix(element);
     const auto force = mass_matrix * acceleration;
 
     Eigen::Matrix<double, Element::dimension(), 1> total_force =
@@ -189,6 +190,10 @@ TYPED_TEST_P(ElementWithMass_Test,
 REGISTER_TYPED_TEST_CASE_P(ElementWithMass_Test,
                            mass_matrix_is_semi_positive_definite,
                            mass_matrix_complies_with_newtons_second_law);
+
+template <std::size_t Dimension>
+using TimoshenkoBeamElementWithMass =
+    ElementWithMass<TimoshenkoBeamElement<Dimension>>;
 
 using MassConfigurations = Types<
     ReferenceConfigurationLumped<TimoshenkoBeamElementWithMass<2>>,

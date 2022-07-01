@@ -54,66 +54,42 @@ timoshenko_beam_consistent_mass_matrix(
     const TimoshenkoBeamWithMassProperties<double, Dimension_>
         &properties) noexcept;
 
-template <std::size_t Dimension_, class ValueType_ = double,
-          class RealType_ = double>
-struct TimoshenkoBeamElementWithMass final
-    : ElementBase<
-          TimoshenkoBeamElementWithMass<Dimension_, ValueType_, RealType_>,
-          std::size_t, ValueType_, RealType_, 2,
-          (Dimension_ * (Dimension_ + 1)) / 2> {
+template <class Element_>
+struct ElementWithMass final
+    : ElementBase<ElementWithMass<Element_>, typename Element_::size_type,
+                  typename Element_::value_type, typename Element_::real_type,
+                  Element_::size(), Element_::dimension(),
+                  Element_::degrees_of_freedom()> {
 public:
-  using Element = TimoshenkoBeamElement<Dimension_, ValueType_, RealType_>;
-  using StiffnessMatrix =
-      typename TimoshenkoBeamElementWithMass::StiffnessMatrix;
-  using MassMatrix = StiffnessMatrix;
+  using Element = Element_;
+  using MassMatrix = typename ElementWithMass::StiffnessMatrix;
 
-  explicit TimoshenkoBeamElementWithMass(Element element,
-                                         MassMatrix mass_matrix) noexcept
+  explicit ElementWithMass(Element element, MassMatrix mass_matrix) noexcept
       : element_(std::move(element)), mass_matrix_(std::move(mass_matrix)) {}
 
-  const StiffnessMatrix &stiffness_matrix() const {
-    return element_.stiffness_matrix();
-  }
-
-  static constexpr typename Element::size_type dimension() {
-    return Dimension_;
-  }
-
-  const MassMatrix &mass_matrix() const { return mass_matrix_; }
-
-  const MassMatrix computeMassMatrix() const { return mass_matrix_; }
+  const MassMatrix &mass_matrix() const & { return mass_matrix_; }
 
 private:
   Element element_;
   MassMatrix mass_matrix_;
 };
 
-template <std::size_t Dimension_, class ValueType_, class RealType_>
-struct ComputeEnergyTrait<
-    TimoshenkoBeamElementWithMass<Dimension_, ValueType_, RealType_>>
-    : ComputeEnergyTrait<
-          TimoshenkoBeamElement<Dimension_, ValueType_, RealType_>> {};
+template <class Element_>
+struct ComputeEnergyTrait<ElementWithMass<Element_>>
+    : ComputeEnergyTrait<Element_> {};
 
-template <std::size_t Dimension_, class ValueType_, class RealType_>
-struct ComputeForcesTrait<
-    TimoshenkoBeamElementWithMass<Dimension_, ValueType_, RealType_>>
-    : ComputeForcesTrait<
-          TimoshenkoBeamElement<Dimension_, ValueType_, RealType_>> {};
+template <class Element_>
+struct ComputeForcesTrait<ElementWithMass<Element_>>
+    : ComputeForcesTrait<Element_> {};
 
-template <std::size_t Dimension_, class ValueType_, class RealType_>
-struct ComputeStiffnessMatrixTrait<
-    TimoshenkoBeamElementWithMass<Dimension_, ValueType_, RealType_>>
-    : ComputeStiffnessMatrixTrait<
-          TimoshenkoBeamElement<Dimension_, ValueType_, RealType_>> {};
+template <class Element_>
+struct ComputeStiffnessMatrixTrait<ElementWithMass<Element_>>
+    : ComputeStiffnessMatrixTrait<Element_> {};
 
-template <std::size_t Dimension_, class ValueType_, class RealType_>
-struct ComputeMassMatrixTrait<
-    TimoshenkoBeamElementWithMass<Dimension_, ValueType_, RealType_>> {
-  typename TimoshenkoBeamElementWithMass<Dimension_, ValueType_,
-                                         RealType_>::MassMatrix
-  operator()(
-      const TimoshenkoBeamElementWithMass<Dimension_, ValueType_, RealType_>
-          &element) const noexcept {
+template <class Element_>
+struct ComputeMassMatrixTrait<ElementWithMass<Element_>> {
+  template <class Element>
+  auto &operator()(const Element &element) const &noexcept {
     return element.mass_matrix();
   }
 };

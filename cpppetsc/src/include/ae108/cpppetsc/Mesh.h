@@ -55,26 +55,12 @@ public:
   static constexpr size_type IGNORE_VERTEX_INDEX = -1;
 
   /**
-   * @brief Calls the second overload with topological and coordinate
-   * dimension both equal to `dimension`.
-   */
-  template <class Container>
-  static Mesh fromConnectivity(const size_type dimension,
-                               const Container &elementVertexIDs,
-                               const size_type numberOfVertices,
-                               const size_type dofPerVertex,
-                               const size_type dofPerElement = 0);
-
-  using TopologicalDimension =
-      TaggedEntity<size_type, struct TopologicalDimensionTag>;
-  using CoordinateDimension =
-      TaggedEntity<size_type, struct CoordinateDimensionTag>;
-
-  /**
    * @brief Creates a Mesh from the connectivity representation.
    *
    * @tparam Container Requirements: size(); Container::value_type requirements:
    * size(), data().
+   *
+   * @param dimension The coordinate dimension.
    *
    * @param elementVertexIDs A container of containers: the container at index i
    * contains the vertex IDs of the element with index i. Each vertex ID must
@@ -84,12 +70,11 @@ public:
    * @param numberOfVertices The maximum vertex ID in the mesh.
    */
   template <class Container>
-  static Mesh fromConnectivity(const TopologicalDimension topologicalDimension,
-                               const CoordinateDimension coordinateDimension,
+  static Mesh fromConnectivity(const size_type dimension,
                                const Container &elementVertexIDs,
                                const size_type numberOfVertices,
                                const size_type dofPerVertex,
-                               const size_type dofPerElement);
+                               const size_type dofPerElement = 0);
 
   /**
    * @brief Clone the mesh with a different default section.
@@ -128,14 +113,9 @@ public:
   size_type localNumberOfVertices() const;
 
   /**
-   * @brief Returns the dimension of the elements.
-   */
-  TopologicalDimension topologicalDimension() const;
-
-  /**
    * @brief Returns the dimension of the coordinates.
    */
-  CoordinateDimension coordinateDimension() const;
+  size_type coordinateDimension() const;
 
   /**
    * @brief Fill the local vector with the corresponding values from the
@@ -171,6 +151,14 @@ public:
   toCanonicalOrder(const distributed<vector_type> &vector) const;
 
   /**
+   * @brief Returns a matrix in canonical row/column order (the degrees of
+   * freedom of the elements sorted by global index, followed by the degrees of
+   * freedom of the vertices sorted by global index) transformed from the
+   * provided matrix in PETSc's row/column order.
+   */
+  matrix_type toCanonicalOrder(const matrix_type &matrix) const;
+
+  /**
    * @brief Returns a global vector in PETSc's row order transformed from the
    * provided vector in canonical row order (the degrees of freedom of the
    * elements sorted by global index, followed by the degrees of freedom of the
@@ -201,9 +189,15 @@ private:
   static UniqueEntity<DM> createDM();
 
   /**
-   * @brief Adds the default uniform section to the mesh.
+   * @brief Creates an uniform section with the provided degrees of freedom.
    */
-  void addSection(const size_type dofPerVertex, const size_type dofPerElement);
+  UniqueEntity<PetscSection> createSection(const size_type dofPerVertex,
+                                           const size_type dofPerElement) const;
+
+  /**
+   * @brief Sets the default section of the mesh.
+   */
+  void setSection(UniqueEntity<PetscSection> section);
 
   /**
    * @brief Adds the chart as described by the connectivity to the mesh.
@@ -249,6 +243,9 @@ private:
   void assertCorrectBaseMesh(const vector_type &vector) const;
 
   UniqueEntity<DM> _mesh;
+  UniqueEntity<PetscSF> _migration;
+  UniqueEntity<PetscSection> _section;
+  UniqueEntity<PetscSF> _globalToNatural;
   size_type _totalNumberOfElements = 0;
   size_type _totalNumberOfVertices = 0;
 };
@@ -303,33 +300,25 @@ Mesh<Policy> Mesh<Policy>::fromConnectivity(const size_type dimension,
                                             const size_type numberOfVertices,
                                             const size_type dofPerVertex,
                                             const size_type dofPerElement) {
-  return fromConnectivity(TopologicalDimension(dimension),
-                          CoordinateDimension(dimension), elementVertexIDs,
-                          numberOfVertices, dofPerVertex, dofPerElement);
-}
-
-template <class Policy>
-template <class Container>
-Mesh<Policy> Mesh<Policy>::fromConnectivity(
-    const TopologicalDimension topologicalDimension,
-    const CoordinateDimension coordinateDimension,
-    const Container &elementVertexIDs, const size_type numberOfVertices,
-    const size_type dofPerVertex, const size_type dofPerElement) {
   auto mesh =
       Mesh(static_cast<size_type>(elementVertexIDs.size()), numberOfVertices);
 
-  Policy::handleError(
-      DMSetCoordinateDim(mesh._mesh.get(), coordinateDimension));
-  Policy::handleError(DMSetDimension(mesh._mesh.get(), topologicalDimension));
+  Policy::handleError(DMSetCoordinateDim(mesh._mesh.get(), dimension));
+  // set dimension to 1 to use two levels in the graph:
+  // the vertices and the elements
+  Policy::handleError(DMSetDimension(mesh._mesh.get(), 1));
 
   addChart(elementVertexIDs, numberOfVertices, mesh._mesh.get());
 
   // calculate the strata
   Policy::handleError(DMPlexStratify(mesh._mesh.get()));
 
+  // set unknown cell type
+  Policy::handleError(DMCreateLabel(mesh._mesh.get(), "celltype"));
+
   distributeMesh(&mesh);
 
-  mesh.addSection(dofPerVertex, dofPerElement);
+  mesh.setSection(mesh.createSection(dofPerVertex, dofPerElement));
 
   mesh.setGlobalToNaturalSF(mesh.createReorderingSF(
       mesh.canonicalRowIndices(dofPerVertex, dofPerElement)));
@@ -406,8 +395,9 @@ UniqueEntity<PetscSF> Mesh<Policy>::createReorderingSF(
 
 template <class Policy>
 void Mesh<Policy>::setGlobalToNaturalSF(UniqueEntity<PetscSF> globalToNatural) {
+  _globalToNatural = std::move(globalToNatural);
   Policy::handleError(
-      DMPlexSetGlobalToNaturalSF(_mesh.get(), globalToNatural.release()));
+      DMPlexSetGlobalToNaturalSF(_mesh.get(), _globalToNatural.get()));
 }
 
 template <class Policy>
@@ -425,13 +415,17 @@ Mesh<Policy> Mesh<Policy>::cloneWithDofs(const size_type dofPerVertex,
   auto migration = PetscSF();
   Policy::handleError(DMPlexGetMigrationSF(_mesh.get(), &migration));
   if (migration) {
-    auto cloned = PetscSF();
+    mesh._migration = [&]() {
+      auto sf = PetscSF();
+      Policy::handleError(
+          PetscSFDuplicate(migration, PETSCSF_DUPLICATE_GRAPH, &sf));
+      return makeUniqueEntity<Policy>(sf);
+    }();
     Policy::handleError(
-        PetscSFDuplicate(migration, PETSCSF_DUPLICATE_GRAPH, &cloned));
-    Policy::handleError(DMPlexSetMigrationSF(mesh._mesh.get(), cloned));
+        DMPlexSetMigrationSF(mesh._mesh.get(), mesh._migration.get()));
   }
 
-  mesh.addSection(dofPerVertex, dofPerElement);
+  mesh.setSection(mesh.createSection(dofPerVertex, dofPerElement));
 
   mesh.setGlobalToNaturalSF(mesh.createReorderingSF(
       mesh.canonicalRowIndices(dofPerVertex, dofPerElement)));
@@ -499,18 +493,17 @@ void Mesh<Policy>::addChart(const Container &elementVertexIDs,
 }
 
 template <class Policy>
-void Mesh<Policy>::addSection(const size_type dofPerVertex,
-                              const size_type dofPerElement) {
-  const size_type dimension = topologicalDimension();
-  assert(dimension > 0);
-
-  auto section = PetscSection();
+UniqueEntity<PetscSection>
+Mesh<Policy>::createSection(const size_type dofPerVertex,
+                            const size_type dofPerElement) const {
   const std::array<size_type, 1> numberOfComponents = {{1}};
-  std::vector<size_type> numberOfDofsPerDim(dimension + 1);
+  std::vector<size_type> numberOfDofsPerDim(2);
   numberOfDofsPerDim.front() = dofPerVertex;
   numberOfDofsPerDim.back() = dofPerElement;
 
   Policy::handleError(DMSetNumFields(_mesh.get(), numberOfComponents.size()));
+
+  auto section = PetscSection();
   Policy::handleError(DMPlexCreateSection(
       _mesh.get(), nullptr /* label */, numberOfComponents.data(),
       numberOfDofsPerDim.data(), 0 /* number of boundary conditions */,
@@ -518,11 +511,13 @@ void Mesh<Policy>::addSection(const size_type dofPerVertex,
       nullptr /* boundary condition components */,
       nullptr /* boundary condition points */, nullptr /* permutation */,
       &section));
+  return makeUniqueEntity<Policy>(section);
+}
 
-  Policy::handleError(DMSetSection(_mesh.get(), section));
-
-  // create default global section
-  Policy::handleError(DMGetGlobalSection(_mesh.get(), &section));
+template <class Policy>
+void Mesh<Policy>::setSection(UniqueEntity<PetscSection> section) {
+  _section = std::move(section);
+  Policy::handleError(DMSetSection(_mesh.get(), _section.get()));
 }
 
 template <class Policy> void Mesh<Policy>::distributeMesh(Mesh *const mesh) {
@@ -567,19 +562,10 @@ typename Mesh<Policy>::size_type Mesh<Policy>::localNumberOfElements() const {
 }
 
 template <class Policy>
-typename Mesh<Policy>::TopologicalDimension
-Mesh<Policy>::topologicalDimension() const {
-  auto dim = size_type{};
-  Policy::handleError(DMGetDimension(_mesh.get(), &dim));
-  return TopologicalDimension(dim);
-}
-
-template <class Policy>
-typename Mesh<Policy>::CoordinateDimension
-Mesh<Policy>::coordinateDimension() const {
+typename Mesh<Policy>::size_type Mesh<Policy>::coordinateDimension() const {
   auto dim = size_type{};
   Policy::handleError(DMGetCoordinateDim(_mesh.get(), &dim));
-  return CoordinateDimension(dim);
+  return dim;
 }
 
 template <class Policy>
@@ -657,6 +643,40 @@ Mesh<Policy>::toCanonicalOrder(const distributed<vector_type> &vector) const {
 }
 
 template <class Policy>
+typename Mesh<Policy>::matrix_type
+Mesh<Policy>::toCanonicalOrder(const matrix_type &matrix) const {
+  const auto mapping = [&]() {
+    auto sf = PetscSF{};
+    Policy::handleError(DMPlexGetGlobalToNaturalSF(_mesh.get(), &sf));
+    auto mapping = ISLocalToGlobalMapping();
+    Policy::handleError(ISLocalToGlobalMappingCreateSF(
+        sf, matrix.localRowRange().first, &mapping));
+    return makeUniqueEntity<Policy>(mapping);
+  }();
+
+  const auto reorder = [&](const auto &in) {
+    auto out = IS();
+    Policy::handleError(
+        ISLocalToGlobalMappingApplyIS(mapping.get(), in.get(), &out));
+    return makeUniqueEntity<Policy>(out);
+  };
+
+  const auto indices = [&](const auto n) {
+    auto is = IS();
+    Policy::handleError(ISCreateStride(Policy::communicator(), n, 0, 1, &is));
+    return reorder(makeUniqueEntity<Policy>(is));
+  };
+
+  const auto rows = indices(matrix.localSize().first);
+  const auto cols = indices(matrix.localSize().second);
+
+  auto mat = Mat();
+  Policy::handleError(MatCreateSubMatrix(matrix.data(), rows.get(), cols.get(),
+                                         MAT_INITIAL_MATRIX, &mat));
+  return matrix_type(makeUniqueEntity<Policy>(mat));
+}
+
+template <class Policy>
 distributed<typename Mesh<Policy>::vector_type>
 Mesh<Policy>::fromCanonicalOrder(const distributed<vector_type> &vector) const {
   auto globalToNatural = PetscSF{};
@@ -673,7 +693,7 @@ Mesh<Policy>::fromCanonicalOrder(const distributed<vector_type> &vector) const {
 
 template <class Policy>
 void Mesh<Policy>::assertCorrectBaseMesh(const vector_type &vector) const {
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !defined(AE108_CPPPETSC_DISABLE_BASE_MESH_CHECK)
   const auto extractDM = [](const vector_type &vector) {
     auto dm = DM{};
     Policy::handleError(VecGetDM(vector.data(), &dm));

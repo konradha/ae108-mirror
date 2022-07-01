@@ -48,8 +48,7 @@ using BoundaryCondition = cpppetsc::MeshBoundaryCondition<Mesh>;
 constexpr auto number_of_vertices_per_element = Mesh::size_type{2};
 constexpr auto number_of_elements = Mesh::size_type{6};
 constexpr auto number_of_vertices = Mesh::size_type{5};
-constexpr auto coordinate_dimension = Mesh::CoordinateDimension{2};
-constexpr auto topological_dimension = Mesh::TopologicalDimension{1};
+constexpr auto coordinate_dimension = Mesh::size_type{2};
 constexpr auto dof_per_vertex = Mesh::size_type{3};
 constexpr auto dof_per_element = Mesh::size_type{0};
 
@@ -124,9 +123,9 @@ int main(int argc, char **argv) {
 
   // Let's create the mesh and an assembler.
 
-  const auto mesh = Mesh::fromConnectivity(
-      topological_dimension, coordinate_dimension, connectivity,
-      number_of_vertices, dof_per_vertex, 0);
+  const auto mesh =
+      Mesh::fromConnectivity(coordinate_dimension, connectivity,
+                             number_of_vertices, dof_per_vertex, 0);
   auto assembler = Assembler();
 
   Properties properties = {young_modulus, shear_modulus,

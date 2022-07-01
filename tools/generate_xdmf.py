@@ -30,20 +30,28 @@ import re
 import typing
 import sys
 import xml.etree.ElementTree as ET
+import itertools
 
 import h5py
 import numpy
 
 
-def parse_input_filename() -> pathlib.Path:
+def parse_command_line_arguments() -> typing.Tuple[pathlib.Path, bool]:
     """
-    Parses the command line parameters and returns the input file name.
+    Parses the command line parameters and returns the input file name and whether
+    planar elements are preferred.
     """
     parser = argparse.ArgumentParser(
         description="Generate XDMF files for *.ae108 files."
     )
     parser.add_argument("input", help="*.ae108 file to read", type=pathlib.Path)
-    return parser.parse_args().input
+    parser.add_argument(
+        "--planar",
+        help="generate planar elements (e.g. quadrilaterals) in ambiguous cases",
+        action="store_true",
+    )
+    result = parser.parse_args()
+    return result.input, result.planar
 
 
 def extract_field_name(name: str) -> str:
@@ -65,12 +73,12 @@ def extract_field_name(name: str) -> str:
 class UnsupportedElementType(Exception):
     """
     This exception is raised if an unsupported element type
-    (number of vertices, topological dimension) is provided.
+    (number of vertices) is provided.
     """
 
 
 def number_of_corners_to_type(
-    number_of_vertices: int, topological_dimension: int
+    number_of_vertices: int, prefer_planar: bool = False
 ) -> typing.List[int]:
     """
     Returns a guess of the element type for the provided number of vertices.
@@ -78,57 +86,55 @@ def number_of_corners_to_type(
     Some element types (e.g. polylines) are described by two numbers:
     the type and the number of vertices.
 
-    >>> number_of_corners_to_type(1, 2)
+    >>> number_of_corners_to_type(1) # vertex
     [1, 1]
-    >>> number_of_corners_to_type(2, 2)
+    >>> number_of_corners_to_type(2) # line
     [2, 2]
-    >>> number_of_corners_to_type(3, 2)
+    >>> number_of_corners_to_type(3) # triangle
     [4]
-    >>> number_of_corners_to_type(4, 2)
-    [5]
-    >>> number_of_corners_to_type(6, 2)
-    [36]
-    >>> number_of_corners_to_type(5, 2)
-    Traceback (most recent call last):
-    generate_xdmf.UnsupportedElementType
-    >>> number_of_corners_to_type(1, 3)
-    [1, 1]
-    >>> number_of_corners_to_type(2, 3)
-    [2, 2]
-    >>> number_of_corners_to_type(4, 3)
+    >>> number_of_corners_to_type(4) # tetrahedron
     [6]
-    >>> number_of_corners_to_type(8, 3)
+    >>> number_of_corners_to_type(4, False) # tetrahedron
+    [6]
+    >>> number_of_corners_to_type(4, True) # quadrilateral
+    [5]
+    >>> number_of_corners_to_type(6) # quadratic triangle
+    [36]
+    >>> number_of_corners_to_type(8) # hexahedron
     [9]
-    >>> number_of_corners_to_type(10, 3)
+    >>> number_of_corners_to_type(8, False) # hexahedron
+    [9]
+    >>> number_of_corners_to_type(8, True) # quadratic quadrilateral (8)
+    [37]
+    >>> number_of_corners_to_type(9) # quadratic quadrilateral (9)
+    [35]
+    >>> number_of_corners_to_type(10) # quadratic tetrahedron (38)
     [38]
-    >>> number_of_corners_to_type(3, 3)
-    Traceback (most recent call last):
-    generate_xdmf.UnsupportedElementType
-    >>> number_of_corners_to_type(9, 3)
-    Traceback (most recent call last):
-    generate_xdmf.UnsupportedElementType
-    >>> number_of_corners_to_type(4, 1)
+    >>> number_of_corners_to_type(20) # quadratic hexahedron (20)
+    [48]
+    >>> number_of_corners_to_type(24) # quadratic hexahedron (24)
+    [49]
+    >>> number_of_corners_to_type(27) # quadratic hexahedron (27)
+    [50]
+    >>> number_of_corners_to_type(5)
     Traceback (most recent call last):
     generate_xdmf.UnsupportedElementType
     """
     try:
         type_map = {
-            2: {
-                1: [1, 1],
-                2: [2, 2],
-                3: [4],
-                4: [5],
-                6: [36],
-            },
-            3: {
-                1: [1, 1],
-                2: [2, 2],
-                4: [6],
-                8: [9],
-                10: [38],
-            },
+            1: [1, 1],
+            2: [2, 2],
+            3: [4],
+            4: [5 if prefer_planar else 6],
+            6: [36],
+            8: [37 if prefer_planar else 9],
+            9: [35],
+            10: [38],
+            20: [48],
+            24: [49],
+            27: [50],
         }
-        return type_map[topological_dimension][number_of_vertices]
+        return type_map[number_of_vertices]
     except KeyError as error:
         raise UnsupportedElementType() from error
 
@@ -246,17 +252,17 @@ def add_sliced_hdf_dataitem(
         "DataItem",
         {"Dimensions": shape_to_xdmf_dimensions((3, item.ndim)), "Format": "XML"},
     )
-    dimensions.text = "{} {} {}".format(
-        shape_to_xdmf_dimensions(
+    dimensions.text = f"""{
+          shape_to_xdmf_dimensions(
             tuple(sliced_dimensions.get(i, 0) for i in range(item.ndim))
-        ),
-        shape_to_xdmf_dimensions(tuple(1 for _ in range(item.ndim))),
-        shape_to_xdmf_dimensions(
-            tuple(
-                1 if i in sliced_dimensions else item.shape[i] for i in range(item.ndim)
-            )
-        ),
-    )
+          )
+          } {
+          shape_to_xdmf_dimensions(tuple(1 for _ in range(item.ndim)))
+          } {
+          shape_to_xdmf_dimensions(
+            tuple(1 if i in sliced_dimensions else item.shape[i] for i in range(item.ndim))
+          )
+          }"""
     add_hdf_dataitem(hyperslab, hdf_file, hdf_path)
     return hyperslab
 
@@ -282,7 +288,7 @@ def add_hdf_dataitem(
             "Rank": str(item.ndim),
         },
     )
-    dataitem.text = "{}:{}".format(hdf_file.filename, hdf_path)
+    dataitem.text = f"{hdf_file.filename}:{hdf_path}"
     return dataitem
 
 
@@ -295,7 +301,7 @@ def read_topological_dimension(hdf_file: h5py.File) -> int:
 
 def read_coordinate_dimension(hdf_file: h5py.File) -> int:
     """
-    Returns the topological dimension specified in the mesh.
+    Returns the coordinate dimension specified in the mesh.
     """
     return hdf_file["/geometry/vertices"].shape[1]
 
@@ -306,30 +312,31 @@ class MeshInformationMissing(Exception):
     """
 
 
-def read_element_vertices(hdf_file: h5py.File) -> typing.Iterator[typing.List[int]]:
+def read_element_vertices(hdf_file: h5py.File) -> typing.Iterator[numpy.ndarray]:
     """
     Returns the vertex indices of the elements.
     """
     if not "/topology" in hdf_file:
         raise MeshInformationMissing()
 
-    cells_data = hdf_file["/topology/cells"]
     cones_data = hdf_file["/topology/cones"][()]
     number_of_elements = numpy.sum(cones_data > 0)
+    cells_data = hdf_file["/topology/cells"][()] - number_of_elements
 
     offset = 0
-    for cone_size in numpy.nditer(cones_data):
-        if cone_size == 0:
-            continue
-        yield list(
-            numpy.nditer(cells_data[offset : offset + cone_size] - number_of_elements)
-        )
+    for cone_size in filter(lambda x: x > 0, numpy.nditer(cones_data)):
+        yield cells_data[offset : offset + cone_size]
         offset += cone_size
 
 
-def add_topology(parent: ET.Element, hdf_file: h5py.File) -> ET.Element:
+def add_topology(
+    parent: ET.Element,
+    hdf_file: h5py.File,
+    prefer_planar: bool,
+) -> ET.Element:
     """
-    Adds the topology element to the parent.
+    Writes topology data compatible with XDMF to "/topology/mixed"
+    in `hdf_file`, and adds the topology element to the parent.
     """
     if not "/topology" in hdf_file:
         raise MeshInformationMissing()
@@ -337,14 +344,7 @@ def add_topology(parent: ET.Element, hdf_file: h5py.File) -> ET.Element:
     cones_data = hdf_file["/topology/cones"][()]
 
     number_of_elements = numpy.sum(cones_data > 0)
-    topological_dimension = read_topological_dimension(hdf_file)
-
-    dataitem_dimension = sum(
-        cone_size
-        + len(number_of_corners_to_type(int(cone_size), topological_dimension))
-        for cone_size in numpy.nditer(cones_data)
-        if cone_size > 0
-    )
+    coordinate_dimension = read_coordinate_dimension(hdf_file)
 
     topology = ET.SubElement(
         parent,
@@ -352,23 +352,30 @@ def add_topology(parent: ET.Element, hdf_file: h5py.File) -> ET.Element:
         {"TopologyType": "Mixed", "NumberOfElements": str(number_of_elements)},
     )
 
-    dataitem = ET.SubElement(
-        topology,
-        "DataItem",
-        {"Format": "XML", "Dimensions": str(dataitem_dimension)},
-    )
-    dataitem.text = "  ".join(
-        "{} {}".format(
-            " ".join(
-                str(type_)
-                for type_ in number_of_corners_to_type(
-                    len(vertices), topological_dimension
+    topology_data = numpy.fromiter(
+        itertools.chain.from_iterable(
+            (
+                itertools.chain(
+                    iter(
+                        number_of_corners_to_type(
+                            vertices.shape[0],
+                            prefer_planar or coordinate_dimension <= 2,
+                        )
+                    ),
+                    numpy.nditer(vertices),
                 )
-            ),
-            " ".join(str(vertex) for vertex in vertices),
-        )
-        for vertices in read_element_vertices(hdf_file)
+                for vertices in read_element_vertices(hdf_file)
+            )
+        ),
+        dtype="int32",
     )
+
+    hdf_file.require_dataset(
+        "/topology/mixed", shape=topology_data.shape, dtype=topology_data.dtype
+    )
+    hdf_file["/topology/mixed"].write_direct(topology_data)
+
+    add_hdf_dataitem(topology, hdf_file, "/topology/mixed")
 
     return topology
 
@@ -411,7 +418,7 @@ def add_field(
         - 3 columns: A vector field will be added.
         - otherwise: The field is split into scalar fields, and those are added.
     """
-    hdf_path = "/fields/{}".format(field_name)
+    hdf_path = f"/fields/{field_name}"
 
     item = hdf_file[hdf_path]
     shape = item.shape
@@ -456,7 +463,7 @@ def add_field(
                 parent,
                 "Attribute",
                 {
-                    "Name": "{}[{}]{}".format(field_name, column, postfix),
+                    "Name": f"{field_name}[{column}]{postfix}",
                     "Center": center,
                     "AttributeType": "Scalar",
                 },
@@ -497,7 +504,7 @@ def add_cell_fields(parent: ET.Element, hdf_file: h5py.File) -> None:
         add_field(parent, hdf_file, field_name, "Cell")
 
 
-def hdf_to_xdmf_string(hdf_file: h5py.File) -> str:
+def hdf_to_xdmf_string(hdf_file: h5py.File, prefer_planar: bool) -> str:
     """
     Returns the XDMF string corresponding to the provided HDF5 file.
     """
@@ -505,7 +512,7 @@ def hdf_to_xdmf_string(hdf_file: h5py.File) -> str:
     domain = ET.SubElement(xdmf, "Domain")
     grid = ET.SubElement(domain, "Grid")
 
-    add_topology(grid, hdf_file)
+    add_topology(grid, hdf_file, prefer_planar)
     add_geometry(grid, hdf_file)
     add_vertex_fields(grid, hdf_file)
     add_cell_fields(grid, hdf_file)
@@ -518,9 +525,14 @@ def main() -> None:
     Parses the input file name from the command line parameters and writes the corresponding
     XDMF to file.
     """
-    filename = parse_input_filename()
-    with open(filename.stem + ".xdmf", "w") as xdmf_file:
-        xdmf_file.write(hdf_to_xdmf_string(h5py.File(filename, "r")))
+    filename, prefer_planar = parse_command_line_arguments()
+    with open(filename.stem + ".xdmf", "w", encoding="utf-8") as xdmf_file:
+        xdmf_file.write(
+            hdf_to_xdmf_string(
+                h5py.File(filename, "r+"),
+                prefer_planar,
+            )
+        )
 
 
 class ErrorCode(IntEnum):
@@ -554,9 +566,7 @@ if __name__ == "__main__":
         sys.exit(ErrorCode.UNSUPPORTED_COORDINATE_DIM)
     except UnsupportedElementType:
         print(
-            "Error: "
-            "The combination of topological dimension and "
-            "number of vertices per element is not supported.",
+            "Error: The number of vertices per element is not supported.",
             file=sys.stderr,
         )
         sys.exit(ErrorCode.UNSUPPORTED_ELEMENT_TYPE)

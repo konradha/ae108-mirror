@@ -54,27 +54,23 @@ computeEigenvalues(const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &);
 template <class Policy>
 std::vector<
     std::complex<typename LinearEigenvalueProblemSolver<Policy>::real_type>>
-computeGeneralizedEigenvalues(const cpppetsc::Matrix<Policy> &A,
-                              const cpppetsc::Matrix<Policy> &B,
-                              const std::size_t number_of_eigenvalues);
+computeEigenvalues(const cpppetsc::Matrix<Policy> &A,
+                   const cpppetsc::Matrix<Policy> &B);
 
 extern template std::vector<std::complex<typename LinearEigenvalueProblemSolver<
     cpppetsc::SequentialComputePolicy>::real_type>>
-computeGeneralizedEigenvalues(
-    const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &,
-    const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &,
-    const std::size_t number_of_eigenvalues);
+computeEigenvalues(const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &,
+                   const cpppetsc::Matrix<cpppetsc::SequentialComputePolicy> &);
 
 extern template std::vector<std::complex<typename LinearEigenvalueProblemSolver<
     cpppetsc::ParallelComputePolicy>::real_type>>
-computeGeneralizedEigenvalues(
-    const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &,
-    const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &,
-    const std::size_t number_of_eigenvalues);
+computeEigenvalues(const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &,
+                   const cpppetsc::Matrix<cpppetsc::ParallelComputePolicy> &);
 
 } // namespace cppslepc
 } // namespace ae108
 
+#include <range/v3/range/conversion.hpp>
 #include <range/v3/view/iota.hpp>
 #include <range/v3/view/transform.hpp>
 #include <slepceps.h>
@@ -87,42 +83,15 @@ namespace detail {
 template <class Policy>
 std::vector<
     std::complex<typename LinearEigenvalueProblemSolver<Policy>::real_type>>
-solve(const LinearEigenvalueProblemSolver<Policy> &solver) {
+solve(LinearEigenvalueProblemSolver<Policy> solver) {
   using solver_type = LinearEigenvalueProblemSolver<Policy>;
   using size_type = typename solver_type::size_type;
 
-  Policy::handleError(EPSSolve(solver.data()));
-
-  const auto hasError = [&]() {
-    auto reason = EPSConvergedReason{};
-    Policy::handleError(EPSGetConvergedReason(solver.data(), &reason));
-    return reason < 0;
-  }();
-
-  if (hasError) {
-    throw EigenvalueProblemSolverDivergedException{};
-  }
-
-  const auto size = [&]() {
-    auto size = size_type{};
-    Policy::handleError(EPSGetConverged(solver.data(), &size));
-    return size;
-  }();
-
   namespace rv = ranges::cpp20::views;
-  return rv::iota(0, size) | rv::transform([&](const size_type index) {
-           auto eigenvalue = std::pair<PetscScalar, PetscScalar>();
-           Policy::handleError(EPSGetEigenvalue(
-               solver.data(), index, &eigenvalue.first, &eigenvalue.second));
-           return
-#ifdef AE108_PETSC_COMPLEX
-               eigenvalue.first
-#else
-               std::complex<typename solver_type::real_type> {
-             eigenvalue.first, eigenvalue.second
-           }
-#endif
-               ;
+  solver.solve();
+  return rv::iota(0, solver.numberOfEigenpairs()) |
+         rv::transform([&](const size_type index) {
+           return solver.getEigenvalue(index);
          }) |
          ranges::to<std::vector>();
 }
@@ -134,24 +103,21 @@ std::vector<
 computeEigenvalues(const cpppetsc::Matrix<Policy> &A) {
   auto solver = LinearEigenvalueProblemSolver<Policy>{};
 
-  Policy::handleError(EPSSetOperators(solver.data(), A.data(), nullptr));
-  return detail::solve(solver);
+  solver.setOperators(&A);
+
+  return detail::solve(std::move(solver));
 }
 
 template <class Policy>
 std::vector<
     std::complex<typename LinearEigenvalueProblemSolver<Policy>::real_type>>
-computeGeneralizedEigenvalues(const cpppetsc::Matrix<Policy> &A,
-                              const cpppetsc::Matrix<Policy> &B,
-                              const std::size_t number_of_eigenvalues) {
+computeEigenvalues(const cpppetsc::Matrix<Policy> &A,
+                   const cpppetsc::Matrix<Policy> &B) {
   auto solver = LinearEigenvalueProblemSolver<Policy>{};
 
-  Policy::handleError(
-      EPSSetWhichEigenpairs(solver.data(), EPS_SMALLEST_MAGNITUDE));
-  Policy::handleError(EPSSetDimensions(solver.data(), number_of_eigenvalues,
-                                       PETSC_DECIDE, PETSC_DECIDE));
-  Policy::handleError(EPSSetOperators(solver.data(), A.data(), B.data()));
-  return detail::solve(solver);
+  solver.setOperators(&A, &B);
+
+  return detail::solve(std::move(solver));
 }
 
 } // namespace cppslepc

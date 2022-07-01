@@ -37,10 +37,6 @@ template <> PetscErrorCode callDestructor(Vec *const ptr) noexcept {
   return VecDestroy(ptr);
 }
 
-template <> PetscErrorCode callDestructor(VecScatter *const ptr) noexcept {
-  return VecScatterDestroy(ptr);
-}
-
 template <> PetscErrorCode callDestructor(PetscSF *const ptr) noexcept {
   return PetscSFDestroy(ptr);
 }
@@ -71,6 +67,11 @@ template <> PetscErrorCode callDestructor(Tao *const ptr) noexcept {
 
 template <> PetscErrorCode callDestructor(PetscViewer *const ptr) noexcept {
   return PetscViewerDestroy(ptr);
+}
+
+template <>
+PetscErrorCode callDestructor(ISLocalToGlobalMapping *const ptr) noexcept {
+  return ISLocalToGlobalMappingDestroy(ptr);
 }
 } // namespace detail
 } // namespace cpppetsc

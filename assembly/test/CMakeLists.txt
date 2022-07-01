@@ -21,9 +21,9 @@ add_executable(${PROJECT_NAME}-AssemblyTests
                ./ConcatenateFeaturePlugins_Test.cc
                ./DerivePluginsUniquely_Test.cc
                ./DeriveUniquely_Test.cc
+               ./FeaturePlugin_Test.cc
                ./HasUniqueTypeTrait_Test.cc
                ./IsSingleTypeTrait_Test.cc
-               ./StaticLooper_Test.cc
                ./deserialize_Test.cc
                ./resizeIfPossible_Test.cc
                ./serialize_Test.cc

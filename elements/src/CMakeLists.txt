@@ -17,8 +17,11 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 add_library(${PROJECT_NAME}-elements
             AutomaticForcesTrait.cc
             AutomaticStiffnessMatrixTrait.cc
+            Bar.cc
+            ComputeConsistentMassMatrixTrait.cc
             ComputeEnergyTrait.cc
             ComputeForcesTrait.cc
+            ComputeLumpedMassMatrixTrait.cc
             ComputeStiffnessMatrixTrait.cc
             CoreElement.cc
             ElementBase.cc
@@ -27,8 +30,10 @@ add_library(${PROJECT_NAME}-elements
             TimoshenkoBeamElement.cc
             automatic_forces.cc
             automatic_stiffness_matrix.cc
+            compute_consistent_mass_matrix.cc
             compute_energy.cc
             compute_forces.cc
+            compute_lumped_mass_matrix.cc
             compute_stiffness_matrix.cc
             embedding/AutomaticJacobianTrait.cc
             embedding/EmbedTrait.cc
@@ -38,10 +43,14 @@ add_library(${PROJECT_NAME}-elements
             embedding/automatic_jacobian.cc
             embedding/compute_jacobian.cc
             embedding/embed_point.cc
+            integrator/ComputeVolumeTrait.cc
+            integrator/IntegrateShapeTrait.cc
             integrator/IntegrateTrait.cc
             integrator/IntegratorBase.cc
             integrator/IsoparametricIntegrator.cc
+            integrator/compute_volume.cc
             integrator/integrate.cc
+            integrator/integrate_shape.cc
             materialmodels/AutomaticStressTrait.cc
             materialmodels/AutomaticTangentMatrixTrait.cc
             materialmodels/ComputeEnergyTrait.cc
@@ -97,7 +106,7 @@ target_include_directories(${PROJECT_NAME}-elements PUBLIC
 )
 
 target_compile_features(${PROJECT_NAME}-elements
-                        PUBLIC cxx_std_11
+                        PUBLIC cxx_std_17
 )
 
 find_package(Eigen3 3.3 CONFIG REQUIRED)

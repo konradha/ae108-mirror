@@ -21,6 +21,7 @@ add_library(${PROJECT_NAME}-solve
             ./DynamicSolver.cc
             ./DynamicState.cc
             ./GeneralizedNonlinearSolver.cc
+            ./GeneralizedTAOSolver.cc
             ./InconsistentBoundaryConditionsException.cc
             ./InvalidVertexException.cc
             ./LeastSquaresSolver.cc
@@ -40,6 +41,6 @@ target_include_directories(${PROJECT_NAME}-solve PUBLIC
 
 target_link_libraries(${PROJECT_NAME}-solve PUBLIC ${PROJECT_NAME}::assembly)
 
-target_compile_features(${PROJECT_NAME}-solve PUBLIC cxx_std_11)
+target_compile_features(${PROJECT_NAME}-solve PUBLIC cxx_std_17)
 
 ae108_install_library(solve)

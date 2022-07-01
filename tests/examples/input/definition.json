@@ -1,10 +1,11 @@
 {
-	"executable": [
-		"examples",
-		"ae108-examples-Input"
-	],
-	"compare_stdout": "numeric",
-	"mpi_processes": [
-		1
-	]
+  "$schema": "../../schema.json",
+  "executable": [
+    "examples",
+    "ae108-examples-Input"
+  ],
+  "compare_stdout": "numeric",
+  "mpi_processes": [
+    1
+  ]
 }

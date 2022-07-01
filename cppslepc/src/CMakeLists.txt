@@ -16,8 +16,12 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
 add_library(${PROJECT_NAME}-cppslepc
     Context.cc
+    EigenPair.cc
     EigenvalueSolverDivergedException.cc
+    InvalidEigenvalueIndexException.cc
+    InvalidProblemTypeException.cc
     LinearEigenvalueProblemSolver.cc
+    NoOperatorsSetException.cc
     computeEigenvalues.cc
 )
 
@@ -26,10 +30,10 @@ target_include_directories(${PROJECT_NAME}-cppslepc PUBLIC
 )
 
 target_compile_features(${PROJECT_NAME}-cppslepc
-                        PUBLIC cxx_std_11
+                        PUBLIC cxx_std_17
 )
 
-find_package(AE108_SLEPc 1.12 MODULE REQUIRED)
+find_package(AE108_SLEPc 3.15 MODULE REQUIRED)
 target_link_libraries(${PROJECT_NAME}-cppslepc
                       PUBLIC ${PROJECT_NAME}::external::slepc
                       PUBLIC ${PROJECT_NAME}::cpppetsc

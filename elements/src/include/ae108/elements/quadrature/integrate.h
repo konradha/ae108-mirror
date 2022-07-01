@@ -30,7 +30,7 @@ namespace quadrature {
 template <class Quadrature, class R, class F, class... Args>
 constexpr typename std::decay<R>::type
 integrate(F &&f, R &&init,
-          const typename Quadrature::template Collection<Args> &... args) {
+          const typename Quadrature::template Collection<Args> &...args) {
   return IntegrateTrait<Quadrature>().template operator()<Quadrature>(
       std::forward<F>(f), std::forward<R>(init), args...);
 }

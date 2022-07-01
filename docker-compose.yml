@@ -23,6 +23,8 @@ services:
     volumes:
     - .:/mnt/io
     tty: true
+    shm_size: '1gb'
+    working_dir: /mnt/io
   dev-complex:
     build:
       args:
@@ -31,4 +33,6 @@ services:
       dockerfile: Dockerfile
     volumes:
     - .:/mnt/io
+    working_dir: /mnt/io
     tty: true
+    shm_size: '1gb'

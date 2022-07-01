@@ -47,135 +47,155 @@ using Configurations =
           Configuration<Hookean<3>>>;
 INSTANTIATE_TYPED_TEST_CASE_P(Hookean_Test, MaterialModel_Test, Configurations);
 
-struct Hookean_1D_Test : Test {
+MATCHER_P(ValueEq, reference,
+          std::string(negation ? "not " : "") + "equal to " +
+              ::testing::PrintToString(reference)) {
+  return ::testing::ExplainMatchResult(::testing::DoubleEq(std::real(arg)),
+                                       std::real(reference), result_listener) &&
+         ::testing::ExplainMatchResult(::testing::DoubleEq(std::imag(arg)),
+                                       std::imag(reference), result_listener);
+}
+
+template <class ValueType> struct Hookean_1D_Test : Test {
   const double youngs_modulus = 3.;
   const double poisson_ratio = .2;
-  using MaterialModel = Hookean<1>;
+  using MaterialModel = Hookean<1, ValueType, double>;
   MaterialModel model = MaterialModel(youngs_modulus, poisson_ratio);
 };
 
-TEST_F(Hookean_1D_Test, correct_lambda) {
-  EXPECT_THAT(model.lambda(), DoubleEq(5. / 6.));
+using ValueTypes = Types<double, std::complex<double>>;
+TYPED_TEST_CASE(Hookean_1D_Test, ValueTypes);
+
+TYPED_TEST(Hookean_1D_Test, correct_lambda) {
+  EXPECT_THAT(this->model.lambda(), DoubleEq(5. / 6.));
 }
 
-TEST_F(Hookean_1D_Test, correct_mu) {
-  EXPECT_THAT(model.mu(), DoubleEq(5. / 4.));
+TYPED_TEST(Hookean_1D_Test, correct_mu) {
+  EXPECT_THAT(this->model.mu(), DoubleEq(5. / 4.));
 }
 
-TEST_F(Hookean_1D_Test, zero_energy_for_no_gradient) {
-  const auto time = MaterialModel::Time{0};
-  const auto gradient = MaterialModel::DisplacementGradient();
+TYPED_TEST(Hookean_1D_Test, zero_energy_for_no_gradient) {
+  const auto time = typename TestFixture::MaterialModel::Time{0};
+  const auto gradient =
+      typename TestFixture::MaterialModel::DisplacementGradient();
 
-  const auto result =
-      compute_energy(model, MaterialModel::unknown_id(), gradient, time);
+  const auto result = compute_energy(
+      this->model, TestFixture::MaterialModel::unknown_id(), gradient, time);
 
   EXPECT_THAT(result, DoubleEq(0.));
 }
 
-TEST_F(Hookean_1D_Test, zero_strain_for_no_gradient) {
-  const auto time = MaterialModel::Time{0};
-  const auto gradient = MaterialModel::DisplacementGradient();
+TYPED_TEST(Hookean_1D_Test, zero_strain_for_no_gradient) {
+  const auto time = typename TestFixture::MaterialModel::Time{0};
+  const auto gradient =
+      typename TestFixture::MaterialModel::DisplacementGradient();
 
-  const auto result =
-      compute_strain(model, MaterialModel::unknown_id(), gradient, time);
+  const auto result = compute_strain(
+      this->model, TestFixture::MaterialModel::unknown_id(), gradient, time);
 
-  EXPECT_THAT(result, ElementsAre(ElementsAre(DoubleEq(0.))));
+  EXPECT_THAT(result, ElementsAre(ElementsAre(ValueEq(0.))));
 }
 
-TEST_F(Hookean_1D_Test, correct_energy_for_gradient_1) {
-  const auto time = MaterialModel::Time{0};
-  const MaterialModel::DisplacementGradient gradient = {{
+TYPED_TEST(Hookean_1D_Test, correct_energy_for_gradient_1) {
+  const auto time = typename TestFixture::MaterialModel::Time{0};
+  const typename TestFixture::MaterialModel::DisplacementGradient gradient = {{
       {{1.}},
   }};
 
-  const auto result =
-      compute_energy(model, MaterialModel::unknown_id(), gradient, time);
+  const auto result = compute_energy(
+      this->model, TestFixture::MaterialModel::unknown_id(), gradient, time);
 
-  EXPECT_THAT(result, DoubleEq(model.mu() + .5 * model.lambda()));
+  EXPECT_THAT(result, DoubleEq(this->model.mu() + .5 * this->model.lambda()));
 }
 
-TEST_F(Hookean_1D_Test, correct_strain_for_gradient_1) {
-  const auto time = MaterialModel::Time{0};
-  const MaterialModel::DisplacementGradient gradient = {{
+TYPED_TEST(Hookean_1D_Test, correct_strain_for_gradient_1) {
+  const auto time = typename TestFixture::MaterialModel::Time{0};
+  const typename TestFixture::MaterialModel::DisplacementGradient gradient = {{
       {{1.}},
   }};
 
-  const auto result =
-      compute_strain(model, MaterialModel::unknown_id(), gradient, time);
+  const auto result = compute_strain(
+      this->model, TestFixture::MaterialModel::unknown_id(), gradient, time);
 
-  EXPECT_THAT(result, ElementsAre(ElementsAre(DoubleEq(1.))));
+  EXPECT_THAT(result, ElementsAre(ElementsAre(ValueEq(1.))));
 }
 
-TEST_F(Hookean_1D_Test, correct_energy_for_gradient_2) {
-  const auto time = MaterialModel::Time{0};
-  const MaterialModel::DisplacementGradient gradient = {{
+TYPED_TEST(Hookean_1D_Test, correct_energy_for_gradient_2) {
+  const auto time = typename TestFixture::MaterialModel::Time{0};
+  const typename TestFixture::MaterialModel::DisplacementGradient gradient = {{
       {{2.}},
   }};
 
-  const auto result =
-      compute_energy(model, MaterialModel::unknown_id(), gradient, time);
+  const auto result = compute_energy(
+      this->model, TestFixture::MaterialModel::unknown_id(), gradient, time);
 
-  EXPECT_THAT(result, DoubleEq(2. * (2. * model.mu() + model.lambda())));
+  EXPECT_THAT(result,
+              DoubleEq(2. * (2. * this->model.mu() + this->model.lambda())));
 }
 
-TEST_F(Hookean_1D_Test, correct_strain_for_gradient_2) {
-  const auto time = MaterialModel::Time{0};
-  const MaterialModel::DisplacementGradient gradient = {{
+TYPED_TEST(Hookean_1D_Test, correct_strain_for_gradient_2) {
+  const auto time = typename TestFixture::MaterialModel::Time{0};
+  const typename TestFixture::MaterialModel::DisplacementGradient gradient = {{
       {{2.}},
   }};
 
-  const auto result = compute_strain(model, 0, gradient, time);
+  const auto result = compute_strain(this->model, 0, gradient, time);
 
-  EXPECT_THAT(result, ElementsAre(ElementsAre(DoubleEq(2.))));
+  EXPECT_THAT(result, ElementsAre(ElementsAre(ValueEq(2.))));
 }
 
-struct Hookean_3D_Test : Test {
+template <class ValueType> struct Hookean_3D_Test : Test {
   const double youngs_modulus = 3.;
   const double poisson_ratio = .2;
-  using MaterialModel = Hookean<3>;
+  using MaterialModel = Hookean<3, ValueType>;
   MaterialModel model = MaterialModel(youngs_modulus, poisson_ratio);
 };
 
-TEST_F(Hookean_3D_Test, symmetrized_gradient_is_strain) {
-  const auto time = MaterialModel::Time{0};
-  const auto gradient = MaterialModel::DisplacementGradient({{
-      {{1., 0., 3.}},
-      {{4., 3., 8.}},
-      {{3., 0., 5.}},
-  }});
-  const auto result =
-      compute_strain(model, MaterialModel::unknown_id(), gradient, time);
+TYPED_TEST_CASE(Hookean_3D_Test, ValueTypes);
 
-  EXPECT_THAT(
-      result,
-      ElementsAre(ElementsAre(DoubleEq(1.), DoubleEq(2.), DoubleEq(3.)),
-                  ElementsAre(DoubleEq(2.), DoubleEq(3.), DoubleEq(4.)),
-                  ElementsAre(DoubleEq(3.), DoubleEq(4.), DoubleEq(5.))));
+TYPED_TEST(Hookean_3D_Test, symmetrized_gradient_is_strain) {
+  const auto time = typename TestFixture::MaterialModel::Time{0};
+  const auto gradient =
+      typename TestFixture::MaterialModel::DisplacementGradient({{
+          {{1., 0., 3.}},
+          {{4., 3., 8.}},
+          {{3., 0., 5.}},
+      }});
+  const auto result = compute_strain(
+      this->model, TestFixture::MaterialModel::unknown_id(), gradient, time);
+
+  EXPECT_THAT(result,
+              ElementsAre(ElementsAre(ValueEq(1.), ValueEq(2.), ValueEq(3.)),
+                          ElementsAre(ValueEq(2.), ValueEq(3.), ValueEq(4.)),
+                          ElementsAre(ValueEq(3.), ValueEq(4.), ValueEq(5.))));
 }
 
-TEST_F(Hookean_3D_Test, correct_energy_for_identity_gradient) {
-  const auto time = MaterialModel::Time{0};
-  const auto gradient = MaterialModel::DisplacementGradient({{
-      {{1., 0., 0.}},
-      {{0., 1., 0.}},
-      {{0., 0., 1.}},
-  }});
-  const auto result = compute_energy(model, 0, gradient, time);
+TYPED_TEST(Hookean_3D_Test, correct_energy_for_identity_gradient) {
+  const auto time = typename TestFixture::MaterialModel::Time{0};
+  const auto gradient =
+      typename TestFixture::MaterialModel::DisplacementGradient({{
+          {{1., 0., 0.}},
+          {{0., 1., 0.}},
+          {{0., 0., 1.}},
+      }});
+  const auto result = compute_energy(this->model, 0, gradient, time);
 
-  EXPECT_THAT(result, DoubleEq(model.mu() * 3. + .5 * model.lambda() * 9.));
+  EXPECT_THAT(result,
+              DoubleEq(this->model.mu() * 3. + .5 * this->model.lambda() * 9.));
 }
 
-TEST_F(Hookean_3D_Test, correct_energy_for_upper_diagonal_gradient) {
-  const auto time = MaterialModel::Time{0};
-  const auto gradient = MaterialModel::DisplacementGradient({{
-      {{1., 1., 1.}},
-      {{0., 1., 1.}},
-      {{0., 0., 1.}},
-  }});
-  const auto result = compute_energy(model, 0, gradient, time);
+TYPED_TEST(Hookean_3D_Test, correct_energy_for_upper_diagonal_gradient) {
+  const auto time = typename TestFixture::MaterialModel::Time{0};
+  const auto gradient =
+      typename TestFixture::MaterialModel::DisplacementGradient({{
+          {{1., 1., 1.}},
+          {{0., 1., 1.}},
+          {{0., 0., 1.}},
+      }});
+  const auto result = compute_energy(this->model, 0, gradient, time);
 
-  EXPECT_THAT(result, DoubleEq(model.mu() * (3. + .25 * 6.) +
-                               .5 * model.lambda() * 9.));
+  EXPECT_THAT(result, DoubleEq(this->model.mu() * (3. + .25 * 6.) +
+                               .5 * this->model.lambda() * 9.));
 }
 
 } // namespace

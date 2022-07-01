@@ -30,9 +30,12 @@ import tempfile
 import typing
 import unittest
 import re
+import sys
+
+import jsonschema
 
 
-ROOT_DIRECTORY = pathlib.Path(__file__).parent.parent
+ROOT_DIRECTORY = pathlib.Path(__file__).resolve().parent.parent
 
 
 class ComparisonType(enum.Enum):
@@ -46,6 +49,16 @@ class ComparisonType(enum.Enum):
 
 
 @dataclasses.dataclass(frozen=True)
+class BinaryOutputDefinition:
+    """
+    Contains the parameters necessary to compare binary output.
+    """
+
+    filename: pathlib.Path
+    xdmf_generator_flags: typing.List[str]
+
+
+@dataclasses.dataclass(frozen=True)
 class TestCaseDefinition:
     """
     Contains the parameters necessary to execute a test.
@@ -55,6 +68,7 @@ class TestCaseDefinition:
     args: typing.List[str]
     references: pathlib.Path
     compare_stdout: ComparisonType
+    ae108_output: typing.List[BinaryOutputDefinition]
     mpi_processes: int
 
 
@@ -141,6 +155,13 @@ def as_test_case_definitions(
             compare_stdout=string_to_comparison_type[
                 definition.get("compare_stdout", "none")
             ],
+            ae108_output=[
+                BinaryOutputDefinition(
+                    filename=pathlib.Path(output["filename"]),
+                    xdmf_generator_flags=output.get("xdmf_generator_flags", []),
+                )
+                for output in definition.get("ae108_output", [])
+            ],
             mpi_processes=mpi_processes,
         )
 
@@ -150,9 +171,9 @@ def run_executable_with_mpirun(
     mpi_processes: int,
     args: typing.List[str],
     working_directory: pathlib.Path,
-) -> subprocess.CompletedProcess:
+) -> subprocess.CompletedProcess[str]:
     """
-    Runs the executable at `path` with the provided `args`
+    Runs the executable at `executable` with the provided `args`
     from `working_directory` with `mpi_processes` processes.
 
     >>> empty_path = pathlib.Path()
@@ -166,8 +187,30 @@ def run_executable_with_mpirun(
     ...
     subprocess.CalledProcessError: Command '['mpirun', '-n', '2', '.', '-v']' ...
     """
-    return subprocess.run(
+    return run_process(
         args=["mpirun", "-n", str(mpi_processes), str(executable)] + args,
+        working_directory=working_directory,
+    )
+
+
+def run_process(
+    args: typing.List[str],
+    working_directory: pathlib.Path = pathlib.Path.cwd(),
+) -> subprocess.CompletedProcess[str]:
+    """
+    Runs a process with the provided `args` from `working_directory`.
+
+    >>> empty_path = pathlib.Path()
+    >>> run_process(
+    ...     args=["mpirun", "."],
+    ...     working_directory=empty_path
+    ... ) # doctest: +ELLIPSIS
+    Traceback (most recent call last):
+    ...
+    subprocess.CalledProcessError: Command '['mpirun', '.']' ...
+    """
+    return subprocess.run(
+        args=args,
         cwd=working_directory,
         capture_output=True,
         check=True,
@@ -175,19 +218,19 @@ def run_executable_with_mpirun(
     )
 
 
-def diff_files(
+def diff_text_files(
     case: unittest.TestCase,
     value: pathlib.Path,
     reference: pathlib.Path,
     comparison: ComparisonType,
-):
+) -> None:
     """
     Compares the files at `value`, `reference` as specified by `comparison.
     Results are reported to `case`.
     Nonexisting references are automatically created.
 
     >>> path = pathlib.Path(__file__)
-    >>> diff_files(unittest.TestCase(), path, path, ComparisonType.TEXT)
+    >>> diff_text_files(unittest.TestCase(), path, path, ComparisonType.TEXT)
     """
     if not reference.exists():
         shutil.copy(value, reference)
@@ -197,16 +240,31 @@ def diff_files(
         ComparisonType.NUMERIC: diff_numeric_string,
     }
 
-    with open(value, "r") as value_file:
-        with open(reference, "r") as reference_file:
+    with open(value, "r", encoding="utf-8") as value_file:
+        with open(reference, "r", encoding="utf-8") as reference_file:
             comparison_to_function.get(comparison, lambda _0, _1, _2: None)(
                 value_file.read(), reference_file.read(), case
             )
 
 
+def diff_vtu_files(
+    value: pathlib.Path,
+    reference: pathlib.Path,
+) -> None:
+    """
+    Compares the files at `value`, `reference`.
+    """
+    if not reference.exists():
+        shutil.copy(value, reference)
+
+    run_process(
+        [str(ROOT_DIRECTORY / "tests" / "vtu_diff.py"), str(value), str(reference)]
+    )
+
+
 def diff_text_string(
     value: str, reference: str, case: unittest.TestCase = unittest.TestCase()
-):
+) -> None:
     """
     Checks that the lines in the strings `value` and `reference` are equal.
 
@@ -277,7 +335,7 @@ def extract_numbers(text: typing.Iterable[str]) -> typing.Iterable[float]:
 
 def diff_numeric_string(
     value: str, reference: str, case: unittest.TestCase = unittest.TestCase()
-):
+) -> None:
     """
     Checks that the lines in the strings `value` and `reference` are almost equal
     when interpreted as floats. Non-float lines are interpreted as NaNs.
@@ -322,21 +380,44 @@ def load_tests(
 
     for path in paths:
         group_name, test_name = path.parent.parts[-2:]
-        to_method_name = (
-            lambda processes, name=test_name: f"test_{name}_with_{processes}_mpi_processes"
-        )
 
-        with open(path, "r") as file:
-            test_case_definitions = as_test_case_definitions(
-                path.parent, json.load(file)
-            )
+        def to_method_name(name: str, processes: int) -> str:
+            """
+            Generates a test name given the number of MPI processes.
+            """
+            return f"test_{name}_with_{processes}_mpi_processes"
 
+        with open(path, "r", encoding="utf-8") as file:
+            instance = json.load(file)
+            try:
+                with open(
+                    ROOT_DIRECTORY / "tests" / "schema.json", "r", encoding="utf-8"
+                ) as schema:
+                    jsonschema.validate(instance=instance, schema=json.load(schema))
+                executable_path = pathlib.Path.cwd() / pathlib.Path(
+                    *instance["executable"]
+                )
+                if not executable_path.exists():
+                    print(
+                        f"Warning: Test '{path.parent}' will be skipped. "
+                        f"The executable '{executable_path}' does not exist.",
+                        file=sys.stderr,
+                    )
+                    continue
+                test_case_definitions = as_test_case_definitions(path.parent, instance)
+            except jsonschema.ValidationError as error:
+                print(
+                    f"Warning: Test '{path.parent}' will be skipped. "
+                    f"The test definition is invalid: {error.message}.",
+                    file=sys.stderr,
+                )
+                continue
             testcase = type(
                 group_name,
                 (unittest.TestCase,),
                 {
                     to_method_name(
-                        definition.mpi_processes
+                        test_name, definition.mpi_processes
                     ): lambda case, definition=definition: run_testcase(
                         definition, case
                     )
@@ -350,7 +431,7 @@ def load_tests(
 
 def run_testcase(
     definition: TestCaseDefinition, case: unittest.TestCase = unittest.TestCase()
-):
+) -> None:
     """
     Runs the test defined by `definition` and reports the issues to `case`.
     Nonexisting references are automatically created.
@@ -365,15 +446,36 @@ def run_testcase(
             mpi_processes=definition.mpi_processes,
         )
 
-        with open(directory_path / "stdout.txt", "w") as file:
+        with open(directory_path / "stdout.txt", "w", encoding="utf-8") as file:
             file.write(result.stdout)
 
-        diff_files(
+        diff_text_files(
             case,
             directory_path / "stdout.txt",
             definition.references / "stdout.txt",
             definition.compare_stdout,
         )
+
+        for output in definition.ae108_output:
+            with tempfile.TemporaryDirectory() as conversion_directory:
+                conversion_path = pathlib.Path(conversion_directory)
+                run_process(
+                    args=[str(ROOT_DIRECTORY / "tools" / "generate_xdmf.py")]
+                    + output.xdmf_generator_flags
+                    + [str(directory_path / output.filename)],
+                    working_directory=conversion_path,
+                )
+                run_process(
+                    [
+                        str(ROOT_DIRECTORY / "tools" / "convert_xdmf_to_vtu.py"),
+                        str(conversion_path / output.filename.with_suffix(".xdmf")),
+                    ],
+                    working_directory=conversion_path,
+                )
+                diff_vtu_files(
+                    conversion_path / output.filename.with_suffix(".vtu"),
+                    definition.references / output.filename.with_suffix(".vtu"),
+                )
 
 
 def main() -> None:

@@ -85,6 +85,31 @@ createIndexVector(const Mesh<Policy> &mesh) {
 }
 
 /**
+ * @brief Creates a matrix that contains the vertex index
+ * for every vertex dof.
+ */
+template <class Policy>
+typename Mesh<Policy>::matrix_type createIndexMatrix(const Mesh<Policy> &mesh) {
+  using matrix_type = typename Mesh<Policy>::matrix_type;
+  using value_type = typename Mesh<Policy>::value_type;
+
+  auto matrix = matrix_type::fromMesh(mesh);
+  for (const auto &vertex : mesh.localVertices()) {
+    const auto isGhost = bool{vertex.globalDofLineRange().first < 0};
+    if (isGhost)
+      continue;
+    const auto values =
+        std::vector<value_type>(vertex.numberOfDofs() * vertex.numberOfDofs(),
+                                static_cast<value_type>(vertex.index()));
+    vertex.addVertexMatrix(values, &matrix);
+  }
+
+  matrix.finalize();
+
+  return matrix;
+}
+
+/**
  * @brief Returns a vector of the local values in parameter.
  */
 template <class Policy>
@@ -105,10 +130,7 @@ template <typename T> struct Mesh_Test : Test {
   using value_type = typename mesh_type::value_type;
   using real_type = typename mesh_type::real_type;
 
-  const typename mesh_type::TopologicalDimension topologicalDimension =
-      typename mesh_type::TopologicalDimension(1);
-  const typename mesh_type::CoordinateDimension coordinateDimension =
-      typename mesh_type::CoordinateDimension(2);
+  static constexpr size_type coordinateDimension = 2;
   static constexpr size_type totalNumberOfElements = 3;
   static constexpr size_type totalNumberOfVertices = 3;
   static constexpr size_type verticesPerElement = 2;
@@ -119,8 +141,8 @@ template <typename T> struct Mesh_Test : Test {
   const Connectivity connectivity = {{0, 2}, {1, 2}, {0, 2}};
 
   const mesh_type mesh = mesh_type::fromConnectivity(
-      topologicalDimension, coordinateDimension, connectivity,
-      totalNumberOfVertices, dofPerVertex, dofPerElement);
+      coordinateDimension, connectivity, totalNumberOfVertices, dofPerVertex,
+      dofPerElement);
 };
 
 template <class Policy, int VertexDof, int ElementDof> struct TestCase {
@@ -145,26 +167,7 @@ TYPED_TEST(Mesh_Test, from_connectivity_generates_correct_number_of_entities) {
 }
 
 TYPED_TEST(Mesh_Test, from_connectivity_generates_correct_dimensions) {
-  EXPECT_THAT(this->mesh.topologicalDimension(),
-              Eq(this->topologicalDimension));
   EXPECT_THAT(this->mesh.coordinateDimension(), Eq(this->coordinateDimension));
-}
-
-TYPED_TEST(Mesh_Test, simple_from_connectivity_delegates_to_second_overload) {
-  using size_type = typename TestFixture::size_type;
-  using mesh_type = typename TestFixture::mesh_type;
-
-  const auto dimension = size_type{1};
-  const auto mesh = mesh_type::fromConnectivity(
-      dimension, this->connectivity, this->totalNumberOfVertices,
-      this->dofPerVertex, this->dofPerElement);
-
-  EXPECT_THAT(mesh.topologicalDimension(), Eq(dimension));
-  EXPECT_THAT(mesh.coordinateDimension(), Eq(dimension));
-  EXPECT_THAT(mesh.totalNumberOfVertices(),
-              Eq(this->mesh.totalNumberOfVertices()));
-  EXPECT_THAT(mesh.totalNumberOfElements(),
-              Eq(this->mesh.totalNumberOfElements()));
 }
 
 TYPED_TEST(Mesh_Test, cloned_mesh_has_correct_number_of_entities) {
@@ -903,7 +906,7 @@ TYPED_TEST(Mesh_Test, adding_vertex_0_to_matrix_works) {
     }
 
     const auto input =
-        createData<value_type>(this->verticesPerElement * this->dofPerVertex);
+        createData<value_type>(this->dofPerVertex * this->dofPerVertex);
     vertex.addVertexMatrix(input, &result);
   }
 
@@ -926,11 +929,33 @@ TYPED_TEST(Mesh_Test, adding_vertex_0_to_matrix_works) {
   }
 }
 
+TYPED_TEST(Mesh_Test, reordering_matrix_in_canonical_order_works) {
+  using value_type = typename TestFixture::value_type;
+
+  const auto matrix = createIndexMatrix(this->mesh);
+
+  const auto result = this->mesh.toCanonicalOrder(matrix);
+
+  for (auto offset = 0; offset < this->totalNumberOfVertices; ++offset) {
+    for (auto i = 0; i < this->dofPerVertex; ++i) {
+      for (auto j = 0; j < this->dofPerVertex; ++j) {
+        EXPECT_THAT(
+            result,
+            ScalarEqIfLocal(this->totalNumberOfElements * this->dofPerElement +
+                                offset * this->dofPerVertex + i,
+                            this->totalNumberOfElements * this->dofPerElement +
+                                offset * this->dofPerVertex + j,
+                            static_cast<value_type>(offset)));
+      }
+    }
+  }
+}
+
 TYPED_TEST(Mesh_Test, element_views_are_valid_after_moving_mesh) {
   using mesh_type = typename TestFixture::mesh_type;
 
   auto mesh = mesh_type::fromConnectivity(
-      this->topologicalDimension, this->coordinateDimension, this->connectivity,
+      this->coordinateDimension, this->connectivity,
       this->totalNumberOfVertices, this->dofPerVertex, this->dofPerElement);
   const auto range = mesh.localElements();
   const auto movedMesh = std::move(mesh);

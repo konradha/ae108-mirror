@@ -49,6 +49,9 @@ public:
   /**
    * @brief Initializes the nonlinear solver with the given buffer entities of
    * correct dimension.
+   *
+   * @remark If `buffer_matrix` is of type MATNEST or MATSHELL, then no
+   * preconditioner is applied by default.
    */
   explicit NonlinearSolver(matrix_type buffer_matrix,
                            distributed<vector_type> buffer_vector);
@@ -125,6 +128,21 @@ NonlinearSolver<Policy>::NonlinearSolver(matrix_type buffer_matrix,
     : _snes(makeUniqueEntity<Policy>(createSNES())),
       _buffer_vector(std::move(buffer_vector)),
       _buffer_matrix(std::move(buffer_matrix)) {
+  const auto deactivatePreconditioning = [&]() {
+    auto ksp = KSP{};
+    Policy::handleError(SNESGetKSP(_snes.get(), &ksp));
+    auto pc = PC{};
+    Policy::handleError(KSPGetPC(ksp, &pc));
+    Policy::handleError(PCSetType(pc, PCNONE));
+  };
+
+  auto type = MatType{};
+  Policy::handleError(MatGetType(_buffer_matrix.data(), &type));
+
+  if (std::string(type) == std::string(MATNEST) ||
+      std::string(type) == std::string(MATSHELL)) {
+    deactivatePreconditioning();
+  }
   Policy::handleError(SNESSetFromOptions(_snes.get()));
 }
 

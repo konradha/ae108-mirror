@@ -33,21 +33,22 @@ public:
   /**
    * @brief Constructs the contained value with the given arguments.
    */
-  template <class... Args> explicit constexpr TaggedEntity(Args &&... args);
+  template <class... Args> explicit constexpr TaggedEntity(Args &&...args);
 
   /**
    * @brief Calls operator() of the contained value.
    */
   template <class... Args>
-  auto operator()(Args &&... args)
+  auto operator()(Args &&...args)
       -> decltype(std::declval<value_type>()(std::forward<Args>(args)...));
 
   /**
    * @brief Calls operator() of the contained value.
    */
   template <class... Args>
-  constexpr auto operator()(Args &&... args) const -> decltype(
-      std::declval<const value_type>()(std::forward<Args>(args)...));
+  constexpr auto operator()(Args &&...args) const
+      -> decltype(std::declval<const value_type>()(
+          std::forward<Args>(args)...));
 
   /**
    * @brief Returns a const reference to the contained value.
@@ -100,12 +101,12 @@ namespace cpppetsc {
 
 template <class Entity, class Tag>
 template <class... Args>
-constexpr TaggedEntity<Entity, Tag>::TaggedEntity(Args &&... args)
+constexpr TaggedEntity<Entity, Tag>::TaggedEntity(Args &&...args)
     : _value(std::forward<Args>(args)...) {}
 
 template <class Entity, class Tag>
 template <class... Args>
-auto TaggedEntity<Entity, Tag>::operator()(Args &&... args)
+auto TaggedEntity<Entity, Tag>::operator()(Args &&...args)
     -> decltype(std::declval<typename TaggedEntity<Entity, Tag>::value_type>()(
         std::forward<Args>(args)...)) {
   return _value(std::forward<Args>(args)...);
@@ -113,10 +114,10 @@ auto TaggedEntity<Entity, Tag>::operator()(Args &&... args)
 
 template <class Entity, class Tag>
 template <class... Args>
-constexpr auto TaggedEntity<Entity, Tag>::operator()(Args &&... args) const
-    -> decltype(
-        std::declval<const typename TaggedEntity<Entity, Tag>::value_type>()(
-            std::forward<Args>(args)...)) {
+constexpr auto TaggedEntity<Entity, Tag>::operator()(Args &&...args) const
+    -> decltype(std::declval<
+                const typename TaggedEntity<Entity, Tag>::value_type>()(
+        std::forward<Args>(args)...)) {
   return _value(std::forward<Args>(args)...);
 }
 

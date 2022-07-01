@@ -45,9 +45,18 @@ template <class Policy> struct Vector_Test : Test {
 using Policies = Types<SequentialComputePolicy, ParallelComputePolicy>;
 TYPED_TEST_CASE(Vector_Test, Policies);
 
-TYPED_TEST(Vector_Test, create_vector_of_length_1) {
-  typename TestFixture::vector_type vec(1);
+TYPED_TEST(Vector_Test, vector_with_1_global_row_has_global_size_1) {
+  const typename TestFixture::vector_type vec(1);
   EXPECT_THAT(vec.size(), Eq(1));
+}
+
+TYPED_TEST(Vector_Test, vector_with_2_local_rows_has_local_size_2) {
+  using vector_type = typename TestFixture::vector_type;
+
+  const typename TestFixture::vector_type vec(
+      typename vector_type::LocalRows{2},
+      typename vector_type::GlobalRows{PETSC_DETERMINE});
+  EXPECT_THAT(vec.localSize(), Eq(2));
 }
 
 TYPED_TEST(Vector_Test, local_range_works) {

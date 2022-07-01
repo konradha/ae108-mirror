@@ -1,0 +1,22 @@
+{
+  "name": "ae108-dev-real",
+  "settings": {
+    "cmake.sourceDirectory": "${workspaceFolder}",
+    "cmake.buildDirectory": "${workspaceFolder}/build"
+  },
+  "extensions": [
+    "ms-vscode.cpptools",
+    "ms-vscode.cmake-tools",
+    "ms-python.vscode-pylance",
+    "ms-azuretools.vscode-docker",
+    "gitlab.gitlab-workflow"
+  ],
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "dev-real",
+  "workspaceFolder": "/mnt/io",
+  "remoteEnv": {
+    "OMPI_ALLOW_RUN_AS_ROOT": "1",
+    "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM": "1",
+    "OMPI_MCA_btl_vader_single_copy_mechanism": "none"
+  }
+}

@@ -21,6 +21,7 @@
 #include "ae108/cpppetsc/Mesh_fwd.h"
 #include "ae108/cpppetsc/ParallelComputePolicy_fwd.h"
 #include "ae108/cpppetsc/SequentialComputePolicy_fwd.h"
+#include "ae108/cpppetsc/TaggedEntity.h"
 #include "ae108/cpppetsc/UniqueEntity.h"
 #include <cstring>
 #include <initializer_list>
@@ -42,10 +43,24 @@ public:
   using value_type = PetscScalar;
   using real_type = PetscReal;
 
+  using LocalRows = TaggedEntity<size_type, struct LocalRowsTag>;
+  using GlobalRows = TaggedEntity<size_type, struct GlobalRowsTag>;
+  using LocalCols = TaggedEntity<size_type, struct LocalColsTag>;
+  using GlobalCols = TaggedEntity<size_type, struct GlobalColsTag>;
+
   /**
    * @brief Allocates a matrix with global_rows rows and global_columns columns.
    */
   explicit Matrix(size_type global_rows, size_type global_columns);
+
+  /**
+   * @brief Allocates a matrix with the provided layout.
+   *
+   * @remark Use PETSC_DETERMINE for the global rows/columns to let PETSc
+   * determine the sum.
+   */
+  explicit Matrix(LocalRows local_rows, LocalCols local_columns,
+                  GlobalRows global_rows, GlobalCols global_columns);
 
   /**
    * @brief Creates a Matrix from a list of rows.
@@ -113,6 +128,11 @@ public:
   std::pair<size_type, size_type> size() const;
 
   /**
+   * @brief Returns a pair of (number of rows, number of columns).
+   */
+  std::pair<size_type, size_type> localSize() const;
+
+  /**
    * @brief Returns the block size of the matrix.
    */
   size_type blockSize() const;
@@ -135,8 +155,8 @@ public:
    *
    * @param nonZeroesPerRow The maximum number of nonzero values per row to
    * expect. If the matrix is of type MPIAIJ, then this parameter defines the
-   * number of nonzero values in the diagonal block. No space for
-   * values in the off-diagonal block is allocated in this case.
+   * number of nonzero values in the diagonal block. The same number of values
+   * is permitted in the off-diagonal block.
    *
    * @throw InvalidParametersException if matrix is not of type SEQAIJ or
    * MPIAIJ.
@@ -161,6 +181,12 @@ public:
    * (first row index, last row index + 1).
    */
   std::pair<size_type, size_type> localRowRange() const;
+
+  /**
+   * @brief Returns the local column indices in the format:
+   * (first column index, last column index + 1).
+   */
+  std::pair<size_type, size_type> localColumnRange() const;
 
   /**
    * @brief Returns the entry at the provided coordinates.
@@ -385,9 +411,15 @@ Matrix<Policy>::Matrix(UniqueEntity<Mat> mat) : _mat(std::move(mat)) {}
 template <class Policy>
 Matrix<Policy>::Matrix(const size_type global_rows,
                        const size_type global_columns)
+    : Matrix(LocalRows{PETSC_DECIDE}, LocalCols{PETSC_DECIDE},
+             GlobalRows{global_rows}, GlobalCols{global_columns}) {}
+
+template <class Policy>
+Matrix<Policy>::Matrix(LocalRows local_rows, LocalCols local_columns,
+                       GlobalRows global_rows, GlobalCols global_columns)
     : _mat(makeUniqueEntity<Policy>(createMat())) {
   Policy::handleError(MatSetFromOptions(_mat.get()));
-  Policy::handleError(MatSetSizes(_mat.get(), PETSC_DETERMINE, PETSC_DETERMINE,
+  Policy::handleError(MatSetSizes(_mat.get(), local_rows, local_columns,
                                   global_rows, global_columns));
   Policy::handleError(MatSetUp(_mat.get()));
   finalize();
@@ -428,7 +460,8 @@ Matrix<Policy>::preallocatedAssemblyView(const size_type nonZeroesPerRow) {
   if (std::strcmp(type, MATSEQAIJ) == 0) {
     MatSeqAIJSetPreallocation(_mat.get(), nonZeroesPerRow, nullptr);
   } else if (std::strcmp(type, MATMPIAIJ) == 0) {
-    MatMPIAIJSetPreallocation(_mat.get(), nonZeroesPerRow, nullptr, 0, nullptr);
+    MatMPIAIJSetPreallocation(_mat.get(), nonZeroesPerRow, nullptr,
+                              nonZeroesPerRow, nullptr);
   } else {
     throw InvalidParametersException{};
   }
@@ -504,10 +537,19 @@ template <class Policy>
 std::pair<typename Matrix<Policy>::size_type,
           typename Matrix<Policy>::size_type>
 Matrix<Policy>::size() const {
-  auto return_value = std::pair<size_type, size_type>();
+  auto result = std::pair<size_type, size_type>();
+  Policy::handleError(MatGetSize(_mat.get(), &result.first, &result.second));
+  return result;
+}
+
+template <class Policy>
+std::pair<typename Matrix<Policy>::size_type,
+          typename Matrix<Policy>::size_type>
+Matrix<Policy>::localSize() const {
+  auto result = std::pair<size_type, size_type>();
   Policy::handleError(
-      MatGetSize(_mat.get(), &return_value.first, &return_value.second));
-  return return_value;
+      MatGetLocalSize(_mat.get(), &result.first, &result.second));
+  return result;
 }
 
 template <class Policy>
@@ -524,6 +566,16 @@ Matrix<Policy>::localRowRange() const {
   auto return_value = std::pair<size_type, size_type>();
   Policy::handleError(MatGetOwnershipRange(_mat.get(), &return_value.first,
                                            &return_value.second));
+  return return_value;
+}
+
+template <class Policy>
+std::pair<typename Matrix<Policy>::size_type,
+          typename Matrix<Policy>::size_type>
+Matrix<Policy>::localColumnRange() const {
+  auto return_value = std::pair<size_type, size_type>();
+  Policy::handleError(MatGetOwnershipRangeColumn(
+      _mat.get(), &return_value.first, &return_value.second));
   return return_value;
 }
 

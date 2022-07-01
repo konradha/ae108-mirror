@@ -20,6 +20,7 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./Exception.cc
             ./GeneralizedMeshBoundaryConditition.cc
             ./InvalidParametersException.cc
+            ./LeastSquaresSolver.cc
             ./LinearSolver.cc
             ./LinearSolverDivergedException.cc
             ./LocalVertexView.cc
@@ -44,9 +45,10 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./Vector.cc
             ./Vector_fwd.cc
             ./Viewer.cc
+            ./asHermitianTransposedMatrix.cc
             ./asInverseMatrix.cc
             ./asSchurComplement.cc
-            ./asTransformedMatrix.cc
+            ./asThAT.cc
             ./asTransposedMatrix.cc
             ./clone.cc
             ./computeElementsOfMatrix.cc
@@ -59,7 +61,10 @@ add_library(${PROJECT_NAME}-cpppetsc
             ./createVectorFromSource.cc
             ./getName.cc
             ./multiply.cc
+            ./nestMatrices.cc
+            ./nestVectors.cc
             ./readFromViewer.cc
+            ./scalarProduct.cc
             ./setName.cc
             ./vertexDataOffsets.cc
             ./writeToViewer.cc
@@ -71,13 +76,13 @@ target_include_directories(${PROJECT_NAME}-cpppetsc PUBLIC
                            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
-find_package(AE108_PETSc 3.12 MODULE REQUIRED)
-find_package(range-v3 0.10.0 CONFIG REQUIRED)
+find_package(AE108_PETSc 3.15 MODULE REQUIRED)
+find_package(range-v3 0.11.0 CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME}-cpppetsc
                       PUBLIC ${PROJECT_NAME}::external::petsc
                       PUBLIC range-v3::range-v3
 )
 
-target_compile_features(${PROJECT_NAME}-cpppetsc PUBLIC cxx_std_11)
+target_compile_features(${PROJECT_NAME}-cpppetsc PUBLIC cxx_std_17)
 
 ae108_install_library(cpppetsc)

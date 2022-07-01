@@ -15,7 +15,7 @@
 #include "ae108/cpppetsc/Matrix.h"
 #include "ae108/cpppetsc/ParallelComputePolicy.h"
 #include "ae108/cpppetsc/SequentialComputePolicy.h"
-#include "ae108/cpppetsc/asTransformedMatrix.h"
+#include "ae108/cpppetsc/asThAT.h"
 #include "ae108/cpppetsc/computeElementsOfMatrix.h"
 #include "ae108/cppslepc/computeEigenvalues.h"
 #include <gmock/gmock.h>
@@ -79,7 +79,7 @@ TYPED_TEST(computeEigenvalues_Test,
       {0., 1.},
   });
 
-  EXPECT_THAT(computeEigenvalues(cpppetsc::asTransformedMatrix(&A, &T)),
+  EXPECT_THAT(computeEigenvalues(cpppetsc::asThAT(&A, &T)),
               ElementsAre(ComplexNear(2., 1e-7), ComplexNear(1., 1e-7)));
 }
 
@@ -97,7 +97,7 @@ TYPED_TEST(
       {0., 1.},
   });
 
-  EXPECT_THAT(computeGeneralizedEigenvalues(A, B),
+  EXPECT_THAT(computeEigenvalues(A, B),
               ElementsAre(ComplexNear(2., 1e-7), ComplexNear(1., 1e-7)));
 }
 
@@ -119,11 +119,10 @@ TYPED_TEST(
       {0., 1.},
   });
 
-  EXPECT_THAT(
-      computeGeneralizedEigenvalues(cpppetsc::asTransformedMatrix(&A, &T),
-                                    cpppetsc::computeElementsOfMatrix(
-                                        cpppetsc::asTransformedMatrix(&B, &T))),
-      ElementsAre(ComplexNear(2., 1e-7), ComplexNear(1., 1e-7)));
+  EXPECT_THAT(computeEigenvalues(
+                  cpppetsc::asThAT(&A, &T),
+                  cpppetsc::computeElementsOfMatrix(cpppetsc::asThAT(&B, &T))),
+              ElementsAre(ComplexNear(2., 1e-7), ComplexNear(1., 1e-7)));
 }
 
 TYPED_TEST(
@@ -141,7 +140,7 @@ TYPED_TEST(
   });
 
   EXPECT_THAT(
-      computeGeneralizedEigenvalues(A, B),
+      computeEigenvalues(A, B),
       ElementsAre(ComplexNear(2. / 2., 1e-7), ComplexNear(1. / 2., 1e-7)));
 }
 

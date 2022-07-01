@@ -153,7 +153,7 @@ struct MaterialModel_Test : ::testing::Test {
       const Eigen::Matrix<ValueType, Rows, Cols> &value,
       const Eigen::Matrix<ValueType, Rows, Cols> &reference) noexcept {
     constexpr auto epsilon =
-        std::numeric_limits<typename MaterialModel::value_type>::epsilon();
+        std::numeric_limits<typename MaterialModel::real_type>::epsilon();
     return (value.norm() <= epsilon && reference.norm() <= epsilon) ||
            value.isApprox(reference);
   }

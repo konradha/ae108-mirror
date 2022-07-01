@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "executable": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "compare_stdout": {
+      "type": "string",
+      "enum": [
+        "numeric",
+        "text",
+        "none"
+      ],
+      "default": "none"
+    },
+    "mpi_processes": {
+      "type": "array",
+      "default": "[1]",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "ae108_output": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "filename"
+        ],
+        "properties": {
+          "filename": {
+            "type": "string"
+          },
+          "xdmf_generator_flags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "args": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    }
+  },
+  "required": [
+    "executable"
+  ],
+  "additionalProperties": false
+}

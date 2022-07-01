@@ -68,12 +68,13 @@ OutputIterator serialize(const std::vector<ValueType> &vector,
 template <class OutputIterator, class ValueType, int Rows, int Cols>
 OutputIterator serialize(const Eigen::Matrix<ValueType, Rows, Cols> &vector,
                          OutputIterator bufferBegin) {
-  std::array<ValueType, Rows * Cols> buffer;
-  Eigen::Map<Eigen::Matrix<ValueType, Rows, Cols,
-                           Cols == 1 ? Eigen::ColMajor : Eigen::RowMajor>>
-      wrappedBuffer(buffer.data(), vector.rows(), vector.cols());
-  wrappedBuffer = vector;
-  return std::copy(buffer.begin(), buffer.end(), bufferBegin);
+  for (Eigen::Index i = 0; i < vector.rows(); ++i) {
+    for (Eigen::Index j = 0; j < vector.cols(); ++j) {
+      *bufferBegin = vector(i, j);
+      bufferBegin++;
+    }
+  }
+  return bufferBegin;
 }
 
 /**

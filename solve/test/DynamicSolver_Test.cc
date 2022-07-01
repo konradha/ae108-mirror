@@ -66,7 +66,6 @@ constexpr double constantTimeStep = .1;
 
 template <class Policy> struct DynamicSolver_Test : Test {
   using assembler_type = test::Assembler_Mock<Policy>;
-  assembler_type assembler;
 
   using solver_type = Solver_Mock<Policy>;
   solver_type solver;
@@ -80,6 +79,8 @@ template <class Policy> struct DynamicSolver_Test : Test {
   typename assembler_type::mesh_type mesh =
       assembler_type::mesh_type::template fromConnectivity<
           std::array<std::array<int, 1>, 1>>(1, {{{{0}}}}, 1, 2);
+
+  assembler_type assembler{&mesh};
 
   using vector_type = typename dynamic_solver_type::vector_type;
 
@@ -262,8 +263,8 @@ TYPED_TEST(DynamicSolver_Test, computes_correct_effective_forces) {
         const auto full = TestFixture::vector_type::fromDistributed(forces);
 
         EXPECT_THAT(full.unwrap(), SizeIs(2));
-        EXPECT_THAT(full(0), ScalarEq(-264.));
-        EXPECT_THAT(full(1), ScalarEq(-499.));
+        EXPECT_THAT(full(0), ScalarEq(-265.));
+        EXPECT_THAT(full(1), ScalarEq(-500.));
 
         return TestFixture::vector_type::fromGlobalMesh(this->mesh);
       };
@@ -319,8 +320,8 @@ TYPED_TEST(DynamicSolver_Test,
         const auto full = TestFixture::vector_type::fromDistributed(forces);
 
         EXPECT_THAT(full.unwrap(), SizeIs(2));
-        EXPECT_THAT(full(0), ScalarEq(1200.));
-        EXPECT_THAT(full(1), ScalarEq(1747.));
+        EXPECT_THAT(full(0), ScalarEq(1197.));
+        EXPECT_THAT(full(1), ScalarEq(1743.));
 
         return TestFixture::vector_type::fromGlobalMesh(this->mesh);
       };
@@ -343,10 +344,10 @@ TYPED_TEST(DynamicSolver_Test, computes_correct_effective_stiffness) {
         auto matrix = TestFixture::matrix_type::fromMesh(this->mesh);
         assemble(guess, time, &matrix);
 
-        EXPECT_THAT(matrix, ScalarEqIfLocal(0, 0, -378.));
+        EXPECT_THAT(matrix, ScalarEqIfLocal(0, 0, -379.));
         EXPECT_THAT(matrix, ScalarEqIfLocal(0, 1, 740.));
         EXPECT_THAT(matrix, ScalarEqIfLocal(1, 0, -1160.));
-        EXPECT_THAT(matrix, ScalarEqIfLocal(1, 1, 1522.));
+        EXPECT_THAT(matrix, ScalarEqIfLocal(1, 1, 1521.));
 
         return TestFixture::vector_type::fromGlobalMesh(this->mesh);
       };
@@ -402,10 +403,10 @@ TYPED_TEST(DynamicSolver_Test,
 
         assemble(probe, time, &matrix);
 
-        EXPECT_THAT(matrix, ScalarEqIfLocal(0, 0, -378.));
+        EXPECT_THAT(matrix, ScalarEqIfLocal(0, 0, -379.));
         EXPECT_THAT(matrix, ScalarEqIfLocal(0, 1, 740.));
         EXPECT_THAT(matrix, ScalarEqIfLocal(1, 0, -1160.));
-        EXPECT_THAT(matrix, ScalarEqIfLocal(1, 1, 1522.));
+        EXPECT_THAT(matrix, ScalarEqIfLocal(1, 1, 1521.));
 
         return TestFixture::vector_type::fromGlobalMesh(this->mesh);
       };

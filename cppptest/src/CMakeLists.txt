@@ -25,11 +25,11 @@ add_library(${PROJECT_NAME}::cppptest ALIAS ${PROJECT_NAME}-cppptest)
 
 target_include_directories(${PROJECT_NAME}-cppptest PUBLIC include)
 
-find_package(AE108_GTest MODULE REQUIRED)
+find_package(GTest 1.8.1 CONFIG REQUIRED)
 find_package(AE108_PETSc 3.12 MODULE REQUIRED)
 target_link_libraries(${PROJECT_NAME}-cppptest
                       PRIVATE ${PROJECT_NAME}::external::petsc
                       PUBLIC GTest::gmock
 )
 
-target_compile_features(${PROJECT_NAME}-cppptest PUBLIC cxx_std_11)
+target_compile_features(${PROJECT_NAME}-cppptest PUBLIC cxx_std_17)

@@ -15,6 +15,7 @@
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
 add_executable(${PROJECT_NAME}-ElementsTests
+               Bar_Test.cc
                CoreElement_Test.cc
                ForceElement_Test.cc
                TimoshenkoBeamElement_Test.cc
@@ -30,6 +31,7 @@ add_executable(${PROJECT_NAME}-ElementsTests
                mesh/generate_quadratic_triangle_mesh_Test.cc
                mesh/generate_tetrahedron_mesh_Test.cc
                mesh/generate_triangle_mesh_Test.cc
+               mesh/refine_segment_mesh_Test.cc
                quadrature/Quadrature_Test.cc
                shape/Hexa8_Test.cc
                shape/Quad4_Test.cc
@@ -47,7 +49,7 @@ add_executable(${PROJECT_NAME}-ElementsTests
 
 add_test(NAME ${PROJECT_NAME}-ElementsTests COMMAND $<TARGET_FILE:${PROJECT_NAME}-ElementsTests>)
 
-find_package(AE108_GTest MODULE REQUIRED)
+find_package(GTest 1.8.1 CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME}-ElementsTests PUBLIC
                       ${PROJECT_NAME}-elements
                       GTest::gmock_main

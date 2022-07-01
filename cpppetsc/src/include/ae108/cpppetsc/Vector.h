@@ -53,11 +53,21 @@ public:
    */
   explicit Vector(const size_type global_size);
 
+  using LocalRows = TaggedEntity<size_type, struct LocalRowsTag>;
+  using GlobalRows = TaggedEntity<size_type, struct GlobalRowsTag>;
+
   /**
-   * @brief Allocates a vector of length global_size and initializes the vector
+   * @brief Allocates a vector with the provided layout.
+   *
+   * @remark Does not initialize the vector.
+   */
+  explicit Vector(const LocalRows localRows, GlobalRows globalRows);
+
+  /**
+   * @brief Allocates a vector of length globalRows and initializes the vector
    * to value.
    */
-  explicit Vector(const size_type global_size, const value_type value);
+  explicit Vector(const size_type globalRows, const value_type value);
 
   /**
    * @brief Constructs a vector with the provided entries.
@@ -195,6 +205,11 @@ public:
   size_type size() const;
 
   /**
+   * @brief Returns the local size of the vector.
+   */
+  size_type localSize() const;
+
+  /**
    * @brief Returns the local row indices in the format:
    *
    * (first row index, last row index + 1).
@@ -224,7 +239,7 @@ public:
   Vec data() const;
 
 private:
-  static Vec createVec(const size_type global_size);
+  static Vec createVec(const LocalRows localRows, const GlobalRows globalRows);
 
   UniqueEntity<Vec> _vec;
 };
@@ -261,22 +276,27 @@ namespace ae108 {
 namespace cpppetsc {
 
 template <class Policy>
-Vec Vector<Policy>::createVec(const size_type global_size) {
+Vec Vector<Policy>::createVec(const LocalRows localRows,
+                              const GlobalRows globalRows) {
   Vec vec;
   Policy::handleError(
-      VecCreateMPI(Policy::communicator(), PETSC_DECIDE, global_size, &vec));
+      VecCreateMPI(Policy::communicator(), localRows, globalRows, &vec));
   return vec;
 }
 
 template <class Policy>
-Vector<Policy>::Vector(const size_type global_size)
-    : _vec(makeUniqueEntity<Policy>(createVec(global_size))) {
+Vector<Policy>::Vector(const size_type globalRows)
+    : Vector(LocalRows{PETSC_DECIDE}, GlobalRows{globalRows}) {}
+
+template <class Policy>
+Vector<Policy>::Vector(const LocalRows localRows, const GlobalRows globalRows)
+    : _vec(makeUniqueEntity<Policy>(createVec(localRows, globalRows))) {
   Policy::handleError(VecSetFromOptions(_vec.get()));
 }
 
 template <class Policy>
-Vector<Policy>::Vector(const size_type global_size, const value_type value)
-    : Vector(global_size) {
+Vector<Policy>::Vector(const size_type globalRows, const value_type value)
+    : Vector(globalRows) {
   fill(value);
 }
 
@@ -465,6 +485,13 @@ template <class Policy>
 typename Vector<Policy>::size_type Vector<Policy>::size() const {
   size_type size = 0;
   Policy::handleError(VecGetSize(_vec.get(), &size));
+  return size;
+}
+
+template <class Policy>
+typename Vector<Policy>::size_type Vector<Policy>::localSize() const {
+  size_type size = 0;
+  Policy::handleError(VecGetLocalSize(_vec.get(), &size));
   return size;
 }
 

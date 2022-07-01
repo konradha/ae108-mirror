@@ -17,8 +17,11 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 add_library(${PROJECT_NAME}-elements
             AutomaticForcesTrait.cc
             AutomaticStiffnessMatrixTrait.cc
+            Bar.cc
+            ComputeConsistentMassMatrixTrait.cc
             ComputeEnergyTrait.cc
             ComputeForcesTrait.cc
+            ComputeLumpedMassMatrixTrait.cc
             ComputeStiffnessMatrixTrait.cc
             ComputeMassMatrixTrait.cc
             CoreElement.cc
@@ -29,8 +32,10 @@ add_library(${PROJECT_NAME}-elements
             TimoshenkoBeamElementWithMass.cc
             automatic_forces.cc
             automatic_stiffness_matrix.cc
+            compute_consistent_mass_matrix.cc
             compute_energy.cc
             compute_forces.cc
+            compute_lumped_mass_matrix.cc
             compute_stiffness_matrix.cc
             embedding/AutomaticJacobianTrait.cc
             embedding/EmbedTrait.cc
@@ -40,10 +45,14 @@ add_library(${PROJECT_NAME}-elements
             embedding/automatic_jacobian.cc
             embedding/compute_jacobian.cc
             embedding/embed_point.cc
+            integrator/ComputeVolumeTrait.cc
+            integrator/IntegrateShapeTrait.cc
             integrator/IntegrateTrait.cc
             integrator/IntegratorBase.cc
             integrator/IsoparametricIntegrator.cc
+            integrator/compute_volume.cc
             integrator/integrate.cc
+            integrator/integrate_shape.cc
             materialmodels/AutomaticStressTrait.cc
             materialmodels/AutomaticTangentMatrixTrait.cc
             materialmodels/ComputeEnergyTrait.cc
@@ -65,6 +74,7 @@ add_library(${PROJECT_NAME}-elements
             mesh/generate_quadratic_triangle_mesh.cc
             mesh/generate_tetrahedron_mesh.cc
             mesh/generate_triangle_mesh.cc
+            mesh/refine_segment_mesh.cc
             quadrature/IntegrateTrait.cc
             quadrature/Quadrature.cc
             quadrature/QuadratureBase.cc

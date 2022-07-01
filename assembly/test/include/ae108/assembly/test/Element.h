@@ -50,6 +50,17 @@ template <class ValueType_> struct Element {
   MOCK_METHOD2_T(updateInternalVariables,
                  void(const NodalDisplacements &, const double));
 };
+
+template <class ValueType_>
+auto compute_consistent_mass_matrix(const Element<ValueType_> &element) {
+  return element.computeConsistentMassMatrix();
+}
+
+template <class ValueType_>
+auto compute_lumped_mass_matrix(const Element<ValueType_> &element) {
+  return element.computeLumpedMassMatrix();
+}
+
 } // namespace test
 } // namespace assembly
 } // namespace ae108

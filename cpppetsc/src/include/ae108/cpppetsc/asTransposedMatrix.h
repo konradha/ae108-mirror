@@ -22,7 +22,7 @@ namespace ae108 {
 namespace cpppetsc {
 
 /**
- * @brief Returns a matrix that behaves like the Hermitian transpose.
+ * @brief Returns a matrix that behaves like the transpose.
  *
  * Note that the matrix is not actually computed, but the returned matrix
  * stores a reference to the given matrix to compute the result of
@@ -53,7 +53,7 @@ Matrix<Policy> asTransposedMatrix(const Matrix<Policy> *matrix) {
   assert(matrix);
 
   auto mat = Mat{};
-  Policy::handleError(MatCreateHermitianTranspose(matrix->data(), &mat));
+  Policy::handleError(MatCreateTranspose(matrix->data(), &mat));
   return Matrix<Policy>(makeUniqueEntity<Policy>(mat));
 }
 

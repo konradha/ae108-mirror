@@ -1,0 +1,17 @@
+{
+  "$schema": "../../schema.json",
+  "executable": [
+    "examples",
+    "ae108-examples-QuadraticTriangles"
+  ],
+  "ae108_output": [
+    {
+      "filename": "quadratic_triangles.ae108"
+    }
+  ],
+  "compare_stdout": "text",
+  "mpi_processes": [
+    1,
+    3
+  ]
+}

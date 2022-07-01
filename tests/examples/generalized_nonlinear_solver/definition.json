@@ -1,0 +1,16 @@
+{
+  "$schema": "../../schema.json",
+  "executable": [
+    "examples",
+    "ae108-examples-GeneralizedNonlinearSolver"
+  ],
+  "args": [
+    "-ksp_type",
+    "fgmres"
+  ],
+  "compare_stdout": "numeric",
+  "mpi_processes": [
+    1,
+    3
+  ]
+}

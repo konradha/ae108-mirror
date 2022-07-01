@@ -17,6 +17,7 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
 add_executable(${PROJECT_NAME}-CppPetscTests
                ./InvalidParametersException_Test.cc
+               ./LeastSquaresSolver_Test.cc
                ./LinearSolverDivergedException_Test.cc
                ./LinearSolver_Test.cc
                ./Matrix_Test.cc
@@ -28,9 +29,10 @@ add_executable(${PROJECT_NAME}-CppPetscTests
                ./TAOSolver_Test.cc
                ./TaggedEntity_Test.cc
                ./Vector_Test.cc
+               ./asHermitianTransposedMatrix_Test.cc
                ./asInverseMatrix_Test.cc
                ./asSchurComplement_Test.cc
-               ./asTransformedMatrix_Test.cc
+               ./asThAT_Test.cc
                ./asTransposedMatrix_Test.cc
                ./clone_Test.cc
                ./computeElementsOfMatrix_Test.cc
@@ -42,6 +44,9 @@ add_executable(${PROJECT_NAME}-CppPetscTests
                ./createTransformOutput_Test.cc
                ./createVectorFromSource_Test.cc
                ./multiply_Test.cc
+               ./nestMatrices_Test.cc
+               ./nestVectors_Test.cc
+               ./scalarProduct_Test.cc
                ./setName_Test.cc
                ./vertexDataOffsets_Test.cc
 )

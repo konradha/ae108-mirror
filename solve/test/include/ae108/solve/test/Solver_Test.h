@@ -29,7 +29,8 @@ namespace solve {
 namespace test {
 namespace {
 
-template <class Policy> struct Assembler_Mock {
+template <class Policy> class Assembler_Mock {
+public:
   static constexpr double constantTime = .77;
 
   using policy_type = Policy;
@@ -39,6 +40,8 @@ template <class Policy> struct Assembler_Mock {
   using size_type = typename mesh_type::size_type;
   using value_type = typename mesh_type::value_type;
   using real_type = typename mesh_type::real_type;
+
+  explicit Assembler_Mock(const mesh_type *mesh) : mesh_(mesh) {}
 
   /**
    * @brief Computes |x - 1|^2 * |y - 2|^2 + 1
@@ -51,11 +54,12 @@ template <class Policy> struct Assembler_Mock {
 
     EXPECT_THAT(time, ::testing::DoubleEq(constantTime));
 
-    if (displacements.unwrap().size() > 0) {
-      const auto x = displacements(0);
-      const auto y = displacements(1);
+    for (auto &&element : mesh_->localElements()) {
+      auto in = std::vector<value_type>(2);
+      element.copyElementData(displacements, &in);
 
-      *energy = std::norm(x - 1) + std::norm(y - 2) + 1.;
+      *energy += .5 * std::norm(in.at(0) - 1);
+      *energy += .5 * std::norm(in.at(1) - 2);
     }
   }
 
@@ -71,13 +75,17 @@ template <class Policy> struct Assembler_Mock {
 
     EXPECT_THAT(time, ::testing::DoubleEq(constantTime));
 
-    const auto replacer = force->unwrap().replace();
-    if (displacements.unwrap().size() > 0) {
-      const auto x = displacements(0);
-      const auto y = displacements(1);
+    for (auto &&element : mesh_->localElements()) {
+      auto in = std::vector<value_type>(1);
+      element.copyElementData(displacements, &in);
 
-      replacer(0) = 2. * std::real(x - 1.);
-      replacer(1) = 2. * std::real(y - 2.);
+      ASSERT_THAT(in, ::testing::SizeIs(2));
+
+      auto out = std::vector<value_type>(2);
+      out.at(0) = in.at(0) - 1.;
+      out.at(1) = in.at(1) - 2.;
+
+      element.addElementData(out, force);
     }
   }
 
@@ -86,21 +94,21 @@ template <class Policy> struct Assembler_Mock {
    * @remark Expects to be called with the time constant.
    * @remark Expects two degrees of freedom, both on the same rank.
    */
-  void
-  assembleStiffnessMatrix(const cpppetsc::local<vector_type> &displacements,
-                          const double time, matrix_type *const matrix) const {
+  void assembleStiffnessMatrix(const cpppetsc::local<vector_type> &,
+                               const double time,
+                               matrix_type *const matrix) const {
     assert(matrix);
 
     EXPECT_THAT(time, ::testing::DoubleEq(constantTime));
 
-    const auto replacer = matrix->assemblyView().replace();
-    if (displacements.unwrap().size() > 0) {
-      replacer(0, 0) = 2.;
-      replacer(0, 1) = 0.;
-      replacer(1, 0) = 0.;
-      replacer(1, 1) = 2.;
+    for (auto &&element : mesh_->localElements()) {
+      const auto out = std::vector<value_type>{1., 0., 0., 1.};
+      element.addElementMatrix(out, matrix);
     }
   }
+
+private:
+  const mesh_type *mesh_;
 };
 } // namespace
 } // namespace test
@@ -143,7 +151,7 @@ template <class TestConfiguration> struct Solver_Test : ::testing::Test {
           1, {{{0, 1}, {0, 1}}}, 2, 1);
 
   solver_type solver = solver_type{&mesh};
-  assembler_type assembler;
+  assembler_type assembler{&mesh};
 };
 
 TYPED_TEST_CASE_P(Solver_Test);

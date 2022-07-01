@@ -56,27 +56,26 @@ The project uses [CMake](https://cmake.org) as its build system generator. The f
 - [Google Test](https://github.com/google/googletest): version 1.8.1
 - [HDF5](https://www.hdfgroup.org/solutions/hdf5/): version 1.10
 - [MPI](https://cmake.org/cmake/help/latest/module/FindMPI.html): version 3.1
-- [PETSc](https://www.mcs.anl.gov/petsc/): version 3.12
-- [Range-v3](https://github.com/ericniebler/range-v3): version 0.10
-- [SLEPc](https://slepc.upv.es/): version 3.12
+- [PETSc](https://www.mcs.anl.gov/petsc/): version 3.15
+- [Range-v3](https://github.com/ericniebler/range-v3): version 0.11
+- [SLEPc](https://slepc.upv.es/): version 3.15
 
 Of course, these libraries are covered by their own license terms. Since PETSc and SLEPc do not provide a CMake configuration file, these libraries are found using the provided find modules in ```cmake/modules/```, which in turn are based on ```pkg-config```.
 
 Once you have installed these libraries, run CMake to build the project, choosing a location to install the library to by specifying ```CMAKE_INSTALL_PREFIX```; see the following example. Of course, depending on your setup, you might need to add a ```-DCMAKE_PREFIX_PATH='...'``` parameter to tell CMake the location of the third party library installations.
 
 ```bash
-mkdir build
-cd build
 cmake \
+    -S . \
+    -B build \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX='install/to/path' \
-    ..
+    -DCMAKE_INSTALL_PREFIX='install/to/path'
 ```
 
-Now run ```make``` to build and install:
+Now use ```cmake``` to build and install:
 
 ```bash
-make -j$(nproc) install
+cmake --build build --target install -- -j$(nproc)
 ```
 
 ## Usage

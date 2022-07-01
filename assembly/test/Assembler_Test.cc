@@ -140,7 +140,7 @@ MATCHER_P(IsWrappedSingleValue, value,
           std::string(negation ? "not " : "") + "wrapped single value " +
               PrintToString(value)) {
   return ::testing::ExplainMatchResult(SizeIs(1), arg, result_listener) &&
-         ::testing::ExplainMatchResult(SizeIs(1), arg[0], result_listener) &&
+         ::testing::ExplainMatchResult(Eq(1), arg[0].size(), result_listener) &&
          ::testing::ExplainMatchResult(ScalarEq(value), arg[0](0),
                                        result_listener);
 }

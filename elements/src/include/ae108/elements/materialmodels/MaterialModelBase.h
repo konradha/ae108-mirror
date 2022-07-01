@@ -28,8 +28,8 @@ struct MaterialModelBase {
   using value_type = ValueType_;
   using real_type = RealType_;
 
-  using Energy = value_type;
-  using Time = value_type;
+  using Energy = real_type;
+  using Time = real_type;
 
   /**
    * @brief Use this id to specify an unknown displacement gradient id.

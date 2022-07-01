@@ -1,0 +1,17 @@
+{
+  "$schema": "../../schema.json",
+  "executable": [
+    "examples",
+    "ae108-examples-ForceElement"
+  ],
+  "ae108_output": [
+    {
+      "filename": "force_element.ae108"
+    }
+  ],
+  "compare_stdout": "text",
+  "mpi_processes": [
+    1,
+    3
+  ]
+}

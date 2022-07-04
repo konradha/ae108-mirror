@@ -20,40 +20,9 @@
 namespace ae108 {
 namespace elements {
 
-template <class RealType_, std::size_t Dimension_>
-struct TimoshenkoBeamWithMassProperties
-    : TimoshenkoBeamProperties<RealType_, Dimension_> {
-  RealType_ density;
-};
-
 /**
- * @brief Computes the lumped mass matrix for a Timoshenko beam with the given
- * axis and the given properties.
- * @tparam Dimension_ The dimenion of the physical space. Only dimensions 2 and
- * 3 are supported.
+ * @brief Extends a given element to also store a mass matrix.
  */
-template <std::size_t Dimension_>
-Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
-              Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
-timoshenko_beam_lumped_mass_matrix(
-    const tensor::Tensor<double, Dimension_> &axis,
-    const TimoshenkoBeamWithMassProperties<double, Dimension_>
-        &properties) noexcept;
-
-/**
- * @brief Computes the consistent mass matrix for a Timoshenko beam with the
- * given axis and the given properties.
- * @tparam Dimension_ The dimenion of the physical space. Only dimensions 2 and
- * 3 are supported.
- */
-template <std::size_t Dimension_>
-Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
-              Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
-timoshenko_beam_consistent_mass_matrix(
-    const tensor::Tensor<double, Dimension_> &axis,
-    const TimoshenkoBeamWithMassProperties<double, Dimension_>
-        &properties) noexcept;
-
 template <class Element_>
 struct ElementWithMass final
     : ElementBase<ElementWithMass<Element_>, typename Element_::size_type,

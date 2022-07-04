@@ -68,6 +68,34 @@ timoshenko_beam_stiffness_matrix(
     const TimoshenkoBeamProperties<double, Dimension_> &properties) noexcept;
 
 /**
+ * @brief Computes the lumped mass matrix for a Timoshenko beam with the given
+ * axis and the given properties.
+ * @tparam Dimension_ The dimenion of the physical space. Only dimensions 2 and
+ * 3 are supported.
+ */
+template <std::size_t Dimension_>
+Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
+              Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
+timoshenko_beam_lumped_mass_matrix(
+    const tensor::Tensor<double, Dimension_> &axis,
+    const TimoshenkoBeamProperties<double, Dimension_> &properties,
+    const double density) noexcept;
+
+/**
+ * @brief Computes the consistent mass matrix for a Timoshenko beam with the
+ * given axis and the given properties.
+ * @tparam Dimension_ The dimenion of the physical space. Only dimensions 2 and
+ * 3 are supported.
+ */
+template <std::size_t Dimension_>
+Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
+              Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
+timoshenko_beam_consistent_mass_matrix(
+    const tensor::Tensor<double, Dimension_> &axis,
+    const TimoshenkoBeamProperties<double, Dimension_> &properties,
+    const double density) noexcept;
+
+/**
  * @brief Implementation of the closed-form Timoshenko beam element as presented
  * in Cook et. al (2002), "Concepts and applications of Finite Element
  * Analysis", 4th ed., pp.24-32

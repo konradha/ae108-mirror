@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "ae108/elements/TimoshenkoBeamElementWithMass.h"
+#include "ae108/elements/ElementWithMass.h"
+#include "ae108/elements/TimoshenkoBeamElement.h"
 #include "ae108/elements/compute_mass_matrix.h"
 #include <Eigen/Dense>
 #include <gmock/gmock.h>
@@ -43,22 +44,22 @@ create_rotated_and_stretched_element_axis() noexcept {
 }
 
 template <std::size_t Dimension_>
-TimoshenkoBeamWithMassProperties<double, Dimension_>
+TimoshenkoBeamProperties<double, Dimension_>
 create_element_properties() noexcept;
 
 template <>
-TimoshenkoBeamWithMassProperties<double, 3>
-create_element_properties<3>() noexcept {
-  return TimoshenkoBeamWithMassProperties<double, 3>{
-      {1.42, 1.64, 1.46, 1.22, 1.67, 1.98, 1.45, 1.12}, 1.97};
+TimoshenkoBeamProperties<double, 3> create_element_properties<3>() noexcept {
+  return {1.42, 1.64, 1.46, 1.22, 1.67, 1.98, 1.45, 1.12};
 }
 
 template <>
-TimoshenkoBeamWithMassProperties<double, 2>
-create_element_properties<2>() noexcept {
-  return TimoshenkoBeamWithMassProperties<double, 2>{
-      {1.12, 1.75, 1.34, 1.78, 1.06}, 1.23};
+TimoshenkoBeamProperties<double, 2> create_element_properties<2>() noexcept {
+  return {1.12, 1.75, 1.34, 1.78, 1.06};
 }
+
+template <std::size_t Dimension_> double create_element_density() noexcept;
+template <> double create_element_density<2>() noexcept { return 1.23; }
+template <> double create_element_density<3>() noexcept { return 1.97; }
 
 template <class Element_> struct ReferenceConfigurationLumped {
   using Element = Element_;
@@ -66,14 +67,15 @@ template <class Element_> struct ReferenceConfigurationLumped {
     return Element(typename Element::Element(Element::StiffnessMatrix::Zero()),
                    timoshenko_beam_lumped_mass_matrix(
                        create_reference_element_axis<Element_>(),
-                       create_element_properties<Element_::dimension()>()));
+                       create_element_properties<Element_::dimension()>(),
+                       create_element_density<Element_::dimension()>()));
   }
 
   static typename Element::Time calculate_mass() noexcept {
     const auto element_axis = create_reference_element_axis<Element_>();
     const auto properties = create_element_properties<Element_::dimension()>();
-    return tensor::as_vector(&element_axis).norm() * properties.area *
-           properties.density;
+    const auto density = create_element_density<Element_::dimension()>();
+    return tensor::as_vector(&element_axis).norm() * properties.area * density;
   }
 };
 
@@ -83,14 +85,15 @@ template <class Element_> struct ReferenceConfigurationConsistent {
     return Element(typename Element::Element(Element::StiffnessMatrix::Zero()),
                    timoshenko_beam_consistent_mass_matrix(
                        create_reference_element_axis<Element_>(),
-                       create_element_properties<Element_::dimension()>()));
+                       create_element_properties<Element_::dimension()>(),
+                       create_element_density<Element_::dimension()>()));
   }
 
   static typename Element::Time calculate_mass() noexcept {
     const auto element_axis = create_reference_element_axis<Element_>();
     const auto properties = create_element_properties<Element_::dimension()>();
-    return tensor::as_vector(&element_axis).norm() * properties.area *
-           properties.density;
+    const auto density = create_element_density<Element_::dimension()>();
+    return tensor::as_vector(&element_axis).norm() * properties.area * density;
   }
 };
 
@@ -100,14 +103,15 @@ template <class Element_> struct RotatedAndStretchedConfigurationConsistent {
     return Element(typename Element::Element(Element::StiffnessMatrix::Zero()),
                    timoshenko_beam_consistent_mass_matrix(
                        create_rotated_and_stretched_element_axis<Element_>(),
-                       create_element_properties<Element_::dimension()>()));
+                       create_element_properties<Element_::dimension()>(),
+                       create_element_density<Element_::dimension()>()));
   }
   static typename Element::Time calculate_mass() noexcept {
     const auto element_axis =
         create_rotated_and_stretched_element_axis<Element_>();
     const auto properties = create_element_properties<Element_::dimension()>();
-    return tensor::as_vector(&element_axis).norm() * properties.area *
-           properties.density;
+    const auto density = create_element_density<Element_::dimension()>();
+    return tensor::as_vector(&element_axis).norm() * properties.area * density;
   }
 };
 
@@ -117,14 +121,15 @@ template <class Element_> struct RotatedAndStretchedConfigurationLumped {
     return Element(typename Element::Element(Element::StiffnessMatrix::Zero()),
                    timoshenko_beam_lumped_mass_matrix(
                        create_rotated_and_stretched_element_axis<Element_>(),
-                       create_element_properties<Element_::dimension()>()));
+                       create_element_properties<Element_::dimension()>(),
+                       create_element_density<Element_::dimension()>()));
   }
   static typename Element::Time calculate_mass() noexcept {
     const auto element_axis =
         create_rotated_and_stretched_element_axis<Element_>();
     const auto properties = create_element_properties<Element_::dimension()>();
-    return tensor::as_vector(&element_axis).norm() * properties.area *
-           properties.density;
+    const auto density = create_element_density<Element_::dimension()>();
+    return tensor::as_vector(&element_axis).norm() * properties.area * density;
   }
 };
 

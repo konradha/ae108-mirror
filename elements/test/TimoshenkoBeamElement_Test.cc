@@ -362,8 +362,8 @@ struct TimoshenkoBeamElementWithMass_Test : ::testing::Test {
     const auto mass_matrix = compute_mass_matrix(element);
     ASSERT_THAT(mass_matrix.isApprox(mass_matrix.transpose()), Eq(true));
 
-    Eigen::LLT<typename Element::MassMatrix> llt_of_mass_matrix(mass_matrix);
-    EXPECT_THAT(llt_of_mass_matrix.info() != Eigen::NumericalIssue, Eq(true));
+    Eigen::LDLT<typename Element::MassMatrix> ldlt_of_mass_matrix(mass_matrix);
+    EXPECT_THAT(ldlt_of_mass_matrix.info() != Eigen::NumericalIssue, Eq(true));
   }
 
   /**

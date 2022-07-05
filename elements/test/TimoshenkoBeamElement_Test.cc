@@ -22,6 +22,7 @@
 
 using testing::DoubleEq;
 using testing::Eq;
+using testing::Not;
 using testing::Test;
 using testing::Types;
 
@@ -348,6 +349,12 @@ struct ConfigurationWithMass {
   }
 };
 
+MATCHER_P(IsEigenApprox, value,
+          std::string(negation ? "not " : "") +
+              "approximately equal to: " + ::testing::PrintToString(value)) {
+  return arg.isApprox(value);
+}
+
 template <typename TestConfiguration>
 struct TimoshenkoBeamElementWithMass_Test : ::testing::Test {
   using Element = typename TestConfiguration::Element;
@@ -360,10 +367,10 @@ struct TimoshenkoBeamElementWithMass_Test : ::testing::Test {
    */
   void check_semi_positive_definite() const noexcept {
     const auto mass_matrix = compute_mass_matrix(element);
-    ASSERT_THAT(mass_matrix.isApprox(mass_matrix.transpose()), Eq(true));
+    EXPECT_THAT(mass_matrix, IsEigenApprox(mass_matrix.transpose()));
 
     Eigen::LDLT<typename Element::MassMatrix> ldlt_of_mass_matrix(mass_matrix);
-    EXPECT_THAT(ldlt_of_mass_matrix.info() != Eigen::NumericalIssue, Eq(true));
+    EXPECT_THAT(ldlt_of_mass_matrix.info(), Not(Eq(Eigen::NumericalIssue)));
   }
 
   /**
@@ -392,9 +399,8 @@ struct TimoshenkoBeamElementWithMass_Test : ::testing::Test {
     for (std::size_t node = 0; node < Element::size(); node++)
       total_force += force.template block<1, Element::dimension()>(node, 0);
 
-    EXPECT_THAT(
-        total_force.isApprox(mass * rigid_body_translational_acceleration),
-        true);
+    EXPECT_THAT(total_force,
+                IsEigenApprox(mass * rigid_body_translational_acceleration));
   }
 };
 

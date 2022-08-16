@@ -190,3 +190,5 @@ build-euler-modules:
         - bsub -Ip -n 3 -W00:10 'cmake --build build-release --target test'
     tags:
         - euler
+    only:
+        - main

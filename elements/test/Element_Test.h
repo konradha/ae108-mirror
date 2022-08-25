@@ -40,7 +40,8 @@ template <typename TestConfiguration> struct Element_Test : ::testing::Test {
       std::is_base_of<
           ElementBase<Element, typename Element::size_type,
                       typename Element::value_type, typename Element::real_type,
-                      Element::size(), Element::degrees_of_freedom()>,
+                      Element::size(), Element::dimension(),
+                      Element::degrees_of_freedom()>,
           Element>::value,
       "The element must derive from ElementBase.");
 

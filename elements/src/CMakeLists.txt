@@ -26,10 +26,10 @@ add_library(${PROJECT_NAME}-elements
             ComputeMassMatrixTrait.cc
             CoreElement.cc
             ElementBase.cc
+            ElementWithMass.cc
             ForceElement.cc
             Minimal.cc
             TimoshenkoBeamElement.cc
-            TimoshenkoBeamElementWithMass.cc
             automatic_forces.cc
             automatic_stiffness_matrix.cc
             compute_consistent_mass_matrix.cc

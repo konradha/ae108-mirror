@@ -13,11 +13,16 @@
 // limitations under the License.
 
 #include "Element_Test.h"
+#include "ae108/elements/ElementWithMass.h"
 #include "ae108/elements/TimoshenkoBeamElement.h"
+#include "ae108/elements/compute_mass_matrix.h"
+#include <Eigen/Dense>
 #include <gmock/gmock.h>
 #include <numeric>
 
 using testing::DoubleEq;
+using testing::Eq;
+using testing::Not;
 using testing::Test;
 using testing::Types;
 
@@ -25,42 +30,42 @@ namespace ae108 {
 namespace elements {
 namespace {
 
-template <class Element>
-tensor::Tensor<double, Element::dimension()>
-create_reference_element_axis() noexcept {
-  auto element_axis = tensor::Tensor<double, Element::dimension()>();
+template <std::size_t Dimension>
+tensor::Tensor<double, Dimension> create_reference_element_axis() noexcept {
+  auto element_axis = tensor::Tensor<double, Dimension>();
   element_axis[0] = 1.;
   return element_axis;
 }
 
-template <class Element>
-tensor::Tensor<double, Element::dimension()>
+template <std::size_t Dimension>
+tensor::Tensor<double, Dimension>
 create_rotated_and_stretched_element_axis() noexcept {
-  auto element_axis = tensor::Tensor<double, Element::dimension()>();
+  auto element_axis = tensor::Tensor<double, Dimension>();
   std::iota(element_axis.begin(), element_axis.end(), 3.);
   return element_axis;
 }
 
 template <std::size_t Dimension_>
 TimoshenkoBeamProperties<double, Dimension_>
-create_element_properties() noexcept;
-
-template <>
-TimoshenkoBeamProperties<double, 3> create_element_properties<3>() noexcept {
-  return {1., 1., 1., 1., 1., 1., 1., 1.};
+create_element_properties() noexcept {
+  static_assert(Dimension_ == 2 || Dimension_ == 3,
+                "Only dimensions 2 and 3 are supported.");
+  if constexpr (Dimension_ == 2) {
+    return {1., 1., 1., 1., 1.};
+  } else {
+    return {1., 1., 1., 1., 1., 1., 1., 1.};
+  }
 }
 
-template <>
-TimoshenkoBeamProperties<double, 2> create_element_properties<2>() noexcept {
-  return {1., 1., 1., 1., 1.};
-}
+template <std::size_t Dimension>
+using create_axis_t = decltype(&create_reference_element_axis<Dimension>);
 
-template <class Element_> struct ReferenceConfiguration {
+template <class Element_, create_axis_t<Element_::dimension()> CreateAxis_>
+struct Configuration {
   using Element = Element_;
   static Element create_element() noexcept {
     return Element(timoshenko_beam_stiffness_matrix(
-        create_reference_element_axis<Element_>(),
-        create_element_properties<Element_::dimension()>()));
+        CreateAxis_(), create_element_properties<Element_::dimension()>()));
   }
 
   static typename Element::Time create_time() noexcept {
@@ -68,31 +73,26 @@ template <class Element_> struct ReferenceConfiguration {
   }
 };
 
-template <class Element_> struct RotatedAndStretchedConfiguration {
-  using Element = Element_;
-  static Element create_element() noexcept {
-    return Element(timoshenko_beam_stiffness_matrix(
-        create_rotated_and_stretched_element_axis<Element_>(),
-        create_element_properties<Element_::dimension()>()));
-  }
-
-  static typename Element::Time create_time() noexcept {
-    return typename Element::Time{0.};
-  }
-};
-
-using Configurations =
-    Types<ReferenceConfiguration<TimoshenkoBeamElement<2>>,
-          ReferenceConfiguration<TimoshenkoBeamElement<3>>,
-          RotatedAndStretchedConfiguration<TimoshenkoBeamElement<2>>,
-          RotatedAndStretchedConfiguration<TimoshenkoBeamElement<3>>>;
+using Configurations = Types<
+    Configuration<TimoshenkoBeamElement<2>, &create_reference_element_axis<2>>,
+    Configuration<TimoshenkoBeamElement<3>, &create_reference_element_axis<3>>,
+    Configuration<TimoshenkoBeamElement<2>,
+                  &create_rotated_and_stretched_element_axis<2>>,
+    Configuration<TimoshenkoBeamElement<3>,
+                  &create_rotated_and_stretched_element_axis<3>>>;
 INSTANTIATE_TYPED_TEST_CASE_P(TimoshenkoBeamElement_Test, Element_Test,
                               Configurations);
 
 struct TimoshenkoBeamElement2D_Test : Test {
   using Element = TimoshenkoBeamElement<2>;
-  const Element element = ReferenceConfiguration<Element>::create_element();
+  const Element element =
+      Configuration<Element,
+                    &create_reference_element_axis<2>>::create_element();
 };
+
+TEST_F(TimoshenkoBeamElement2D_Test, dimension_is_2) {
+  EXPECT_THAT(element.dimension(), Eq(2));
+}
 
 TEST_F(TimoshenkoBeamElement2D_Test, computes_energy_with_axial_displacement) {
   const auto time = Element::Time{0.};
@@ -131,9 +131,11 @@ TEST_F(TimoshenkoBeamElement2D_Test,
 
 struct TimoshenkoBeamElement3D_Test : Test {
   using Element = TimoshenkoBeamElement<3>;
-  const Element element = ReferenceConfiguration<Element>::create_element();
+  const Element element =
+      Configuration<Element,
+                    &create_reference_element_axis<3>>::create_element();
   const tensor::Tensor<double, 3> axis =
-      create_reference_element_axis<Element>();
+      create_reference_element_axis<Element::dimension()>();
   const double L = tensor::as_vector(&axis).norm();
 };
 
@@ -158,6 +160,10 @@ TEST_F(TimoshenkoBeamElement3D_Test,
   }};
 
   EXPECT_THAT(element.computeEnergy(displacements, time), DoubleEq(6. / 13.));
+}
+
+TEST_F(TimoshenkoBeamElement3D_Test, dimension_is_3) {
+  EXPECT_THAT(element.dimension(), Eq(3));
 }
 
 TEST_F(TimoshenkoBeamElement3D_Test,
@@ -212,10 +218,10 @@ TEST_F(TimoshenkoBeamElement3D_Test,
 
 struct TimoshenkoBeamElement2D_rotated_Test : Test {
   using Element = TimoshenkoBeamElement<2>;
-  const Element element =
-      RotatedAndStretchedConfiguration<Element>::create_element();
+  const Element element = Configuration<
+      Element, &create_rotated_and_stretched_element_axis<2>>::create_element();
   const tensor::Tensor<double, 2> axis =
-      create_rotated_and_stretched_element_axis<Element>();
+      create_rotated_and_stretched_element_axis<Element::dimension()>();
   const double L = tensor::as_vector(&axis).norm();
 };
 
@@ -259,10 +265,10 @@ TEST_F(TimoshenkoBeamElement2D_rotated_Test,
 
 struct TimoshenkoBeamElement3D_rotated_Test : Test {
   using Element = TimoshenkoBeamElement<3>;
-  const Element element =
-      RotatedAndStretchedConfiguration<Element>::create_element();
+  const Element element = Configuration<
+      Element, &create_rotated_and_stretched_element_axis<3>>::create_element();
   const tensor::Tensor<double, 3> axis =
-      create_rotated_and_stretched_element_axis<Element>();
+      create_rotated_and_stretched_element_axis<Element::dimension()>();
   const double L = tensor::as_vector(&axis).norm();
 };
 
@@ -317,6 +323,134 @@ TEST_F(TimoshenkoBeamElement3D_rotated_Test,
               DoubleEq((4. + 12. / L / L) / (1 + 12. / L / L) / L / 2));
 }
 
+template <std::size_t Dimension_> double create_element_density() noexcept {
+  return .123;
+}
+
+template <std::size_t Dimension>
+using compute_mass_t = decltype(&timoshenko_beam_lumped_mass_matrix<Dimension>);
+
+template <class Element_, create_axis_t<Element_::dimension()> CreateAxis_,
+          compute_mass_t<Element_::dimension()> ComputeMass_>
+struct ConfigurationWithMass {
+  using Element = Element_;
+  static Element create_element() noexcept {
+    return Element(
+        typename Element::Element(Element::StiffnessMatrix::Zero()),
+        ComputeMass_(CreateAxis_(),
+                     create_element_properties<Element_::dimension()>(),
+                     create_element_density<Element_::dimension()>()));
+  }
+  static typename Element::Time calculate_mass() noexcept {
+    const auto element_axis = CreateAxis_();
+    const auto properties = create_element_properties<Element_::dimension()>();
+    const auto density = create_element_density<Element_::dimension()>();
+    return tensor::as_vector(&element_axis).norm() * properties.area * density;
+  }
+};
+
+MATCHER_P(IsEigenApprox, value,
+          std::string(negation ? "not " : "") +
+              "approximately equal to: " + ::testing::PrintToString(value)) {
+  return arg.isApprox(value);
+}
+
+template <typename TestConfiguration>
+struct TimoshenkoBeamElementWithMass_Test : ::testing::Test {
+  using Element = typename TestConfiguration::Element;
+
+  const Element element = TestConfiguration::create_element();
+  const double mass = TestConfiguration::calculate_mass();
+
+  /**
+   * Checks that the mass matrix is positive (semi-)definite.
+   */
+  void check_semi_positive_definite() const noexcept {
+    const auto mass_matrix = compute_mass_matrix(element);
+    EXPECT_THAT(mass_matrix, IsEigenApprox(mass_matrix.transpose()));
+
+    Eigen::LDLT<typename Element::MassMatrix> ldlt_of_mass_matrix(mass_matrix);
+    EXPECT_THAT(ldlt_of_mass_matrix.info(), Not(Eq(Eigen::NumericalIssue)));
+  }
+
+  /**
+   * Checks that the mass matrix complies with Newton's second law.
+   */
+  void check_second_law_of_motion() const noexcept {
+    const auto rigid_body_translational_acceleration =
+        Eigen::Matrix<double, Element::dimension(), 1>::Ones().eval();
+
+    auto acceleration = Eigen::Matrix<double, Element::size(),
+                                      Element::degrees_of_freedom()>::Zero()
+                            .eval();
+    for (std::size_t node = 0; node < Element::size(); node++)
+      acceleration.template block<1, Element::dimension()>(node, 0) +=
+          rigid_body_translational_acceleration;
+
+    const auto mass_matrix = compute_mass_matrix(element);
+    const auto force =
+        (mass_matrix * acceleration.template reshaped<Eigen::RowMajor>(
+                           Element::size() * Element::degrees_of_freedom(), 1))
+            .template reshaped<Eigen::RowMajor>(Element::size(),
+                                                Element::degrees_of_freedom());
+
+    auto total_force =
+        Eigen::Matrix<double, Element::dimension(), 1>::Zero().eval();
+    for (std::size_t node = 0; node < Element::size(); node++)
+      total_force += force.template block<1, Element::dimension()>(node, 0);
+
+    EXPECT_THAT(total_force,
+                IsEigenApprox(mass * rigid_body_translational_acceleration));
+  }
+};
+
+TYPED_TEST_CASE_P(TimoshenkoBeamElementWithMass_Test);
+TYPED_TEST_P(TimoshenkoBeamElementWithMass_Test,
+             mass_matrix_is_semi_positive_definite) {
+  this->check_semi_positive_definite();
+}
+TYPED_TEST_P(TimoshenkoBeamElementWithMass_Test,
+             mass_matrix_complies_with_newtons_second_law) {
+  this->check_second_law_of_motion();
+}
+REGISTER_TYPED_TEST_CASE_P(TimoshenkoBeamElementWithMass_Test,
+                           mass_matrix_is_semi_positive_definite,
+                           mass_matrix_complies_with_newtons_second_law);
+
+template <std::size_t Dimension>
+using TimoshenkoBeamElementWithMass =
+    ElementWithMass<TimoshenkoBeamElement<Dimension>>;
+
+using MassConfigurations =
+    Types<ConfigurationWithMass<TimoshenkoBeamElementWithMass<2>,
+                                &create_reference_element_axis<2>,
+                                &timoshenko_beam_lumped_mass_matrix<2>>,
+          ConfigurationWithMass<TimoshenkoBeamElementWithMass<3>,
+                                &create_reference_element_axis<3>,
+                                &timoshenko_beam_lumped_mass_matrix<3>>,
+          ConfigurationWithMass<TimoshenkoBeamElementWithMass<2>,
+                                &create_rotated_and_stretched_element_axis<2>,
+                                &timoshenko_beam_lumped_mass_matrix<2>>,
+          ConfigurationWithMass<TimoshenkoBeamElementWithMass<3>,
+                                &create_rotated_and_stretched_element_axis<3>,
+                                &timoshenko_beam_lumped_mass_matrix<3>>,
+
+          ConfigurationWithMass<TimoshenkoBeamElementWithMass<2>,
+                                &create_reference_element_axis<2>,
+                                &timoshenko_beam_consistent_mass_matrix<2>>,
+          ConfigurationWithMass<TimoshenkoBeamElementWithMass<3>,
+                                &create_reference_element_axis<3>,
+                                &timoshenko_beam_consistent_mass_matrix<3>>,
+          ConfigurationWithMass<TimoshenkoBeamElementWithMass<2>,
+                                &create_rotated_and_stretched_element_axis<2>,
+                                &timoshenko_beam_consistent_mass_matrix<2>>,
+          ConfigurationWithMass<TimoshenkoBeamElementWithMass<3>,
+                                &create_rotated_and_stretched_element_axis<3>,
+                                &timoshenko_beam_consistent_mass_matrix<3>>>;
+
+INSTANTIATE_TYPED_TEST_CASE_P(TimoshenkoBeamElementWithMass_Test,
+                              TimoshenkoBeamElementWithMass_Test,
+                              MassConfigurations);
 } // namespace
 } // namespace elements
 } // namespace ae108

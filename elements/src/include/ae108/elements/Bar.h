@@ -78,7 +78,7 @@ template <std::size_t Dimension_, class ValueType_ = double,
           class RealType_ = double>
 struct Bar final
     : ElementBase<Bar<Dimension_, ValueType_, RealType_>, std::size_t,
-                  ValueType_, RealType_, 2, Dimension_> {
+                  ValueType_, RealType_, 2, Dimension_, Dimension_> {
 public:
   /**
    * @param matrix A symmetric stiffness matrix.
@@ -89,11 +89,6 @@ public:
   const typename Bar::StiffnessMatrix &stiffness_matrix() const {
     return stiffness_matrix_;
   }
-
-  /**
-   * @brief The dimension of physical space.
-   */
-  static constexpr typename Bar::size_type dimension() { return Dimension_; }
 
 private:
   typename Bar::StiffnessMatrix stiffness_matrix_;

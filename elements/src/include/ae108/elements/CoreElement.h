@@ -45,7 +45,8 @@ class CoreElement final
     : public ElementBase<
           CoreElement<MaterialModel_, Integrator_, ValueType_, RealType_>,
           typename Integrator_::size_type, ValueType_, RealType_,
-          Integrator_::size(), MaterialModel_::degrees_of_freedom()> {
+          Integrator_::size(), Integrator_::dimension(),
+          MaterialModel_::degrees_of_freedom()> {
 
   static_assert(std::is_same<typename MaterialModel_::real_type,
                              typename CoreElement::real_type>::value,

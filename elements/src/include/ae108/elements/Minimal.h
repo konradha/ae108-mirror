@@ -28,16 +28,18 @@ namespace elements {
  * @brief A minimal example of an element. Note that only the energy is
  * defined.
  */
-template <std::size_t Size_, std::size_t DegreesOfFreedom_>
+template <std::size_t Size_, std::size_t Dimension_,
+          std::size_t DegreesOfFreedom_ = Dimension_>
 struct Minimal final
-    : ElementBase<Minimal<Size_, DegreesOfFreedom_>, std::size_t, double,
-                  double, Size_, DegreesOfFreedom_> {};
+    : ElementBase<Minimal<Size_, Dimension_, DegreesOfFreedom_>, std::size_t,
+                  double, double, Size_, Dimension_, DegreesOfFreedom_> {};
 
 /**
  * @brief Always returns 0.
  */
-template <std::size_t Size_, std::size_t DegreesOfFreedom_>
-struct ComputeEnergyTrait<Minimal<Size_, DegreesOfFreedom_>> {
+template <std::size_t Size_, std::size_t Dimension_,
+          std::size_t DegreesOfFreedom_>
+struct ComputeEnergyTrait<Minimal<Size_, Dimension_, DegreesOfFreedom_>> {
   template <class Element>
   typename Element::Energy
   operator()(const Element &, const typename Element::NodalDisplacements &,
@@ -49,16 +51,20 @@ struct ComputeEnergyTrait<Minimal<Size_, DegreesOfFreedom_>> {
 /**
  * @brief Computes the forces by differentiating the energy.
  */
-template <std::size_t Size_, std::size_t DegreesOfFreedom_>
-struct ComputeForcesTrait<Minimal<Size_, DegreesOfFreedom_>>
-    : AutomaticForcesTrait<Minimal<Size_, DegreesOfFreedom_>> {};
+template <std::size_t Size_, std::size_t Dimension_,
+          std::size_t DegreesOfFreedom_>
+struct ComputeForcesTrait<Minimal<Size_, Dimension_, DegreesOfFreedom_>>
+    : AutomaticForcesTrait<Minimal<Size_, Dimension_, DegreesOfFreedom_>> {};
 
 /**
  * @brief Computes the stiffness matrix by differentiating the forces.
  */
-template <std::size_t Size_, std::size_t DegreesOfFreedom_>
-struct ComputeStiffnessMatrixTrait<Minimal<Size_, DegreesOfFreedom_>>
-    : AutomaticStiffnessMatrixTrait<Minimal<Size_, DegreesOfFreedom_>> {};
+template <std::size_t Size_, std::size_t Dimension_,
+          std::size_t DegreesOfFreedom_>
+struct ComputeStiffnessMatrixTrait<
+    Minimal<Size_, Dimension_, DegreesOfFreedom_>>
+    : AutomaticStiffnessMatrixTrait<
+          Minimal<Size_, Dimension_, DegreesOfFreedom_>> {};
 
 } // namespace elements
 } // namespace ae108

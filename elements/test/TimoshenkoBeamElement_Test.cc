@@ -542,6 +542,38 @@ TEST_F(TimoshenkoBeamElement2D_LumpedMassTest, lumped_mass_matrix_is_correct) {
   EXPECT_THAT(matrix, IsEigenApprox(reference));
 }
 
+struct TimoshenkoBeamElement3D_LumpedMassTest
+    : TimoshenkoBeamElementWithMass_Test<ConfigurationWithMass<
+          TimoshenkoBeamElementWithMass<3>, &create_reference_element_axis<3>,
+          &create_euler_bernoulli_properties<3>,
+          &timoshenko_beam_lumped_mass_matrix<3>>> {};
+
+TEST_F(TimoshenkoBeamElement3D_LumpedMassTest, lumped_mass_matrix_is_correct) {
+  const auto matrix = compute_mass_matrix(element);
+
+  // see Felippa et al (2015), "Mass Matrix Templates: General Description
+  // and 1D Examples", eq. 123, http://dx.doi.org/10.1007/s11831-014-9108-x
+  //
+  // Note that degrees of freedom 0, 3 represent the displacement in axial
+  // direction.
+  const auto reference = [&]() {
+    auto reference = decltype(matrix)::Zero().eval();
+    reference(0, 0) = .5 * mass;
+    reference(1, 1) = .5 * mass;
+    reference(2, 2) = .5 * mass;
+    reference(4, 4) = 1. / 24. * length * length * mass;
+    reference(5, 5) = 1. / 24. * length * length * mass;
+    reference(6, 6) = .5 * mass;
+    reference(7, 7) = .5 * mass;
+    reference(8, 8) = .5 * mass;
+    reference(10, 10) = 1. / 24. * length * length * mass;
+    reference(11, 11) = 1. / 24. * length * length * mass;
+    return reference;
+  }();
+
+  EXPECT_THAT(matrix, IsEigenApprox(reference));
+}
+
 } // namespace
 } // namespace elements
 } // namespace ae108

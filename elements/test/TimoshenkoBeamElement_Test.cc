@@ -350,6 +350,10 @@ struct ConfigurationWithMass {
     const auto density = create_element_density<Element_::dimension()>();
     return tensor::as_vector(&element_axis).norm() * properties.area * density;
   }
+  static double calculate_length() noexcept {
+    const auto axis = CreateAxis_();
+    return tensor::as_vector(&axis).norm();
+  }
 };
 
 MATCHER_P(IsEigenApprox, value,
@@ -364,6 +368,7 @@ struct TimoshenkoBeamElementWithMass_Test : ::testing::Test {
 
   const Element element = TestConfiguration::create_element();
   const double mass = TestConfiguration::calculate_mass();
+  const double length = TestConfiguration::calculate_length();
 
   /**
    * Checks that the mass matrix is positive (semi-)definite.
@@ -473,24 +478,15 @@ create_euler_bernoulli_properties() noexcept {
   }
 }
 
-struct TimoshenkoBeamElement2D_EulerBernoulliTest : ::testing::Test {
-  using Configuration =
-      ConfigurationWithMass<TimoshenkoBeamElementWithMass<2>,
-                            &create_reference_element_axis<2>,
-                            &create_euler_bernoulli_properties<2>,
-                            &timoshenko_beam_consistent_mass_matrix<2>>;
-  using Element = typename Configuration::Element;
-  Element element = Configuration::create_element();
-
-  const tensor::Tensor<double, 2> axis =
-      create_reference_element_axis<Element::dimension()>();
-  const double L = tensor::as_vector(&axis).norm();
-  const double m = Configuration::calculate_mass();
-};
+struct TimoshenkoBeamElement2D_EulerBernoulliTest
+    : TimoshenkoBeamElementWithMass_Test<ConfigurationWithMass<
+          TimoshenkoBeamElementWithMass<2>, &create_reference_element_axis<2>,
+          &create_euler_bernoulli_properties<2>,
+          &timoshenko_beam_consistent_mass_matrix<2>>> {};
 
 TEST_F(TimoshenkoBeamElement2D_EulerBernoulliTest,
        special_case_is_equal_to_euler_bernoulli_mass_matrix) {
-  const auto mass = compute_mass_matrix(element);
+  const auto matrix = compute_mass_matrix(element);
 
   // see Felippa et al (2015), "Mass Matrix Templates: General Description
   // and 1D Examples", eq. 148, http://dx.doi.org/10.1007/s11831-014-9108-x
@@ -498,24 +494,52 @@ TEST_F(TimoshenkoBeamElement2D_EulerBernoulliTest,
   // Note that degrees of freedom 0, 3 represent the displacement in axial
   // direction.
   const auto reference = [&]() {
-    auto reference = decltype(mass)::Zero().eval();
+    auto reference = decltype(matrix)::Zero().eval();
     reference(0, 0) = 420. / 3.;
     reference(0, 3) = reference(3, 0) = 420 / 6.;
     reference(3, 3) = 420. / 3.;
     reference(1, 1) = 156.;
-    reference(1, 2) = reference(2, 1) = 22. * L;
+    reference(1, 2) = reference(2, 1) = 22. * length;
     reference(1, 4) = reference(4, 1) = 54;
-    reference(1, 5) = reference(5, 1) = -13. * L;
-    reference(2, 2) = 4. * L * L;
-    reference(2, 4) = reference(4, 2) = 13. * L;
-    reference(2, 5) = reference(5, 2) = -3. * L * L;
+    reference(1, 5) = reference(5, 1) = -13. * length;
+    reference(2, 2) = 4. * length * length;
+    reference(2, 4) = reference(4, 2) = 13. * length;
+    reference(2, 5) = reference(5, 2) = -3. * length * length;
     reference(4, 4) = 156.;
-    reference(4, 5) = reference(5, 4) = -22. * L;
-    reference(5, 5) = 4 * L * L;
-    return ((m / 420.) * reference).eval();
+    reference(4, 5) = reference(5, 4) = -22. * length;
+    reference(5, 5) = 4 * length * length;
+    return ((mass / 420.) * reference).eval();
   }();
 
-  EXPECT_THAT(mass, IsEigenApprox(reference));
+  EXPECT_THAT(matrix, IsEigenApprox(reference));
+}
+
+struct TimoshenkoBeamElement2D_LumpedMassTest
+    : TimoshenkoBeamElementWithMass_Test<ConfigurationWithMass<
+          TimoshenkoBeamElementWithMass<2>, &create_reference_element_axis<2>,
+          &create_euler_bernoulli_properties<2>,
+          &timoshenko_beam_lumped_mass_matrix<2>>> {};
+
+TEST_F(TimoshenkoBeamElement2D_LumpedMassTest, lumped_mass_matrix_is_correct) {
+  const auto matrix = compute_mass_matrix(element);
+
+  // see Felippa et al (2015), "Mass Matrix Templates: General Description
+  // and 1D Examples", eq. 123, http://dx.doi.org/10.1007/s11831-014-9108-x
+  //
+  // Note that degrees of freedom 0, 3 represent the displacement in axial
+  // direction.
+  const auto reference = [&]() {
+    auto reference = decltype(matrix)::Zero().eval();
+    reference(0, 0) = .5 * mass;
+    reference(1, 1) = .5 * mass;
+    reference(2, 2) = 1. / 24. * length * length * mass;
+    reference(3, 3) = .5 * mass;
+    reference(4, 4) = .5 * mass;
+    reference(5, 5) = 1. / 24. * length * length * mass;
+    return reference;
+  }();
+
+  EXPECT_THAT(matrix, IsEigenApprox(reference));
 }
 
 } // namespace

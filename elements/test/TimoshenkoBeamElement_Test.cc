@@ -330,15 +330,18 @@ template <std::size_t Dimension_> double create_element_density() noexcept {
 template <std::size_t Dimension>
 using compute_mass_t = decltype(&timoshenko_beam_lumped_mass_matrix<Dimension>);
 
+template <std::size_t Dimension>
+using create_properties_t = decltype(&create_element_properties<Dimension>);
+
 template <class Element_, create_axis_t<Element_::dimension()> CreateAxis_,
+          create_properties_t<Element_::dimension()> CreateProperties_,
           compute_mass_t<Element_::dimension()> ComputeMass_>
 struct ConfigurationWithMass {
   using Element = Element_;
   static Element create_element() noexcept {
     return Element(
         typename Element::Element(Element::StiffnessMatrix::Zero()),
-        ComputeMass_(CreateAxis_(),
-                     create_element_properties<Element_::dimension()>(),
+        ComputeMass_(CreateAxis_(), CreateProperties_(),
                      create_element_density<Element_::dimension()>()));
   }
   static typename Element::Time calculate_mass() noexcept {
@@ -421,36 +424,43 @@ template <std::size_t Dimension>
 using TimoshenkoBeamElementWithMass =
     ElementWithMass<TimoshenkoBeamElement<Dimension>>;
 
-using MassConfigurations =
-    Types<ConfigurationWithMass<TimoshenkoBeamElementWithMass<2>,
-                                &create_reference_element_axis<2>,
-                                &timoshenko_beam_lumped_mass_matrix<2>>,
-          ConfigurationWithMass<TimoshenkoBeamElementWithMass<3>,
-                                &create_reference_element_axis<3>,
-                                &timoshenko_beam_lumped_mass_matrix<3>>,
-          ConfigurationWithMass<TimoshenkoBeamElementWithMass<2>,
-                                &create_rotated_and_stretched_element_axis<2>,
-                                &timoshenko_beam_lumped_mass_matrix<2>>,
-          ConfigurationWithMass<TimoshenkoBeamElementWithMass<3>,
-                                &create_rotated_and_stretched_element_axis<3>,
-                                &timoshenko_beam_lumped_mass_matrix<3>>,
+using MassConfigurations = Types<
+    ConfigurationWithMass<
+        TimoshenkoBeamElementWithMass<2>, &create_reference_element_axis<2>,
+        &create_element_properties<2>, &timoshenko_beam_lumped_mass_matrix<2>>,
+    ConfigurationWithMass<
+        TimoshenkoBeamElementWithMass<3>, &create_reference_element_axis<3>,
+        &create_element_properties<3>, &timoshenko_beam_lumped_mass_matrix<3>>,
+    ConfigurationWithMass<TimoshenkoBeamElementWithMass<2>,
+                          &create_rotated_and_stretched_element_axis<2>,
+                          &create_element_properties<2>,
+                          &timoshenko_beam_lumped_mass_matrix<2>>,
+    ConfigurationWithMass<TimoshenkoBeamElementWithMass<3>,
+                          &create_rotated_and_stretched_element_axis<3>,
+                          &create_element_properties<3>,
+                          &timoshenko_beam_lumped_mass_matrix<3>>,
 
-          ConfigurationWithMass<TimoshenkoBeamElementWithMass<2>,
-                                &create_reference_element_axis<2>,
-                                &timoshenko_beam_consistent_mass_matrix<2>>,
-          ConfigurationWithMass<TimoshenkoBeamElementWithMass<3>,
-                                &create_reference_element_axis<3>,
-                                &timoshenko_beam_consistent_mass_matrix<3>>,
-          ConfigurationWithMass<TimoshenkoBeamElementWithMass<2>,
-                                &create_rotated_and_stretched_element_axis<2>,
-                                &timoshenko_beam_consistent_mass_matrix<2>>,
-          ConfigurationWithMass<TimoshenkoBeamElementWithMass<3>,
-                                &create_rotated_and_stretched_element_axis<3>,
-                                &timoshenko_beam_consistent_mass_matrix<3>>>;
+    ConfigurationWithMass<TimoshenkoBeamElementWithMass<2>,
+                          &create_reference_element_axis<2>,
+                          &create_element_properties<2>,
+                          &timoshenko_beam_consistent_mass_matrix<2>>,
+    ConfigurationWithMass<TimoshenkoBeamElementWithMass<3>,
+                          &create_reference_element_axis<3>,
+                          &create_element_properties<3>,
+                          &timoshenko_beam_consistent_mass_matrix<3>>,
+    ConfigurationWithMass<TimoshenkoBeamElementWithMass<2>,
+                          &create_rotated_and_stretched_element_axis<2>,
+                          &create_element_properties<2>,
+                          &timoshenko_beam_consistent_mass_matrix<2>>,
+    ConfigurationWithMass<TimoshenkoBeamElementWithMass<3>,
+                          &create_rotated_and_stretched_element_axis<3>,
+                          &create_element_properties<3>,
+                          &timoshenko_beam_consistent_mass_matrix<3>>>;
 
 INSTANTIATE_TYPED_TEST_CASE_P(TimoshenkoBeamElementWithMass_Test,
                               TimoshenkoBeamElementWithMass_Test,
                               MassConfigurations);
+
 } // namespace
 } // namespace elements
 } // namespace ae108

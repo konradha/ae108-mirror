@@ -467,24 +467,9 @@ create_euler_bernoulli_properties() noexcept {
   static_assert(Dimension_ == 2 || Dimension_ == 3,
                 "Only dimensions 2 and 3 are supported.");
   if constexpr (Dimension_ == 2) {
-    return {
-        .young_modulus = 1.,
-        .shear_modulus = 1.,
-        .shear_correction_factor_y = 1.,
-        .area = 1.,
-        .area_moment_z = 0.,
-    };
+    return {1., 1., 1., 1., 0.};
   } else {
-    return {
-        .young_modulus = 1.,
-        .shear_modulus = 1.,
-        .shear_correction_factor_y = 1.,
-        .shear_correction_factor_z = 1.,
-        .area = 1.,
-        .area_moment_y = 0.,
-        .area_moment_z = 0.,
-        .polar_moment_x = 0.,
-    };
+    return {1., 1., 1., 1., 1., 0., 0., 0.};
   }
 }
 

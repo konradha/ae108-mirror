@@ -14,8 +14,15 @@
 
 #pragma once
 
+#include "ae108/elements/ComputeEnergyTrait.h"
+#include "ae108/elements/ComputeForcesTrait.h"
 #include "ae108/elements/ComputeMassMatrixTrait.h"
-#include "ae108/elements/TimoshenkoBeamElement.h"
+#include "ae108/elements/ComputeStiffnessMatrixTrait.h"
+#include "ae108/elements/compute_energy.h"
+#include "ae108/elements/compute_forces.h"
+#include "ae108/elements/compute_stiffness_matrix.h"
+#include "ae108/elements/ElementBase.h"
+#include <utility>
 
 namespace ae108 {
 namespace elements {
@@ -37,23 +44,35 @@ public:
       : element_(std::move(element)), mass_matrix_(std::move(mass_matrix)) {}
 
   const MassMatrix &mass_matrix() const & { return mass_matrix_; }
+  const Element &unwrap() const & { return element_; }
 
 private:
   Element element_;
   MassMatrix mass_matrix_;
 };
 
-template <class Element_>
-struct ComputeEnergyTrait<ElementWithMass<Element_>>
-    : ComputeEnergyTrait<Element_> {};
+template <class Element_> struct ComputeEnergyTrait<ElementWithMass<Element_>> {
+  template <class Element, class... Args>
+  auto operator()(const Element &element, Args &&...args) const noexcept {
+    return compute_energy(element.unwrap(), std::forward<Args>(args)...);
+  }
+};
+
+template <class Element_> struct ComputeForcesTrait<ElementWithMass<Element_>> {
+  template <class Element, class... Args>
+  auto operator()(const Element &element, Args &&...args) const noexcept {
+    return compute_forces(element.unwrap(), std::forward<Args>(args)...);
+  }
+};
 
 template <class Element_>
-struct ComputeForcesTrait<ElementWithMass<Element_>>
-    : ComputeForcesTrait<Element_> {};
-
-template <class Element_>
-struct ComputeStiffnessMatrixTrait<ElementWithMass<Element_>>
-    : ComputeStiffnessMatrixTrait<Element_> {};
+struct ComputeStiffnessMatrixTrait<ElementWithMass<Element_>> {
+  template <class Element, class... Args>
+  auto operator()(const Element &element, Args &&...args) const noexcept {
+    return compute_stiffness_matrix(element.unwrap(),
+                                    std::forward<Args>(args)...);
+  }
+};
 
 template <class Element_>
 struct ComputeMassMatrixTrait<ElementWithMass<Element_>> {

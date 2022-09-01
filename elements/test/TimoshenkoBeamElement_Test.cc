@@ -354,7 +354,24 @@ struct ConfigurationWithMass {
     const auto axis = CreateAxis_();
     return tensor::as_vector(&axis).norm();
   }
+  static typename Element::Time create_time() noexcept {
+    return typename Element::Time{0.};
+  }
 };
+
+template <std::size_t Dimension>
+using TimoshenkoBeamElementWithMass =
+    ElementWithMass<TimoshenkoBeamElement<Dimension>>;
+
+using ConfigurationsWithMass = Types<
+    ConfigurationWithMass<
+        TimoshenkoBeamElementWithMass<2>, &create_reference_element_axis<2>,
+        &create_element_properties<2>, &timoshenko_beam_lumped_mass_matrix<2>>,
+    ConfigurationWithMass<
+        TimoshenkoBeamElementWithMass<3>, &create_reference_element_axis<3>,
+        &create_element_properties<3>, &timoshenko_beam_lumped_mass_matrix<3>>>;
+INSTANTIATE_TYPED_TEST_CASE_P(TimoshenkoBeamElementWithMass_Test, Element_Test,
+                              ConfigurationsWithMass);
 
 MATCHER_P(IsEigenApprox, value,
           std::string(negation ? "not " : "") +
@@ -424,10 +441,6 @@ TYPED_TEST_P(TimoshenkoBeamElementWithMass_Test,
 REGISTER_TYPED_TEST_CASE_P(TimoshenkoBeamElementWithMass_Test,
                            mass_matrix_is_semi_positive_definite,
                            mass_matrix_complies_with_newtons_second_law);
-
-template <std::size_t Dimension>
-using TimoshenkoBeamElementWithMass =
-    ElementWithMass<TimoshenkoBeamElement<Dimension>>;
 
 using MassConfigurations = Types<
     ConfigurationWithMass<

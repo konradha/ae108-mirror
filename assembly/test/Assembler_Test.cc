@@ -22,6 +22,7 @@
 #include "ae108/assembly/plugins/AssembleForceIfPlugin.h"
 #include "ae108/assembly/plugins/AssembleForceVectorPlugin.h"
 #include "ae108/assembly/plugins/AssembleLumpedMassMatrixPlugin.h"
+#include "ae108/assembly/plugins/AssembleMassMatrixPlugin.h"
 #include "ae108/assembly/plugins/AssembleStiffnessMatrixPlugin.h"
 #include "ae108/assembly/plugins/UpdateInternalVariablesPlugin.h"
 #include "ae108/assembly/test/Element.h"
@@ -79,7 +80,7 @@ template <class Policy> struct Assembler_Test : Test {
   using Plugins = FeaturePlugins<
       plugins::AssembleEnergyPlugin, plugins::AssembleForceVectorPlugin,
       plugins::AssembleStiffnessMatrixPlugin,
-      plugins::UpdateInternalVariablesPlugin,
+      plugins::UpdateInternalVariablesPlugin, plugins::AssembleMassMatrixPlugin,
       plugins::AssembleConsistentMassMatrixPlugin,
       plugins::AssembleLumpedMassMatrixPlugin, plugins::AssembleForceIfPlugin,
       SumUpElementIndicesPlugin, SumUpElementIndicesPluginNonConst>;
@@ -275,6 +276,30 @@ TYPED_TEST(Assembler_Test, assembling_stiffness_matrix_works) {
 
   this->assembler.assembleStiffnessMatrix(this->localInput(), this->time,
                                           &matrix);
+  matrix.finalize();
+
+  ASSERT_THAT(matrix.size(),
+              Pair(Eq(this->numberOfNodes), Eq(this->numberOfNodes)));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(0, 0, 1. + 2.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(0, 1, 0.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(1, 0, 0.));
+  EXPECT_THAT(matrix, ScalarEqIfLocal(1, 1, 3.));
+}
+
+TYPED_TEST(Assembler_Test, assembling_mass_matrix_works) {
+  using matrix_type = typename TestFixture::mesh_type::matrix_type;
+
+  auto matrix = matrix_type::fromMesh(this->mesh);
+  const auto fullInput = this->fullInput();
+
+  for (const auto &annotatedElement : this->assembler.meshElements()) {
+    const auto elementMatrix = typename TestFixture::Element::StiffnessMatrix(
+        annotatedElement.meshView().index() + 1.);
+    ON_CALL(annotatedElement.instance(), computeMassMatrix())
+        .WillByDefault(Return(elementMatrix));
+  }
+
+  this->assembler.assembleMassMatrix(&matrix);
   matrix.finalize();
 
   ASSERT_THAT(matrix.size(),

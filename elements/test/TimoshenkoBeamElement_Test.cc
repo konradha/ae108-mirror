@@ -527,6 +527,48 @@ TEST_F(TimoshenkoBeamElement2D_EulerBernoulliTest,
   EXPECT_THAT(matrix, IsEigenApprox(reference));
 }
 
+struct TimoshenkoBeamElement3D_EulerBernoulliTest
+    : TimoshenkoBeamElementWithMass_Test<ConfigurationWithMass<
+          TimoshenkoBeamElementWithMass<3>, &create_reference_element_axis<3>,
+          &create_euler_bernoulli_properties<3>,
+          &timoshenko_beam_consistent_mass_matrix<3>>> {};
+
+TEST_F(TimoshenkoBeamElement3D_EulerBernoulliTest,
+       special_case_is_equal_to_euler_bernoulli_mass_matrix) {
+  const auto matrix = compute_mass_matrix(element);
+
+  // see Felippa et al (2015), "Mass Matrix Templates: General Description
+  // and 1D Examples", eq. 148, http://dx.doi.org/10.1007/s11831-014-9108-x
+  //
+  // Note that degrees of freedom 0, 6 represent the displacement in axial
+  // direction. Degrees of freedom 3, 9 represent torsion around the beam axis.
+  const auto reference = [&]() {
+    auto reference = decltype(matrix)::Zero().eval();
+    reference(0, 0) = reference(6, 6) = 420. / 3.;
+    reference(0, 6) = reference(6, 0) = 420 / 6.;
+    reference(1, 1) = reference(2, 2) = 156.;
+    reference(1, 5) = reference(5, 1) = 22. * length;
+    reference(2, 4) = reference(4, 2) = -22. * length;
+    reference(1, 7) = reference(7, 1) = 54;
+    reference(2, 8) = reference(8, 2) = 54;
+    reference(1, 11) = reference(11, 1) = -13. * length;
+    reference(2, 10) = reference(10, 2) = 13. * length;
+    reference(4, 4) = reference(5, 5) = 4. * length * length;
+    reference(4, 10) = reference(10, 4) = -3. * length * length;
+    reference(5, 11) = reference(11, 5) = -3. * length * length;
+    reference(7, 7) = reference(8, 8) = 156.;
+    reference(7, 11) = reference(11, 7) = -22. * length;
+    reference(8, 10) = reference(10, 8) = 22. * length;
+    reference(4, 8) = reference(8, 4) = -13. * length;
+    reference(7, 5) = reference(5, 7) = 13. * length;
+    reference(11, 11) = reference(10, 10) = 4 * length * length;
+
+    return ((mass / 420.) * reference).eval();
+  }();
+
+  EXPECT_THAT(matrix, IsEigenApprox(reference));
+}
+
 struct TimoshenkoBeamElement2D_LumpedMassTest
     : TimoshenkoBeamElementWithMass_Test<ConfigurationWithMass<
           TimoshenkoBeamElementWithMass<2>, &create_reference_element_axis<2>,

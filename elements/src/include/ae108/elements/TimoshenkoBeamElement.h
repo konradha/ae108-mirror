@@ -36,7 +36,6 @@ template <class RealType_> struct TimoshenkoBeamProperties<RealType_, 3> {
   real_type shear_correction_factor_z;
 
   real_type area;
-
   real_type area_moment_z;
   real_type area_moment_y;
   real_type polar_moment_x;
@@ -69,6 +68,34 @@ timoshenko_beam_stiffness_matrix(
     const TimoshenkoBeamProperties<double, Dimension_> &properties) noexcept;
 
 /**
+ * @brief Computes the lumped mass matrix for a Timoshenko beam with the given
+ * axis and the given properties.
+ * @tparam Dimension_ The dimenion of the physical space. Only dimensions 2 and
+ * 3 are supported.
+ */
+template <std::size_t Dimension_>
+Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
+              Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
+timoshenko_beam_lumped_mass_matrix(
+    const tensor::Tensor<double, Dimension_> &axis,
+    const TimoshenkoBeamProperties<double, Dimension_> &properties,
+    const double density) noexcept;
+
+/**
+ * @brief Computes the consistent mass matrix for a Timoshenko beam with the
+ * given axis and the given properties.
+ * @tparam Dimension_ The dimenion of the physical space. Only dimensions 2 and
+ * 3 are supported.
+ */
+template <std::size_t Dimension_>
+Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
+              Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
+timoshenko_beam_consistent_mass_matrix(
+    const tensor::Tensor<double, Dimension_> &axis,
+    const TimoshenkoBeamProperties<double, Dimension_> &properties,
+    const double density) noexcept;
+
+/**
  * @brief Implementation of the closed-form Timoshenko beam element as presented
  * in Cook et. al (2002), "Concepts and applications of Finite Element
  * Analysis", 4th ed., pp.24-32
@@ -77,7 +104,7 @@ template <std::size_t Dimension_, class ValueType_ = double,
           class RealType_ = double>
 struct TimoshenkoBeamElement final
     : ElementBase<TimoshenkoBeamElement<Dimension_, ValueType_, RealType_>,
-                  std::size_t, ValueType_, RealType_, 2,
+                  std::size_t, ValueType_, RealType_, 2, Dimension_,
                   (Dimension_ * (Dimension_ + 1)) / 2> {
 public:
   explicit TimoshenkoBeamElement(
@@ -87,13 +114,6 @@ public:
   const typename TimoshenkoBeamElement::StiffnessMatrix &
   stiffness_matrix() const {
     return stiffness_matrix_;
-  }
-
-  /**
-   * @brief The dimension of physical space.
-   */
-  static constexpr typename TimoshenkoBeamElement::size_type dimension() {
-    return Dimension_;
   }
 
 private:

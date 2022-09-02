@@ -103,7 +103,8 @@ constexpr Mesh::real_type shear_correction_factor_y = 1.2;
 constexpr Mesh::real_type thickness = 1.;
 constexpr Mesh::real_type width = 0.1;
 constexpr Mesh::real_type area = width * thickness;
-constexpr Mesh::real_type area_moment_z = thickness * std::pow(width, 3) / 12.;
+constexpr Mesh::real_type area_moment_z =
+    thickness * width * width * width / 12.;
 
 // We will assemble e.g. energy using a collection of elements. This is done by
 // the assembler. (The list DefaultFeaturePlugins contain the features (e.g.

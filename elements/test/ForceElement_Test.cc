@@ -19,6 +19,7 @@
 
 using testing::DoubleEq;
 using testing::ElementsAre;
+using testing::Eq;
 using testing::Test;
 using testing::Types;
 
@@ -52,11 +53,19 @@ using Configurations =
 INSTANTIATE_TYPED_TEST_CASE_P(ForceElement_Test, Element_Test, Configurations);
 
 struct ForceElement_Test : Test {
-  static constexpr auto degrees_of_freedom = 2;
+  static constexpr auto dimension = 2;
 
-  using Element = ForceElement<degrees_of_freedom>;
+  using Element = ForceElement<dimension>;
   const Element element = Element(create_test_force<Element>());
 };
+
+TEST_F(ForceElement_Test, dimension_is_2) {
+  EXPECT_THAT(element.dimension(), Eq(2));
+}
+
+TEST_F(ForceElement_Test, number_of_degrees_of_freedom_is_2) {
+  EXPECT_THAT(element.degrees_of_freedom(), Eq(2));
+}
 
 TEST_F(ForceElement_Test, computes_correct_energy) {
   const auto time = Element::Time{0.};

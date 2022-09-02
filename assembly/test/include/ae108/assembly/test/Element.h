@@ -45,11 +45,17 @@ template <class ValueType_> struct Element {
   MOCK_CONST_METHOD2_T(computeStiffnessMatrix,
                        StiffnessMatrix(const NodalDisplacements &,
                                        const double));
+  MOCK_CONST_METHOD0_T(computeMassMatrix, StiffnessMatrix());
   MOCK_CONST_METHOD0_T(computeLumpedMassMatrix, StiffnessMatrix());
   MOCK_CONST_METHOD0_T(computeConsistentMassMatrix, StiffnessMatrix());
   MOCK_METHOD2_T(updateInternalVariables,
                  void(const NodalDisplacements &, const double));
 };
+
+template <class ValueType_>
+auto compute_mass_matrix(const Element<ValueType_> &element) {
+  return element.computeMassMatrix();
+}
 
 template <class ValueType_>
 auto compute_consistent_mass_matrix(const Element<ValueType_> &element) {

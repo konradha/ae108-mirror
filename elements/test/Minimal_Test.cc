@@ -17,6 +17,7 @@
 #include <gmock/gmock.h>
 
 using testing::DoubleEq;
+using testing::Eq;
 using testing::Test;
 using testing::Types;
 
@@ -40,11 +41,19 @@ INSTANTIATE_TYPED_TEST_CASE_P(Minimal_Test, Element_Test, Configurations);
 
 struct Minimal_Test : Test {
   static constexpr auto size = 2;
-  static constexpr auto degrees_of_freedom = 1;
+  static constexpr auto dimension = 1;
 
-  using Element = Minimal<size, degrees_of_freedom>;
+  using Element = Minimal<size, dimension>;
   const Element element = Element();
 };
+
+TEST_F(Minimal_Test, dimension_is_1) {
+  EXPECT_THAT(element.dimension(), Eq(1));
+}
+
+TEST_F(Minimal_Test, number_of_degrees_of_freedom_is_1) {
+  EXPECT_THAT(element.dimension(), Eq(1));
+}
 
 TEST_F(Minimal_Test, computes_zero_energy) {
   const auto time = Element::Time{0.};

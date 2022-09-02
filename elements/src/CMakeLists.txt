@@ -23,8 +23,10 @@ add_library(${PROJECT_NAME}-elements
             ComputeForcesTrait.cc
             ComputeLumpedMassMatrixTrait.cc
             ComputeStiffnessMatrixTrait.cc
+            ComputeMassMatrixTrait.cc
             CoreElement.cc
             ElementBase.cc
+            ElementWithMass.cc
             ForceElement.cc
             Minimal.cc
             TimoshenkoBeamElement.cc

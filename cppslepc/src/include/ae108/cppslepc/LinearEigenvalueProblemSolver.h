@@ -21,7 +21,7 @@
 #include "ae108/cpppetsc/Vector.h"
 #include "ae108/cppslepc/EigenPair.h"
 #include "ae108/cppslepc/EigenvalueProblemSolverDivergedException.h"
-#include <slepc/slepceps.h>
+#include <slepceps.h>
 
 namespace ae108 {
 namespace cppslepc {

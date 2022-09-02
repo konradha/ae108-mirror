@@ -18,10 +18,10 @@
 #include "ae108/elements/ComputeForcesTrait.h"
 #include "ae108/elements/ComputeMassMatrixTrait.h"
 #include "ae108/elements/ComputeStiffnessMatrixTrait.h"
+#include "ae108/elements/ElementBase.h"
 #include "ae108/elements/compute_energy.h"
 #include "ae108/elements/compute_forces.h"
 #include "ae108/elements/compute_stiffness_matrix.h"
-#include "ae108/elements/ElementBase.h"
 #include <utility>
 
 namespace ae108 {

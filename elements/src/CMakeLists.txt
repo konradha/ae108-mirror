@@ -111,7 +111,7 @@ target_compile_features(${PROJECT_NAME}-elements
                         PUBLIC cxx_std_17
 )
 
-find_package(Eigen3 3.3 CONFIG REQUIRED)
+find_package(Eigen3 3.4 CONFIG REQUIRED)
 find_package(Boost 1.67 REQUIRED)
 
 target_link_libraries(${PROJECT_NAME}-elements

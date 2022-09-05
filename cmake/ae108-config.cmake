@@ -17,7 +17,7 @@ include(CMakeFindDependencyMacro)
 
 find_dependency(Boost 1.67 COMPONENTS program_options REQUIRED)
 
-find_dependency(Eigen3 3.3 CONFIG REQUIRED)
+find_dependency(Eigen3 3.4 CONFIG REQUIRED)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/modules")
 find_dependency(AE108_PETSc MODULE 3.15)

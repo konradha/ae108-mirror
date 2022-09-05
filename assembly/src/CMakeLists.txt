@@ -47,7 +47,7 @@ target_include_directories(${PROJECT_NAME}-assembly PUBLIC
                            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
-find_package(Eigen3 3.3 CONFIG REQUIRED)
+find_package(Eigen3 3.4 CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME}-assembly
                       PUBLIC ${PROJECT_NAME}::cpppetsc
                       PUBLIC Eigen3::Eigen

@@ -21,6 +21,7 @@ add_executable(${PROJECT_NAME}-CppSlepcTests
         LinearEigenvalueProblemSolver_Test.cc
         NoOperatorsSetException_Test.cc
         computeEigenvalues_Test.cc
+        computeSmallestEigenvalues_Test.cc
         main.cc
 )
 

@@ -23,6 +23,7 @@ add_library(${PROJECT_NAME}-cppslepc
     LinearEigenvalueProblemSolver.cc
     NoOperatorsSetException.cc
     computeEigenvalues.cc
+    computeSmallestEigenvalues.cc
 )
 
 target_include_directories(${PROJECT_NAME}-cppslepc PUBLIC

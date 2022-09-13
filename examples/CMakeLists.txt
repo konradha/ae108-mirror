@@ -107,6 +107,23 @@ target_link_libraries(${PROJECT_NAME}-ForceElement
                       PRIVATE ae108::elements
 )
 
+add_executable(${PROJECT_NAME}-EigenfrequencyAnalysis EigenfrequencyAnalysis.cc)
+target_link_libraries(${PROJECT_NAME}-EigenfrequencyAnalysis
+                      PRIVATE ae108::cppslepc
+                      PRIVATE ae108::assembly
+                      PRIVATE ae108::elements
+)
+
+if(${AE108_PETSC_COMPLEX})
+    add_executable(${PROJECT_NAME}-BlochWaveAnalysis BlochWaveAnalysis.cc)
+    target_link_libraries(${PROJECT_NAME}-BlochWaveAnalysis
+                          PRIVATE ae108::solve
+                          PRIVATE ae108::assembly
+                          PRIVATE ae108::elements
+                          PRIVATE ae108::cppslepc
+    ) 
+endif()
+
 add_executable(${PROJECT_NAME}-DynamicSolver DynamicSolver.cc)
 target_link_libraries(${PROJECT_NAME}-DynamicSolver
                       PRIVATE ae108::solve

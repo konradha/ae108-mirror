@@ -1,0 +1,4 @@
+natural frequency 1: 0.0161 (error: 0.24%)
+natural frequency 2: 0.0440 (error: -1.11%)
+natural frequency 3: 0.0857 (error: -1.80%)
+natural frequency 4: 0.1405 (error: -2.62%)

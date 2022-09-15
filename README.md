@@ -94,4 +94,4 @@ AE108 is available under the [Apache 2.0 license](https://choosealicense.com/lic
 
 ## Releases
 
-The latest release is v0.1.0. It is also available via the ETH library: [ae108](https://search.library.ethz.ch/permalink/f/13kse66/data_archiveIE15605648).
+The releases of this project are are available [here](https://gitlab.ethz.ch/mechanics-and-materials/ae108/-/releases). Release v0.1.0 is also available via the ETH library: [ae108](https://search.library.ethz.ch/permalink/f/13kse66/data_archiveIE15605648).

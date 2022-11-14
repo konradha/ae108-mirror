@@ -18,6 +18,7 @@ stages:
     - image-docu
     - analyze
     - build
+    - publish
 
 .build-image: &build-image
     image:
@@ -176,7 +177,7 @@ build-documentation:
             '
     artifacts:
         paths:
-            - build/build/latex/ae108.pdf
+            - build/build/
         expose_as: manual
 
 build-euler-modules:
@@ -191,3 +192,38 @@ build-euler-modules:
         - euler
     only:
         - main
+
+prepare-html:
+    stage: build
+    needs: ["build-documentation"]
+    script:
+        - mkdir public
+        - cp -r build/build/html public
+    artifacts:
+        paths:
+            - public/
+
+publish-html:
+    stage: publish
+    image: alpine
+    before_script:
+        - apk add openssh-client
+        - eval $(ssh-agent -s)
+        - echo "$PUBLISH_KEY" | tr -d '\r' | ssh-add - > /dev/null 2>/dev/null
+        - host="${PUBLISH_URL%:*}"
+        - host="${host#*@}"
+        - mkdir -p ~/.ssh
+        - chmod 700 ~/.ssh
+        - ssh-keyscan "$host" 2>/dev/null >> ~/.ssh/known_hosts
+        - >
+            [ -n "$CI_COMMIT_BRANCH" ] \
+              && [ "$CI_COMMIT_BRANCH" != "$CI_DEFAULT_BRANCH" ] \
+              && mv public "${CI_COMMIT_BRANCH}" \
+              && mkdir public && mv "${CI_COMMIT_BRANCH}" public/
+    script:
+        - |-
+          sftp -q -b - "${PUBLISH_URL%:*}" <<EOF
+          put -r public/* ${PUBLISH_URL#*:}
+          EOF
+    rules:
+        - if: '$CI_COMMIT_REF_PROTECTED && $PUBLISH_URL && $PUBLISH_KEY'

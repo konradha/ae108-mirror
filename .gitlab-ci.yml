@@ -197,7 +197,6 @@ prepare-html:
     stage: build
     needs: ["build-documentation"]
     script:
-        - mkdir public
         - cp -r build/build/html public
     artifacts:
         paths:

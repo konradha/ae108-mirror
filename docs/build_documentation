@@ -92,4 +92,5 @@ ln -s "$ROOT_DIRECTORY/cmdline" source/cmdline
 ln -s "$ROOT_DIRECTORY/examples" source/examples
 
 make -j$(nproc) html
+sed -i -e "s/🐧/Linux/g" -e "s/🪟/Windows/g" -e "s/🍏/Mac/g" source/index.rst
 make -j$(nproc) latexpdf

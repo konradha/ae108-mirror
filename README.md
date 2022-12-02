@@ -46,8 +46,14 @@ The following libraries are provided:
 - ```ae108-solve```: Minimize the total energy.
 
     A library for minimizing the assembled total energy using PETSc's solvers or optimizers as provided by ```cpppetsc```.
-
+    
 ## Installation
+
+🐧: [deb packages](/../../packages/) available for Ubuntu jammy.
+The packages can be downloaded and installed by
+`apt-get -f install ./package.deb`.
+
+🪟 / 🍏: You have to compile it by yourself.
 
 The project uses [CMake](https://cmake.org) as its build system generator. The following third party libraries are required and located using CMake's ```find_package```.
 

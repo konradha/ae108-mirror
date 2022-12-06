@@ -29,7 +29,7 @@ ROOT_DIRECTORY=$(readlink -e $(dirname "$0"))/..
                "$ROOT_DIRECTORY/solve/src/include" \
                "$ROOT_DIRECTORY/examples"; \
     echo RECURSIVE=YES; \
-    echo PROJECT_NAME=\"AE108\" \
+    echo PROJECT_NAME=\"ae108\" \
 ) \
 | doxygen -
 
@@ -38,23 +38,55 @@ sphinx-quickstart \
     --sep \
     -a "Mechanics & Materials Lab, ETH Zurich" \
     -l "en" \
-    -p "AE108" \
+    -p "ae108" \
     -r "$(git describe)"
 
 cat <<EOF >> source/conf.py
 #
-extensions = [ "breathe" ]
-breathe_projects = { "AE108": "$PWD/xml" }
-breathe_default_project = "AE108"
+
+root_doc = 'index'
+extensions = [ "breathe", "sphinx_design"]
+breathe_projects = { "ae108": "$PWD/xml" }
+breathe_default_project = "ae108"
+html_context = {"default_mode": "dark"}
+html_static_path = ['_static']
+html_theme = "pydata_sphinx_theme"
+html_favicon = "_static/favicon.ico"
+html_theme_options = {
+    "logo": {
+        "image_light": "logo_light.svg",
+        "image_dark": "logo_dark.svg",
+    },
+    "icon_links": [
+        {
+            "name": "GitLab",
+            "url": "https://gitlab.ethz.ch/mechanics-and-materials/ae108",
+            "icon": "fa-brands fa-gitlab",
+        },
+        {
+            "name": "Mechanics & Materials Lab",
+            "url": "https://mm.ethz.ch/",
+            "icon": "fa-solid fa-flask",
+        },
+        {
+            "name": "Twitter",
+            "url": "https://twitter.com/DennisKochmann",
+            "icon": "fa-brands fa-twitter",
+        },
+    ],
+}
+html_title = "ae108"
+html_show_sourcelink = False
 EOF
 
-pandoc \
-    -o source/README.rst \
-    -s \
-    -t rst \
-    "$ROOT_DIRECTORY/README.md"
+cp -rs "$ROOT_DIRECTORY/docs/_static/" source/
 
 ln -sf "$ROOT_DIRECTORY/docs/index.rst" source/index.rst
+
+ln -sf "$ROOT_DIRECTORY/docs/quickstart.rst" source/quickstart.rst
+ln -sf "$ROOT_DIRECTORY/docs/libraries.rst" source/libraries.rst
+ln -sf "$ROOT_DIRECTORY/docs/faq.rst" source/faq.rst
+
 ln -s "$ROOT_DIRECTORY/elements" source/elements
 ln -s "$ROOT_DIRECTORY/cmdline" source/cmdline
 ln -s "$ROOT_DIRECTORY/examples" source/examples

@@ -24,4 +24,4 @@ RUN apt-get update && apt-get install -y \
       python3 python3-pip \
       texlive texlive-latex-extra latexmk
 
-RUN pip3 install sphinx breathe
+RUN pip3 install sphinx breathe sphinx_design pydata-sphinx-theme

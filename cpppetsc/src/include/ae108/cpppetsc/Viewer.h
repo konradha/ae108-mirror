@@ -30,17 +30,17 @@ public:
   static Viewer fromStdout();
 
   /**
-   * @brief Creates a PetscViewer that writes to an ASCII file at path.
-   */
-  static Viewer fromAsciiFilePath(const char *path);
-
-  /**
    * @brief Used to specify the mode a file is opened with.
    */
   enum class Mode {
     read,
     write,
   };
+
+  /**
+   * @brief Creates a PetscViewer that writes to an ASCII file at path.
+   */
+  static Viewer fromAsciiFilePath(const char *path, const Mode mode);
 
   /**
    * @brief Creates a PetscViewer that writes to an HDF5 file at path.
@@ -80,10 +80,21 @@ template <class Policy> Viewer<Policy> Viewer<Policy>::fromStdout() {
 }
 
 template <class Policy>
-Viewer<Policy> Viewer<Policy>::fromAsciiFilePath(const char *path) {
+Viewer<Policy> Viewer<Policy>::fromAsciiFilePath(const char *path,
+                                                 const Mode mode) {
   auto viewer = PetscViewer{};
-  Policy::handleError(
-      PetscViewerASCIIOpen(Policy::communicator(), path, &viewer));
+
+  if (mode == Mode::write) {
+    Policy::handleError(
+        PetscViewerASCIIOpen(Policy::communicator(), path, &viewer));
+  } else {
+    Policy::handleError(PetscViewerCreate(Policy::communicator(), &viewer));
+    Policy::handleError(PetscViewerSetType(viewer, PETSCVIEWERASCII));
+    Policy::handleError(
+        PetscViewerFileSetMode(viewer, PetscFileMode::FILE_MODE_READ));
+    Policy::handleError(PetscViewerFileSetName(viewer, path));
+  }
+
   return Viewer(makeUniqueEntity<Policy>(viewer));
 }
 

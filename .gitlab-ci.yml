@@ -18,7 +18,15 @@ stages:
     - image-docu
     - analyze
     - build
+    - test-install
     - publish
+
+workflow:
+    rules:
+        - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+        - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+          when: never
+        - if: $CI_COMMIT_BRANCH
 
 .build-image: &build-image
     image:
@@ -163,6 +171,81 @@ install-library-complex:
     image: $CI_REGISTRY_IMAGE/dev-complex:$CI_COMMIT_REF_SLUG
     needs: ["build-image-dev-complex"]
     <<: *install-library
+
+.build-deb: &build-deb
+    stage: build
+    script:
+        - useradd developer
+        - mkdir build
+        - chown developer:developer build
+        - >
+            su developer -c '
+              cmake -G Ninja \
+                    -DCMAKE_BUILD_TYPE=Release \
+                    -DCMAKE_CXX_FLAGS="-Werror -Wall -Wextra -Wpedantic" \
+                    -B deb \
+                    -S . \
+              && cmake --build deb \
+              && cd deb && cpack
+            '
+    artifacts:
+        paths:
+            - deb/*.deb
+    rules:
+        - if: '$CI_COMMIT_REF_PROTECTED'
+
+build-deb-real:
+    image: $CI_REGISTRY_IMAGE/dev-real:$CI_COMMIT_REF_SLUG
+    needs: ["build-image-dev-real"]
+    <<: *build-deb
+
+build-deb-complex:
+    image: $CI_REGISTRY_IMAGE/dev-complex:$CI_COMMIT_REF_SLUG
+    needs: ["build-image-dev-complex"]
+    <<: *build-deb
+
+.install-deb: &install-deb
+    stage: test-install
+    image: ubuntu:jammy
+    script:
+        - apt-get update && apt-get install -y cmake ninja-build
+        - >
+            DEBIAN_FRONTEND="noninteractive" TZ="Europe/Zurich"
+            apt-get -f install -y ./deb/libae108-${SCALAR_TYPE}-dev-*.deb
+        - cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -S examples -B build
+        - cmake --build build
+    rules:
+        - if: '$CI_COMMIT_REF_PROTECTED'
+
+install-deb-real:
+    needs: ["build-deb-real"]
+    variables:
+        SCALAR_TYPE: real
+    <<: *install-deb
+
+install-deb-complex:
+    needs: ["build-deb-complex"]
+    variables:
+        SCALAR_TYPE: complex
+    <<: *install-deb
+
+package:
+    stage: publish
+    image: curlimages/curl:latest
+    script:
+        - >
+            for p in deb/*.deb ; do
+             stem="${p%-*}" ; \
+             version="${stem##*-}" ; \
+             version_ext="${version}+${CI_COMMIT_SHORT_SHA}"
+             curl \
+              --header "JOB-TOKEN: $CI_JOB_TOKEN" \
+              --upload-file "$p" \
+              "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/deb/${CI_COMMIT_TAG:-$version_ext}/$(basename $p)" ;
+            done
+    rules:
+        - if: '$CI_COMMIT_REF_PROTECTED'
+
 
 build-documentation:
     stage: build

@@ -51,3 +51,19 @@ install(FILES
 )
 
 install(FILES LICENSE DESTINATION .)
+
+if(${AE108_PETSC_COMPLEX})
+  set(AE108_PETSC_SCALAR_TYPE "complex")
+else()
+  set(AE108_PETSC_SCALAR_TYPE "real")
+endif()
+
+set(CPACK_GENERATOR "DEB")
+set(CPACK_PACKAGE_NAME "libae108-${AE108_PETSC_SCALAR_TYPE}-dev")
+set(CPACK_DEBIAN_PACKAGE_SECTION "science")
+set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libboost-program-options-dev,libeigen3-dev,librange-v3-dev,libxrender1,libvtk9-dev,libpetsc-${AE108_PETSC_SCALAR_TYPE}-dev,libslepc-${AE108_PETSC_SCALAR_TYPE}3.15-dev")
+set(CPACK_PACKAGE_DESCRIPTION "C++ foundation for computational solid mechanics simulations using a variational framework, primarily focusing on the Finite Element Method (FEM)")
+set(CPACK_PACKAGE_CONTACT "Mechanics & Materials Lab at ETH Zurich <gerhard.braeunlich@id.ethz.ch>")
+
+include(CPack)

@@ -2,17 +2,20 @@
  © 2020 ETH Zurich, Mechanics and Materials Lab
  © 2020 California Institute of Technology
 
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
+ This file is part of ae108.
 
- http://www.apache.org/licenses/LICENSE-2.0
+ ae108 is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or any
+ later version.
 
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
+ ae108 is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with ae108. If not, see <https://www.gnu.org/licenses/>.
 -->
 
 # AE108
@@ -96,7 +99,7 @@ To link and use the libraries point CMake to the installation using ```-DCMAKE_P
 
 ## License
 
-AE108 is available under the [Apache 2.0 license](https://choosealicense.com/licenses/apache-2.0/).
+AE108 is available under the [GNU General Public License v3.0 or later](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ## Releases
 

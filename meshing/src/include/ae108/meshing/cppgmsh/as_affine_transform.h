@@ -25,7 +25,7 @@ namespace cppgmsh {
  * @brief Returns affine transform (16 entries of a 4x4 matrix, by row) based on
  * translation.
  *
- * @param translation The translation.
+ * @param translation The 3D translation vector.
  */
 std::array<double, 16>
 as_affine_transform(const std::array<double, 3> &translation) noexcept;

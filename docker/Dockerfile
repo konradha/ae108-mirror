@@ -38,7 +38,14 @@ RUN apt-get update && \
   libxrender1 \
   ninja-build \
   python3 python3-pip \
-  python3-scipy
+  python3-scipy 
+
+RUN apt-get update && \
+  DEBIAN_FRONTEND="noninteractive" \
+  TZ="Europe/Zurich" \
+  apt-get install -y \
+  libgmsh-dev \
+  voro++-dev
 
 RUN pip3 install \
   mypy==0.931 \

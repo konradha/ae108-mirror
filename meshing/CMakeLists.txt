@@ -15,35 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with ae108. If not, see <https://www.gnu.org/licenses/>.
 
-version: "3.3"
-services:
-  dev-real:
-    build:
-      args:
-        PETSC_SCALAR_TYPE: real
-      context: ./docker
-      dockerfile: Dockerfile
-    volumes:
-      - .:/mnt/io
-    tty: true
-    shm_size: '1gb'
-    working_dir: /mnt/io
-  dev-complex:
-    build:
-      args:
-        PETSC_SCALAR_TYPE: complex
-      context: ./docker
-      dockerfile: Dockerfile
-    volumes:
-      - .:/mnt/io
-    working_dir: /mnt/io
-    tty: true
-    shm_size: '1gb'
-  dev-doc:
-    build:
-      context: ./docker
-      dockerfile: Dockerfile_docu
-    volumes:
-      - .:/mnt/io
-    working_dir: /mnt/io
-    tty: true
+cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
+
+add_subdirectory(src)
+add_subdirectory(test)

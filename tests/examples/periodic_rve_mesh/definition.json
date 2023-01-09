@@ -1,0 +1,10 @@
+{
+    "executable": [
+        "examples/meshing",
+        "ae108-examples-PeriodicRVEMesh"
+    ],
+    "compare_stdout": "numeric",
+    "mpi_processes": [
+        1
+    ]
+}

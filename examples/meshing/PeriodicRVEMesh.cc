@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
   // We sync the constructive solid geometry engine and write a CAD file.
 
   cppgmsh::synchronize();
-  //   cppgmsh::write_file("periodic.step");
+  cppgmsh::write_file("periodic.step");
 
   // To obtain a periodic mesh (e.g. for homogenization or Bloch wave analysis),
   // we define the periodic domain faces.

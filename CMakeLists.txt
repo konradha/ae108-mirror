@@ -27,7 +27,7 @@ include(cmake/ae108_install_library.cmake)
 include(cmake/ae108_add_cppptest.cmake)
 
 add_subdirectory(cppptest)
-foreach(AE108_LIBRARY elements cpppetsc cppslepc assembly solve cmdline)
+foreach(AE108_LIBRARY elements cpppetsc cppslepc assembly solve cmdline meshing)
     add_subdirectory(${AE108_LIBRARY})
 endforeach()
 add_subdirectory(examples)
@@ -50,6 +50,8 @@ install(FILES
         cmake/modules/FindAE108_PETSc.cmake
         cmake/modules/FindAE108_SLEPc.cmake
         cmake/modules/AE108_PETSc.cc
+        cmake/modules/FindVoro++.cmake
+        cmake/modules/FindGmsh.cmake
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}/modules"
 )
 
@@ -65,7 +67,7 @@ set(CPACK_GENERATOR "DEB")
 set(CPACK_PACKAGE_NAME "libae108-${AE108_PETSC_SCALAR_TYPE}-dev")
 set(CPACK_DEBIAN_PACKAGE_SECTION "science")
 set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libboost-program-options-dev,libeigen3-dev,librange-v3-dev,libxrender1,libvtk9-dev,libpetsc-${AE108_PETSC_SCALAR_TYPE}-dev,libslepc-${AE108_PETSC_SCALAR_TYPE}3.15-dev")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libboost-program-options-dev,libeigen3-dev,librange-v3-dev,libxrender1,libvtk9-dev,libpetsc-${AE108_PETSC_SCALAR_TYPE}-dev,libslepc-${AE108_PETSC_SCALAR_TYPE}3.15-dev,libgmsh-dev,voro++-dev")
 set(CPACK_PACKAGE_DESCRIPTION "C++ foundation for computational solid mechanics simulations using a variational framework, primarily focusing on the Finite Element Method (FEM)")
 set(CPACK_PACKAGE_CONTACT "Mechanics & Materials Lab at ETH Zurich <gerhard.braeunlich@id.ethz.ch>")
 

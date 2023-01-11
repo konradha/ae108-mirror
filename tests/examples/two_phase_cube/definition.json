@@ -1,0 +1,10 @@
+{
+    "executable": [
+        "examples/meshing",
+        "ae108-examples-TwoPhaseCube"
+    ],
+    "compare_stdout": "numeric",
+    "mpi_processes": [
+        1
+    ]
+}

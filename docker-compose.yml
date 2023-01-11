@@ -24,7 +24,7 @@ services:
       context: ./docker
       dockerfile: Dockerfile
     volumes:
-    - .:/mnt/io
+      - .:/mnt/io
     tty: true
     shm_size: '1gb'
     working_dir: /mnt/io
@@ -35,7 +35,7 @@ services:
       context: ./docker
       dockerfile: Dockerfile
     volumes:
-    - .:/mnt/io
+      - .:/mnt/io
     working_dir: /mnt/io
     tty: true
     shm_size: '1gb'
@@ -44,6 +44,6 @@ services:
       context: ./docker
       dockerfile: Dockerfile_docu
     volumes:
-    - .:/mnt/io
+      - .:/mnt/io
     working_dir: /mnt/io
     tty: true

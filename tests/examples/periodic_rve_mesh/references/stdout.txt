@@ -1,0 +1,30 @@
+[32;1m
+*******************************************************************
+******        Statistics on Transfer (Write)                 ******[0m
+[32;1m
+*******************************************************************
+******        Transfer Mode = 0  I.E.  As Is       ******[0m
+[32;1m******        Transferring Shape, ShapeType = 0                      ******[0m
+[32;1m** WorkSession : Sending all data[0m
+[32;1m Step File Name : periodic.step(73672 ents)  Write  Done[0m
+# target face (9) nodes: 150
+# source face (0) nodes: 150
+
+# target face (11) nodes: 139
+# source face (1) nodes: 139
+
+# target face (7) nodes: 76
+# source face (2) nodes: 76
+
+# target face (6) nodes: 150
+# source face (3) nodes: 150
+
+# target face (10) nodes: 76
+# source face (4) nodes: 76
+
+# target face (8) nodes: 161
+# source face (5) nodes: 161
+
+# target face (13) nodes: 76
+# source face (12) nodes: 76
+

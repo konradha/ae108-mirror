@@ -156,3 +156,5 @@ if (NOT ${AE108_PETSC_COMPLEX})
                           PRIVATE ae108::elements
     )
 endif()
+
+add_subdirectory(meshing)

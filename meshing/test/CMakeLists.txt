@@ -18,6 +18,7 @@
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
 add_executable(${PROJECT_NAME}-MeshingTests
+        cppgmsh/Node_Test.cc
         cppgmsh/construct_cylinders_Test.cc
         cppgmsh/construct_polyhedron_Test.cc
         cppgmsh/construct_rectangle_Test.cc

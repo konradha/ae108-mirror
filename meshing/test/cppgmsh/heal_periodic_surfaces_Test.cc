@@ -46,8 +46,8 @@ TEST_F(heal_periodic_surfaces_Test, heal_periodic_rectangles) {
   heal_periodic_surfaces(source_rect.second, target_rect.second, {0, 0, 1});
   gmsh::model::occ::synchronize();
 
-  const auto source_points = get_points_of({2, source_rect});
-  const auto target_points = get_points_of({2, target_rect});
+  const auto source_points = get_points_of(source_rect);
+  const auto target_points = get_points_of(target_rect);
 
   gmsh::vectorpair points;
   gmsh::model::getEntities(points, 0);

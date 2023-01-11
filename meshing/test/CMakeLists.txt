@@ -34,8 +34,8 @@ add_executable(${PROJECT_NAME}-MeshingTests
         cppgmsh/translate_entities_Test.cc
         cppgmsh/generate_mesh_Test.cc
         cppgmsh/extract_mesh_Test.cc
-        # cppgmsh/heal_periodic_surfaces_Test.cc
-        # cppgmsh/heal_periodic_domains_Test.cc
+        cppgmsh/heal_periodic_surfaces_Test.cc
+        cppgmsh/heal_periodic_domains_Test.cc
         cppgmsh/as_affine_transform_Test.cc
         cppgmsh/get_boundary_of_Test.cc
         cppgmsh/get_centroid_of_Test.cc

@@ -42,7 +42,3 @@ add_executable(${PROJECT_NAME}-PhysicalGroups PhysicalGroups.cc)
 target_link_libraries(${PROJECT_NAME}-PhysicalGroups
                         PRIVATE ae108::meshing
 )
-add_executable(${PROJECT_NAME}-GradedLattice GradedLattice.cc)
-target_link_libraries(${PROJECT_NAME}-GradedLattice
-                        PRIVATE ae108::meshing
-)

@@ -38,12 +38,7 @@ RUN apt-get update && \
   libxrender1 \
   ninja-build \
   python3 python3-pip \
-  python3-scipy 
-
-RUN apt-get update && \
-  DEBIAN_FRONTEND="noninteractive" \
-  TZ="Europe/Zurich" \
-  apt-get install -y \
+  python3-scipy \
   libgmsh-dev \
   voro++-dev
 

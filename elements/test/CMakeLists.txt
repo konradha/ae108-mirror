@@ -20,6 +20,7 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 add_executable(${PROJECT_NAME}-ElementsTests
                Bar_Test.cc
                CoreElement_Test.cc
+               TwoNodeCorotationalBeam_Test.cc
                ForceElement_Test.cc
                TimoshenkoBeamElement_Test.cc
                Minimal_Test.cc

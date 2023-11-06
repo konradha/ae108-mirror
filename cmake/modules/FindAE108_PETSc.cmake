@@ -45,7 +45,9 @@ if(AE108_PETSc_FOUND AND NOT TARGET ae108::external::petsc)
             CXX_STANDARD 11
             CXX_STANDARD_REQUIRED TRUE
             LINK_LIBRARIES ae108::external::petsc
+            OUTPUT_VARIABLE TRY_OUTPUT
         )
+        message(WARNING ${TRY_OUTPUT})
     endmacro()
     
     try_compile_with_petsc("")

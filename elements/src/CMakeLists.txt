@@ -28,6 +28,7 @@ add_library(${PROJECT_NAME}-elements
             ComputeStiffnessMatrixTrait.cc
             ComputeMassMatrixTrait.cc
             CoreElement.cc
+            TwoNodeCorotationalBeam.cc
             ElementBase.cc
             ElementWithMass.cc
             ForceElement.cc

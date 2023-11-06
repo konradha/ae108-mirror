@@ -16,7 +16,7 @@
 // along with ae108. If not, see <https://www.gnu.org/licenses/>.
 
 
-#include "ae108/elements/TwoNodeCorotationalBeam.h"
+#include "ae108/elements/TwoNodeCorotationalBeamElement.h"
 
 #include <iostream>
 

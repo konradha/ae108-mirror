@@ -27,6 +27,7 @@ using testing::Types;
 namespace ae108 {
 namespace elements {
 namespace {
+  testing::Test
 /*
 template <class Element_> struct Configuration_1Dxx {
   using Element = Element_;

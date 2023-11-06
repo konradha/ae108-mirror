@@ -36,6 +36,92 @@ struct TwoNodeCorotationalBeamProperties;
 template <class RealType_>
 struct TwoNodeCorotationalBeamProperties<RealType_, 2> {
   using real_type = RealType_;
+
+  real_type modulus; // TODO find out `nature` of modulus
+  real_type areaMoment;
+  real_type area;
+  real_type density;
+
+
+  // double _modulus;
+  // double _areaMoment;
+  // double _area;
+  // double _density;
+
+  // CURRENT Timoshenko element
+  // real_type young_modulus;
+  // real_type shear_modulus;
+  // real_type shear_correction_factor_y;
+  // real_type area;
+  // real_type area_moment_z;
+
+  // LEGACY Timoshenko element
+  // double _shearcorrection;
+  // double _area;
+  // double _areaMomenty;
+  // double _areaMomentz;
+  // double _JMoment;
+  // Matrix<double,3,1> _desiredLocalZOrientation;
+  // double _maxExtensiony;
+  // double _maxExtensionz;
+  // double _yieldStress;
+};
+
+template <class RealType_, class Element>
+tensor::Tensor<RealType_, 2> computeLocAxialValues(
+  const typename Element::NodalDisplacements &s, // TODO: needs to be changed
+  const typename Element::NodalDisplacements &displacements) noexcept
+{
+  tensor::Tensor<RealType_, 2> x0, x1;
+  x0 = s(0) + displacements(0); // TODO: check if this makes sense in matmul backend notation
+  x1 = s(1) + displacements(1); // TODO: check if this makes sense in matmul backend notation
+  auto d = tensor::as_vector(x1 - x0);
+  RealType_ dist = d.norm();
+  
+  RealType_ axialDisplacement = (dist*dist - x0*x0) / (dist + x0); // what are we actually calculating here?
+  return {axialDisplacement, dist};
+
+
+  /*
+  // COMPUTE L
+  Point defX0;
+  defX0(0, 0) = _x0(0) + displacements[0](0);
+  defX0(1, 0) = _x0(1) + displacements[0](1);
+  Point defX1;
+  defX1(0, 0) = _x1(0) + displacements[1](0);
+  defX1(1, 0) = _x1(1) + displacements[1](1);
+  Point defDistanceVector = defX1 - defX0;
+  double defDistance = defDistanceVector.norm();
+  // COMPUTE UL
+  double locAxialDisplacement =
+      (pow(defDistance, 2) - pow(_distance, 2)) / (defDistance + _distance);
+  Vector2d locAxialValues;
+  locAxialValues(0) = locAxialDisplacement;
+  locAxialValues(1) = defDistance;
+  return locAxialValues;
+  */
+}
+
+// template <std::size_t Dimension_, class ValueType_, class RealType_>
+// struct ComputeEnergyTrait<
+//     TwoNodeCorotationalBeamElement<Dimension_, ValueType_, RealType_>> {
+//   template <class Element>
+//   typename Element::Energy
+//   operator()(const Element &element,
+//              const typename Element::NodalDisplacements &u,
+//              const typename Element::Time &) const noexcept {
+//     const auto v = tensor::as_vector(&u);
+//     return typename Element::Energy{.5} * v.transpose() *
+//            element.stiffness_matrix() * v;
+//   }
+// };
+
+
+
+
+template <class RealType_>
+struct TwoNodeCorotationalBeamProperties<RealType_, 3> {
+  using real_type = RealType_;
 };
 
 

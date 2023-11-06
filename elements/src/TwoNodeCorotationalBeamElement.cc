@@ -17,9 +17,3 @@
 
 
 #include "ae108/elements/TwoNodeCorotationalBeamElement.h"
-
-#include <iostream>
-
-int main() {
-    std::cout << "helllo\n";
-}

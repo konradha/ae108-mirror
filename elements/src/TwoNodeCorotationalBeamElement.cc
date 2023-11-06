@@ -21,5 +21,5 @@
 #include <iostream>
 
 int main() {
-    std::cout << "helllo\n";1
+    std::cout << "helllo\n";
 }

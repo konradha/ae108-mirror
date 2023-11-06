@@ -17,8 +17,28 @@
 
 #pragma once
 
+#include "ae108/elements/ComputeEnergyTrait.h"
+#include "ae108/elements/ComputeForcesTrait.h"
+#include "ae108/elements/ComputeStiffnessMatrixTrait.h"
+#include "ae108/elements/ElementBase.h"
+#include "ae108/elements/tensor/as_vector.h"
+
+#include "ae108/elements/TimoshenkoBeamElement.h"
+// #include "ae108/elements/tensor/as_matrix_of_rows.h"
+
 
 namespace ae108 {
 namespace elements {
+
+template <class RealType_, std::size_t Dimension_>
+struct TwoNodeCorotationalBeamProperties;
+
+template <class RealType_>
+struct TwoNodeCorotationalBeamProperties<RealType_, 2> {
+  using real_type = RealType_;
+};
+
+
+
 }
 }

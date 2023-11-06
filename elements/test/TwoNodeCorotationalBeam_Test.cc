@@ -1,6 +1,6 @@
 #include "Element_Test.h"
 #include "ae108/elements/CoreElement.h"
-#include "ae108/elements/TwoNodeCorotationalBeam.h"
+#include "ae108/elements/TwoNodeCorotationalBeamElement.h"
 #include <gmock/gmock.h>
 
 // #include "Element_Test.h"
@@ -27,7 +27,6 @@ using testing::Types;
 namespace ae108 {
 namespace elements {
 namespace {
-  testing::Test
 /*
 template <class Element_> struct Configuration_1Dxx {
   using Element = Element_;

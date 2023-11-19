@@ -23,7 +23,7 @@
 #include "ae108/elements/ElementBase.h"
 #include "ae108/elements/tensor/as_vector.h"
 
-#include "ae108/elements/TimoshenkoBeamElement.h"
+#include "ae108/elements/TwoNodeCorotationalBeamElement.h"
 // #include "ae108/elements/tensor/as_matrix_of_rows.h"
 
 
@@ -38,7 +38,7 @@ struct TwoNodeCorotationalBeamProperties<RealType_, 2> {
   using real_type = RealType_;
 
   real_type modulus; // TODO find out `nature` of modulus
-  real_type areaMoment;
+  real_type area_moment;
   real_type area;
   real_type density;
 
@@ -47,6 +47,8 @@ struct TwoNodeCorotationalBeamProperties<RealType_, 2> {
   // double _areaMoment;
   // double _area;
   // double _density;
+
+  // ↓↓↓ COMPARISON ↓↓↓
 
   // CURRENT Timoshenko element
   // real_type young_modulus;
@@ -102,6 +104,47 @@ tensor::Tensor<RealType_, 2> computeLocAxialValues(
   */
 }
 
+
+template <std::size_t Dimension_, class Element>
+tensor::Tensor<double, Dimension_ *(Dimension_ + 1),
+               Dimension_ *(Dimension_ + 1)>
+stiffness_matrix(const TwoNodeCorotationalBeamProperties<double, Dimension_> &properties,
+                 const typename Element::NodalDisplacements &displacements) noexcept;
+
+template <std::size_t Dimension_, class Element>
+tensor::Tensor<double, 12, 12>
+stiffness_matrix<3>(const TwoNodeCorotationalBeamProperties<double, 3> &properties,
+                    const typename Element::NodalDisplacements &displacements,
+                    const double length) noexcept {
+  const double L = length;
+  computeLocAxialValues(displacements);
+  const auto M   = properties.modulus; 
+  const auto I   = properties.area_moment;
+  const auto A   = properties.area;
+
+  compute_strain()
+
+  // Calculate local angles, bending moments, axial strain
+  auto localAngles = calculateLocalAngles(displacements);
+  auto moments     = calculateLocalMoments(localAngles, M, I);
+  auto axialValues = computeLocAxialValues(displacements);
+  const auto axialStrain = axialValues[0] / L;
+  
+  // assembly final stiffness matrix  
+  tensor::Tensor<double, Dimension_*(Dimension_+1), Dimension_*(Dimension_+1)> k;
+  
+  // Axial stiffness portion
+  k(0,0) = M*A / L; 
+  k(0,6) = -k(0,0);
+
+  // Bending stiffness portion
+  // Use properties, localAngles, and moments
+
+  return k;
+}
+
+
+
 // template <std::size_t Dimension_, class ValueType_, class RealType_>
 // struct ComputeEnergyTrait<
 //     TwoNodeCorotationalBeamElement<Dimension_, ValueType_, RealType_>> {
@@ -116,6 +159,93 @@ tensor::Tensor<RealType_, 2> computeLocAxialValues(
 //   }
 // };
 
+
+template <std::size_t Dimension_>
+Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
+              Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
+twonode_corotational_beam_stiffness_matrix(
+    const tensor::Tensor<double, Dimension_> &axis,
+    const TwoNodeCorotationalBeamProperties<double, Dimension_> &properties) noexcept;
+
+
+template <std::size_t Dimension_>
+Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
+              Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
+twonode_corotational_beam_lumped_mass_matrix(
+    const tensor::Tensor<double, Dimension_> &axis,
+    const TwoNodeCorotationalBeamProperties<double, Dimension_> &properties,
+    const double density) noexcept;
+
+
+template <std::size_t Dimension_>
+Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
+              Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
+twonode_corotational_beam_consistent_mass_matrix(
+    const tensor::Tensor<double, Dimension_> &axis,
+    const TwoNodeCorotationalBeamProperties<double, Dimension_> &properties,
+    const double density) noexcept;
+
+
+template <std::size_t Dimension_, class ValueType_ = double,
+          class RealType_ = double>
+struct TwoNodeCorotationalBeamElement final
+    : ElementBase<TwoNodeCorotationalBeamElement<Dimension_, ValueType_, RealType_>,
+                  std::size_t, ValueType_, RealType_, 2, Dimension_,
+                  (Dimension_ * (Dimension_ + 1)) / 2> {
+public:
+  explicit TwoNodeCorotationalBeamElement(
+      typename TwoNodeCorotationalBeamElement::StiffnessMatrix matrix) noexcept
+      : stiffness_matrix_(std::move(matrix)) {}
+
+  const typename TwoNodeCorotationalBeamElement::StiffnessMatrix &
+  stiffness_matrix() const {
+    return stiffness_matrix_;
+  }
+
+private:
+  typename TwoNodeCorotationalBeamElement::StiffnessMatrix stiffness_matrix_;
+};
+
+template <std::size_t Dimension_, class ValueType_, class RealType_>
+struct ComputeEnergyTrait<
+    TwoNodeCorotationalBeamElement<Dimension_, ValueType_, RealType_>> {
+  template <class Element>
+  typename Element::Energy
+  operator()(const Element &element,
+             const typename Element::NodalDisplacements &u,
+             const typename Element::Time &) const noexcept {
+    const auto v = tensor::as_vector(&u);
+    return typename Element::Energy{.5} * v.transpose() *
+           element.stiffness_matrix() * v;
+  }
+};
+
+template <std::size_t Dimension_, class ValueType_, class RealType_>
+struct ComputeForcesTrait<
+    TwoNodeCorotationalBeamElement<Dimension_, ValueType_, RealType_>> {
+  template <class Element>
+  typename Element::Forces
+  operator()(const Element &element,
+             const typename Element::NodalDisplacements &u,
+             const typename Element::Time &) const noexcept {
+    typename Element::Forces forces;
+    tensor::as_vector(&forces) =
+        element.stiffness_matrix() * tensor::as_vector(&u);
+    return forces;
+  }
+};
+
+template <std::size_t Dimension_, class ValueType_, class RealType_>
+struct ComputeStiffnessMatrixTrait<
+    TwoNodeCorotationalBeamElement<Dimension_, ValueType_, RealType_>> {
+  template <class Element>
+  typename Element::StiffnessMatrix
+  operator()(const Element &element,
+             const typename Element::NodalDisplacements &,
+             const typename Element::Time &) const noexcept {
+    return element.stiffness_matrix();
+  }
+};
 
 
 

@@ -271,7 +271,8 @@ build-euler-modules:
     needs: []
     script:
         - . requirements/euler.sh
-        - cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release -G Ninja -DCMAKE_TOOLCHAIN_FILE=/cluster/project/mandm/libraries/EulerToolchain.cmake
+        - >
+          cmake -S . -B build-release -G Ninja -DCMAKE_BUILD_TYPE=Release -DUSE_MESHING=OFF -DCMAKE_TOOLCHAIN_FILE=/cluster/project/mandm/libraries/EulerToolchain.cmake
         - bsub -Ip -n 32 -W00:10 'cmake --build build-release --target all'
         - bsub -Ip -n 3 -W00:10 'cmake --build build-release --target test'
     tags:

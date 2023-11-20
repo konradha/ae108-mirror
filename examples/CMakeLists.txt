@@ -157,4 +157,6 @@ if (NOT ${AE108_PETSC_COMPLEX})
     )
 endif()
 
-add_subdirectory(meshing)
+if (${USE_MESHING})
+    add_subdirectory(meshing)
+endif()

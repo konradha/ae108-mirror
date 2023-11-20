@@ -26,10 +26,15 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/modules")
 include(cmake/ae108_install_library.cmake)
 include(cmake/ae108_add_cppptest.cmake)
 
+option(USE_MESHING "Build meshing module" ON)
+
 add_subdirectory(cppptest)
-foreach(AE108_LIBRARY elements cpppetsc cppslepc assembly solve cmdline meshing)
+foreach(AE108_LIBRARY elements cpppetsc cppslepc assembly solve cmdline)
     add_subdirectory(${AE108_LIBRARY})
 endforeach()
+if (${USE_MESHING})
+    add_subdirectory(meshing)
+endif()
 add_subdirectory(examples)
 
 add_test(NAME ${PROJECT_NAME}-ExamplesTests COMMAND "${CMAKE_CURRENT_LIST_DIR}/tests/run.py")

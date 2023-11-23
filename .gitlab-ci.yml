@@ -273,8 +273,17 @@ build-euler-modules:
         - . requirements/euler.sh
         - >
           cmake -S . -B build-release -G Ninja -DCMAKE_BUILD_TYPE=Release -DUSE_MESHING=OFF -DCMAKE_TOOLCHAIN_FILE=/cluster/project/mandm/libraries/EulerToolchain.cmake
-        - bsub -Ip -n 32 -W00:10 'cmake --build build-release --target all'
-        - bsub -Ip -n 3 -W00:10 'cmake --build build-release --target test'
+        - >
+          srun -c 32 --mem-per-cpu=4G --account=es_kochm --time=01:00:00 cmake --build build-release --target all
+        # srun does not work with mpi for some reason - sbatch works:
+        - >
+          if ! sbatch -o euler-ae108-test.log -e euler-ae108-test.log -W --ntasks=3 --account=es_kochm --time=01:00:00 --wrap "cmake --build build-release --target test" ; then
+            exit_code=1 ;
+          else
+            exit_code=0 ;
+          fi
+        - cat euler-ae108-test.log
+        - exit "$exit_code"
     tags:
         - euler
     only:

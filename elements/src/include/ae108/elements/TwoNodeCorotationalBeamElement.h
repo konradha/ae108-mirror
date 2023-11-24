@@ -23,7 +23,7 @@
 #include "ae108/elements/ElementBase.h"
 #include "ae108/elements/tensor/as_vector.h"
 
-#include "ae108/elements/TwoNodeCorotationalBeamElement.h"
+// #include "ae108/elements/TwoNodeCorotationalBeamElement.h"
 // #include "ae108/elements/tensor/as_matrix_of_rows.h"
 
 
@@ -113,33 +113,35 @@ stiffness_matrix(const TwoNodeCorotationalBeamProperties<double, Dimension_> &pr
 
 template <std::size_t Dimension_, class Element>
 tensor::Tensor<double, 12, 12>
-stiffness_matrix<3>(const TwoNodeCorotationalBeamProperties<double, 3> &properties,
+stiffness_matrix(const TwoNodeCorotationalBeamProperties<double, 3> &properties,
                     const typename Element::NodalDisplacements &displacements,
                     const double length) noexcept {
-  const double L = length;
-  computeLocAxialValues(displacements);
-  const auto M   = properties.modulus; 
-  const auto I   = properties.area_moment;
-  const auto A   = properties.area;
+  // const double L = length;
+  // computeLocAxialValues(displacements);
+  // const auto M   = properties.modulus; 
+  // const auto I   = properties.area_moment;
+  // const auto A   = properties.area;
 
-  compute_strain()
+  // compute_strain()
 
-  // Calculate local angles, bending moments, axial strain
-  auto localAngles = calculateLocalAngles(displacements);
-  auto moments     = calculateLocalMoments(localAngles, M, I);
-  auto axialValues = computeLocAxialValues(displacements);
-  const auto axialStrain = axialValues[0] / L;
+  // // Calculate local angles, bending moments, axial strain
+  // auto localAngles = calculateLocalAngles(displacements);
+  // auto moments     = calculateLocalMoments(localAngles, M, I);
+  // auto axialValues = computeLocAxialValues(displacements);
+  // const auto axialStrain = axialValues[0] / L;
   
-  // assembly final stiffness matrix  
+  // // assembly final stiffness matrix  
+  // tensor::Tensor<double, Dimension_*(Dimension_+1), Dimension_*(Dimension_+1)> k;
+  
+  // // Axial stiffness portion
+  // k(0,0) = M*A / L; 
+  // k(0,6) = -k(0,0);
+
+  // // Bending stiffness portion
+  // // Use properties, localAngles, and moments
+
+  // return k;
   tensor::Tensor<double, Dimension_*(Dimension_+1), Dimension_*(Dimension_+1)> k;
-  
-  // Axial stiffness portion
-  k(0,0) = M*A / L; 
-  k(0,6) = -k(0,0);
-
-  // Bending stiffness portion
-  // Use properties, localAngles, and moments
-
   return k;
 }
 
@@ -216,7 +218,7 @@ struct ComputeEnergyTrait<
              const typename Element::Time &) const noexcept {
     const auto v = tensor::as_vector(&u);
     return typename Element::Energy{.5} * v.transpose() *
-           element.stiffness_matrix() * v;
+           element.stiffness_matrix() * v; // placeholder
   }
 };
 
@@ -230,7 +232,7 @@ struct ComputeForcesTrait<
              const typename Element::Time &) const noexcept {
     typename Element::Forces forces;
     tensor::as_vector(&forces) =
-        element.stiffness_matrix() * tensor::as_vector(&u);
+        element.stiffness_matrix() * tensor::as_vector(&u); // placeholder
     return forces;
   }
 };

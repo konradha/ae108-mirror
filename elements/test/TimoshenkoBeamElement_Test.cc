@@ -23,6 +23,9 @@
 #include <gmock/gmock.h>
 #include <numeric>
 
+#include <iostream>
+#include <typeinfo>
+
 using testing::DoubleEq;
 using testing::Eq;
 using testing::Not;
@@ -149,7 +152,8 @@ TEST_F(TimoshenkoBeamElement3D_Test, computes_energy_with_axial_displacement) {
       {{0., 0., 0., 0., 0., 0.}},
       {{1., 0., 0., 0., 0., 0.}},
   }};
-
+  std::cout << typeid(element.stiffness_matrix()).name() << "\n\n\n";
+  std::cout << "STIFFNESS MATRIX IS\n" << element.stiffness_matrix() << "\n\n\n";
   EXPECT_THAT(element.computeEnergy(displacements, time), DoubleEq(.5));
 }
 

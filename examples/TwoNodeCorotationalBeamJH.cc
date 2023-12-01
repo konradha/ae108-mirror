@@ -90,3 +90,27 @@ constexpr auto vertex_positions = VertexPositions{{
 using Element =
     elements::TwoNodeCorotationalBeamJHElement<coordinate_dimension, Vector::value_type,
                                     Vector::real_type>;
+
+using Properties =
+    elements::TwoNodeCorotationalBeamJHProperties<Mesh::real_type, coordinate_dimension>;
+
+constexpr Mesh::real_type young_modulus = 1.;
+constexpr Mesh::real_type poisson_ratio = 0.3;
+constexpr Mesh::real_type shear_modulus =
+    young_modulus / (2 * (1 + poisson_ratio));
+constexpr Mesh::real_type shear_correction_factor_y = 1.2;
+constexpr Mesh::real_type thickness = 1.;
+constexpr Mesh::real_type width = 0.1;
+constexpr Mesh::real_type area = width * thickness;
+constexpr Mesh::real_type area_moment_z =
+    thickness * width * width * width / 12.;
+
+using Assembler =
+    assembly::Assembler<Element, assembly::DefaultFeaturePlugins, Policy>;
+
+
+using Solver = solve::NonlinearSolver<Assembler>;
+
+int main() {
+  return 0;
+}

@@ -86,3 +86,7 @@ constexpr auto vertex_positions = VertexPositions{{
     {{1., 1.}},
     {{0., 1.}},
 }};
+
+using Element =
+    elements::TwoNodeCorotationalBeamJHElement<coordinate_dimension, Vector::value_type,
+                                    Vector::real_type>;

@@ -22,3 +22,8 @@
 #include <Eigen/Dense>
 #include <gmock/gmock.h>
 #include <numeric>
+
+int main() {
+  // TODO
+  return 0;
+}

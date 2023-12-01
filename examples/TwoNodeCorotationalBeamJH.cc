@@ -175,6 +175,9 @@ int main(int argc, char **argv) {
   auto result = solver.computeSolution(
       boundary_conditions, Vector::fromGlobalMesh(mesh), time, &assembler);
 
+  // !!!!!! this will obviously fail
+  //  --> what():  The nonlinear solver failed to find a solution.
+
   // Let us now print the result.
   // We could use: result.unwrap().print();
 

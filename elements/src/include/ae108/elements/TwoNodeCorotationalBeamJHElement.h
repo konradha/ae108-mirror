@@ -165,15 +165,18 @@ stiffness_matrix(const TwoNodeCorotationalBeamJHProperties<double, 3> &propertie
 template <std::size_t Dimension_>
 Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
               Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
-twonode_corotational_beam_stiffness_matrix(
+twonode_corotational_beamjh_stiffness_matrix(
     const tensor::Tensor<double, Dimension_> &axis,
-    const TwoNodeCorotationalBeamJHProperties<double, Dimension_> &properties) noexcept;
+    const TwoNodeCorotationalBeamJHProperties<double, Dimension_> &properties) noexcept {
+      Eigen::Matrix<double, Dimension_ *(Dimension_ + 1), Dimension_ *(Dimension_ + 1), Eigen::RowMajor> values;
+      return values;
+    }
 
 
 template <std::size_t Dimension_>
 Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
               Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
-twonode_corotational_beam_lumped_mass_matrix(
+twonode_corotational_beamjh_lumped_mass_matrix(
     const tensor::Tensor<double, Dimension_> &axis,
     const TwoNodeCorotationalBeamJHProperties<double, Dimension_> &properties,
     const double density) noexcept;
@@ -182,7 +185,7 @@ twonode_corotational_beam_lumped_mass_matrix(
 template <std::size_t Dimension_>
 Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
               Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
-twonode_corotational_beam_consistent_mass_matrix(
+twonode_corotational_beamjh_consistent_mass_matrix(
     const tensor::Tensor<double, Dimension_> &axis,
     const TwoNodeCorotationalBeamJHProperties<double, Dimension_> &properties,
     const double density) noexcept;

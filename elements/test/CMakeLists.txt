@@ -50,7 +50,7 @@ add_executable(${PROJECT_NAME}-ElementsTests
 )
 
 add_executable(${PROJECT_NAME}-ExtraTest
-               TwoNodeCorotationalBeam_JH_Test.cc
+               TwoNodeCorotationalBeamJHElement_Test.cc
 )
 
 add_test(NAME ${PROJECT_NAME}-ElementsTests COMMAND $<TARGET_FILE:${PROJECT_NAME}-ElementsTests>)

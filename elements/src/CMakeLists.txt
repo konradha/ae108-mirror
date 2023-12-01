@@ -33,7 +33,7 @@ add_library(${PROJECT_NAME}-elements
             ForceElement.cc
             Minimal.cc
             TimoshenkoBeamElement.cc
-            TwoNodeCorotationalBeam_JH.cc
+            TwoNodeCorotationalBeamJHElement.cc
             automatic_forces.cc
             automatic_stiffness_matrix.cc
             compute_consistent_mass_matrix.cc

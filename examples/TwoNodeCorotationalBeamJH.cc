@@ -31,7 +31,6 @@
 #include "ae108/elements/tensor/as_vector.h"
 #include "ae108/solve/NonlinearSolver.h"
 
-
 using namespace ae108;
 
 using Policy = cpppetsc::ParallelComputePolicy;
@@ -87,12 +86,12 @@ constexpr auto vertex_positions = VertexPositions{{
     {{0., 1.}},
 }};
 
-using Element =
-    elements::TwoNodeCorotationalBeamJHElement<coordinate_dimension, Vector::value_type,
-                                    Vector::real_type>;
+using Element = elements::TwoNodeCorotationalBeamJHElement<
+    coordinate_dimension, Vector::value_type, Vector::real_type>;
 
 using Properties =
-    elements::TwoNodeCorotationalBeamJHProperties<Mesh::real_type, coordinate_dimension>;
+    elements::TwoNodeCorotationalBeamJHProperties<Mesh::real_type,
+                                                  coordinate_dimension>;
 
 constexpr Mesh::real_type young_modulus = 1.;
 constexpr Mesh::real_type poisson_ratio = 0.3;
@@ -108,11 +107,10 @@ constexpr Mesh::real_type area_moment_z =
 using Assembler =
     assembly::Assembler<Element, assembly::DefaultFeaturePlugins, Policy>;
 
-
 using Solver = solve::NonlinearSolver<Assembler>;
 
 int main(int argc, char **argv) {
-   // MPI/PETSc/cpppetsc must be initialized before using it.
+  // MPI/PETSc/cpppetsc must be initialized before using it.
 
   const auto context = Context(&argc, &argv);
 
@@ -123,9 +121,7 @@ int main(int argc, char **argv) {
                              number_of_vertices, dof_per_vertex, 0);
   auto assembler = Assembler();
 
-  Properties properties = {young_modulus, area_moment_z,
-                           area, thickness};
-
+  Properties properties = {young_modulus, area_moment_z, area, thickness};
 
   // Depending on whether we use MPI, our mesh may be distributed and not all
   // elements are present on this computational node.
@@ -142,7 +138,8 @@ int main(int argc, char **argv) {
             &vertex_positions.at(connectivity.at(element.index()).at(0)));
 
     assembler.emplaceElement(
-        element, twonode_corotational_beamjh_stiffness_matrix(element_axis, properties));
+        element,
+        twonode_corotational_beamjh_stiffness_matrix(element_axis, properties));
   }
 
   const auto solver = Solver(&mesh);
@@ -170,7 +167,7 @@ int main(int argc, char **argv) {
     }
   }
 
-   // We are ready to minimize the energy.
+  // We are ready to minimize the energy.
 
   auto result = solver.computeSolution(
       boundary_conditions, Vector::fromGlobalMesh(mesh), time, &assembler);

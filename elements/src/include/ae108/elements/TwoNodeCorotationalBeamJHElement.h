@@ -29,7 +29,6 @@
 // #include "ae108/elements/TwoNodeCorotationalBeamJHElement.h"
 // #include "ae108/elements/tensor/as_matrix_of_rows.h"
 
-
 namespace ae108 {
 namespace elements {
 
@@ -49,68 +48,64 @@ struct TwoNodeCorotationalBeamJHProperties<RealType_, 2> {
   // real_type torsion_y;
 };
 
-
 template <std::size_t Dimension_, class Element>
 tensor::Tensor<double, Dimension_ *(Dimension_ + 1),
                Dimension_ *(Dimension_ + 1)>
-stiffness_matrix(const TwoNodeCorotationalBeamJHProperties<double, Dimension_> &properties,
-                 const typename Element::NodalDisplacements &displacements) noexcept;
+stiffness_matrix(
+    const TwoNodeCorotationalBeamJHProperties<double, Dimension_> &properties,
+    const typename Element::NodalDisplacements &displacements) noexcept;
 
 template <std::size_t Dimension_, class Element>
-tensor::Tensor<double, 6, 6>
-stiffness_matrix(const TwoNodeCorotationalBeamJHProperties<double, 2> &properties,
-                    const typename Element::NodalDisplacements &displacements,
-                    const double length) noexcept {
-  auto tangent = Element::ComputeTangentMatrixTrait<MaterialModel_>(model, id, gradient); // TODO
+tensor::Tensor<double, 6, 6> stiffness_matrix(
+    const TwoNodeCorotationalBeamJHProperties<double, 2> &properties,
+    const typename Element::NodalDisplacements &displacements,
+    const double length) noexcept {
+  auto tangent = Element::ComputeTangentMatrixTrait<MaterialModel_>(
+      model, id, gradient); // TODO
   double cosbeta, sinbeta;
-  cosbeta = properties.local_angles[0]; sinbeta = properties.local_angles[1];
+  cosbeta = properties.local_angles[0];
+  sinbeta = properties.local_angles[1];
   auto stress = Element::ComputeStressTrait<Dimension_>();
 
-
-  auto L  = length;
-  // assume all matrices local here; no left/right stress; only entire StressTrait
+  auto L = length;
+  // assume all matrices local here; no left/right stress; only entire
+  // StressTrait
 
   auto rg = properties.areaMoment / properties.area;
-  auto n  = properties.area * stress[0];
+  auto n = properties.area * stress[0];
   auto k1 = tangent[0, 0] * properties.area;
 
   auto c1 = tangent[0, 0] * properties.area;
-  auto c2 = k1 * 2. * rg; auto c3 = 2. * c2;
+  auto c2 = k1 * 2. * rg;
+  auto c3 = 2. * c2;
   auto _ = 0;
-  tensor::Tensor<double, 3, 3> C = 
-  {{
-      {{  c1,  c3, _}},
-      {{  c3,  c2,  _}},
-      {{  _,   _,  _}}
-  }};
+  tensor::Tensor<double, 3, 3> C = {
+      {{{c1, c3, _}}, {{c3, c2, _}}, {{_, _, _}}}};
   // Dimenion_ == DOF? number of nodes?
-  tensor::Tensor<double, 4, 1> r = 
-  {{
-    {{sinbeta, -cosbeta, -sinbeta, cosbeta}}
-  }};
+  tensor::Tensor<double, 4, 1> r = {{{{sinbeta, -cosbeta, -sinbeta, cosbeta}}}};
 
-  tensor::Tensor<double, 4, 1> z =
-  {{
-    {{-cosbeta, -sinbeta, cosbeta, sinbeta}}
-  }};
+  tensor::Tensor<double, 4, 1> z = {{{{-cosbeta, -sinbeta, cosbeta, sinbeta}}}};
 
-  tensor::Tensor<double, Dimension_*(Dimension_+1), Dimension_*(Dimension_+1)> k =
-  C + 1./L * z.transpose() * z + ((m1 + m2) / L / L) * (r * z.tranpose()) + z * r.transpose(); 
+  tensor::Tensor<double, Dimension_ *(Dimension_ + 1),
+                 Dimension_ *(Dimension_ + 1)>
+      k = C + 1. / L * z.transpose() * z +
+          ((m1 + m2) / L / L) * (r * z.tranpose()) + z * r.transpose();
 
   return k;
 }
-
 
 template <std::size_t Dimension_>
 Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
               Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
 twonode_corotational_beamjh_stiffness_matrix(
     const tensor::Tensor<double, Dimension_> &axis,
-    const TwoNodeCorotationalBeamJHProperties<double, Dimension_> &properties) noexcept {
-      Eigen::Matrix<double, Dimension_ *(Dimension_ + 1), Dimension_ *(Dimension_ + 1), Eigen::RowMajor> values;
-      return values;
-    }
-
+    const TwoNodeCorotationalBeamJHProperties<double, Dimension_>
+        &properties) noexcept {
+  Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
+                Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
+      values;
+  return values;
+}
 
 template <std::size_t Dimension_>
 Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
@@ -120,7 +115,6 @@ twonode_corotational_beamjh_lumped_mass_matrix(
     const TwoNodeCorotationalBeamJHProperties<double, Dimension_> &properties,
     const double density) noexcept;
 
-
 template <std::size_t Dimension_>
 Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
               Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
@@ -129,16 +123,17 @@ twonode_corotational_beamjh_consistent_mass_matrix(
     const TwoNodeCorotationalBeamJHProperties<double, Dimension_> &properties,
     const double density) noexcept;
 
-
 template <std::size_t Dimension_, class ValueType_ = double,
           class RealType_ = double>
 struct TwoNodeCorotationalBeamJHElement final
-    : ElementBase<TwoNodeCorotationalBeamJHElement<Dimension_, ValueType_, RealType_>,
-                  std::size_t, ValueType_, RealType_, 2, Dimension_,
-                  (Dimension_ * (Dimension_ + 1)) / 2> {
+    : ElementBase<
+          TwoNodeCorotationalBeamJHElement<Dimension_, ValueType_, RealType_>,
+          std::size_t, ValueType_, RealType_, 2, Dimension_,
+          (Dimension_ * (Dimension_ + 1)) / 2> {
 public:
   explicit TwoNodeCorotationalBeamJHElement(
-      typename TwoNodeCorotationalBeamJHElement::StiffnessMatrix matrix) noexcept
+      typename TwoNodeCorotationalBeamJHElement::StiffnessMatrix
+          matrix) noexcept
       : stiffness_matrix_(std::move(matrix)) {}
 
   const typename TwoNodeCorotationalBeamJHElement::StiffnessMatrix &
@@ -191,14 +186,10 @@ struct ComputeStiffnessMatrixTrait<
   }
 };
 
-
-
 template <class RealType_>
 struct TwoNodeCorotationalBeamJHProperties<RealType_, 3> {
   using real_type = RealType_;
 };
 
-
-
-}
-}
+} // namespace elements
+} // namespace ae108

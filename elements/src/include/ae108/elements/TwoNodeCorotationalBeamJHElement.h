@@ -61,7 +61,7 @@ tensor::Tensor<double, 6, 6>
 stiffness_matrix(const TwoNodeCorotationalBeamJHProperties<double, 2> &properties,
                     const typename Element::NodalDisplacements &displacements,
                     const double length) noexcept {
-  auto tangent = Element::ComputeTangentMatrixTrait<MaterialModel_>(model, id, gradient); // how to apply this trait?
+  auto tangent = Element::ComputeTangentMatrixTrait<MaterialModel_>(model, id, gradient); // TODO
   double cosbeta, sinbeta;
   cosbeta = properties.local_angles[0]; sinbeta = properties.local_angles[1];
   auto stress = Element::ComputeStressTrait<Dimension_>();

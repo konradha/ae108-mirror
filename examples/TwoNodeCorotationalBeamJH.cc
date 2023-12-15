@@ -31,6 +31,8 @@
 #include "ae108/elements/tensor/as_vector.h"
 #include "ae108/solve/NonlinearSolver.h"
 
+#include <iostream>
+
 using namespace ae108;
 
 using Policy = cpppetsc::ParallelComputePolicy;
@@ -136,7 +138,9 @@ int main(int argc, char **argv) {
             &vertex_positions.at(connectivity.at(element.index()).at(1))) -
         elements::tensor::as_vector(
             &vertex_positions.at(connectivity.at(element.index()).at(0)));
-
+    // std::cout << twonode_corotational_beamjh_stiffness_matrix(element_axis,
+    //                                                           properties)
+    //           << "\n";
     assembler.emplaceElement(
         element,
         twonode_corotational_beamjh_stiffness_matrix(element_axis, properties));
@@ -216,8 +220,7 @@ int main(int argc, char **argv) {
   cpppetsc::setName("result", &result);
   cpppetsc::writeToViewer(result, &viewer);
 
-  fprintf(stderr, "The data has been written to the file "
-                  "\"twonodecorotjh.ae108\".\n");
+  std::cerr << "The data has been written to the file twonodecorotjh.ae108.\n";
 
   return 0;
 }

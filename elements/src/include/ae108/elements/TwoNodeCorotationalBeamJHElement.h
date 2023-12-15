@@ -55,43 +55,50 @@ stiffness_matrix(
     const TwoNodeCorotationalBeamJHProperties<double, Dimension_> &properties,
     const typename Element::NodalDisplacements &displacements) noexcept;
 
-template <std::size_t Dimension_, class Element>
+template <std::size_t Dimension_, class Element, class MaterialModel_>
 tensor::Tensor<double, 6, 6> stiffness_matrix(
     const TwoNodeCorotationalBeamJHProperties<double, 2> &properties,
     const typename Element::NodalDisplacements &displacements,
     const double length) noexcept {
-  auto tangent = Element::ComputeTangentMatrixTrait<MaterialModel_>(
-      model, id, gradient); // TODO
-  double cosbeta, sinbeta;
-  cosbeta = properties.local_angles[0];
-  sinbeta = properties.local_angles[1];
-  auto stress = Element::ComputeStressTrait<Dimension_>();
+  // auto tangent = Element::ComputeTangentMatrixTrait<MaterialModel_>(); //
+  // TODO
+  const auto cosbeta = properties.local_angles[0];
+  const auto sinbeta = properties.local_angles[1];
+  // auto stress = Element::ComputeStressTrait<Dimension_>();
+  Eigen::Matrix<double, 2, 1, Eigen::RowMajor> stress;
 
-  auto L = length;
+  const auto L = length;
   // assume all matrices local here; no left/right stress; only entire
   // StressTrait
 
-  auto rg = properties.areaMoment / properties.area;
-  auto n = properties.area * stress[0];
-  auto k1 = tangent[0, 0] * properties.area;
+  const auto rg = properties.areaMoment / properties.area;
+  const auto n = properties.area * stress[0];
+  const auto k1 = 1.; // tangent[0, 0] * properties.area;
 
-  auto c1 = tangent[0, 0] * properties.area;
-  auto c2 = k1 * 2. * rg;
-  auto c3 = 2. * c2;
-  auto _ = 0;
-  tensor::Tensor<double, 3, 3> C = {
+  const auto c1 = 1.; // tangent[0, 0] * properties.area;
+  const auto c2 = k1 * 2. * rg;
+  const auto c3 = 2. * c2;
+  const auto _ = 0;
+  const tensor::Tensor<double, 3, 3> C = {
       {{{c1, c3, _}}, {{c3, c2, _}}, {{_, _, _}}}};
   // Dimenion_ == DOF? number of nodes?
-  tensor::Tensor<double, 4, 1> r = {{{{sinbeta, -cosbeta, -sinbeta, cosbeta}}}};
+  const tensor::Tensor<double, 4, 1> r = {
+      {sinbeta, -cosbeta, -sinbeta, cosbeta}};
 
-  tensor::Tensor<double, 4, 1> z = {{{{-cosbeta, -sinbeta, cosbeta, sinbeta}}}};
+  const tensor::Tensor<double, 4, 1> z = {
+      {-cosbeta, -sinbeta, cosbeta, sinbeta}};
 
-  tensor::Tensor<double, Dimension_ *(Dimension_ + 1),
-                 Dimension_ *(Dimension_ + 1)>
-      k = C + 1. / L * z.transpose() * z +
-          ((m1 + m2) / L / L) * (r * z.tranpose()) + z * r.transpose();
+  // auto k = C + 1. / L * z.transpose() * z +
+  //  ((m1 + m2) / L / L) * (r * z.transpose()) + z * r.transpose();
 
-  return k;
+  return tensor::Tensor<double, 6, 6>{{
+      {{1., _, _, _, _, _}},
+      {{_, 1., _, _, _, _}},
+      {{_, _, 1., _, _, _}},
+      {{_, _, _, 1., _, _}},
+      {{_, _, _, _, 1., _}},
+      {{_, _, _, _, _, 1.}},
+  }};
 }
 
 template <std::size_t Dimension_>
@@ -104,6 +111,7 @@ twonode_corotational_beamjh_stiffness_matrix(
   Eigen::Matrix<double, Dimension_ *(Dimension_ + 1),
                 Dimension_ *(Dimension_ + 1), Eigen::RowMajor>
       values;
+  values(0, 0) = 100;
   return values;
 }
 
@@ -143,6 +151,9 @@ public:
 
 private:
   typename TwoNodeCorotationalBeamJHElement::StiffnessMatrix stiffness_matrix_;
+  // TODO change to using stiffness_matrix_ =
+  // TwoNodeCorotationalBeamJHElement::StiffnessMatrix (currently breaks type to
+  // be used in ParallelComputingPolicy)
 };
 
 template <std::size_t Dimension_, class ValueType_, class RealType_>
